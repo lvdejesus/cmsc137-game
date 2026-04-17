@@ -23,14 +23,18 @@ public class Main {
     }
 
     private void init() {
-        if (!glfwInit()) throw new IllegalStateException("GLFW failed!");
+        if (!glfwInit()) {
+            throw new IllegalStateException("GLFW failed!");
+        }
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         window = glfwCreateWindow(WIDTH, HEIGHT, "Game", NULL, NULL);
-        if (window == NULL) throw new RuntimeException("Window failed!");
+        if (window == NULL) {
+            throw new RuntimeException("Window failed!");
+        }
 
         glfwMakeContextCurrent(window);
         glfwSwapInterval(1); // VSync
@@ -74,7 +78,7 @@ public class Main {
             batch.draw(tex, player.position.x, player.position.y, player.position.z,
                     rotation, player.scale.x, player.scale.y, 1, 1, 1, 1);
 
-            for(int i = 0; i < 10; i++) {
+            for (int i = 0; i < 10; i++) {
                 batch.draw(TextureAtlas.get().getRegion("grass.png"),
                         i * 64, 100, 0.5f, 0, 64, 64, 1, 1, 1, 1);
             }
@@ -121,5 +125,7 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) { new Main().run(); }
+    public static void main(String[] args) {
+        new Main().run();
+    }
 }
