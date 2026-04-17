@@ -1,115 +1,120 @@
-import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
+import java.nio.file.*;
+import java.io.IOException;
 
-import java.nio.*;
-
-import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main {
-
-    // The window handle
     private long window;
+    private int shaderProgram;
+    private SpriteBatch batch;
+    private Camera camera;
+    private final int WIDTH = 800, HEIGHT = 600;
 
     public void run() {
-        System.out.println("Hello LWJGL " + Version.getVersion() + "!");
-
         init();
         loop();
 
-        // Free the window callbacks and destroy the window
-        glfwFreeCallbacks(window);
-        glfwDestroyWindow(window);
-
-        // Terminate GLFW and free the error callback
+        glDeleteProgram(shaderProgram);
         glfwTerminate();
-        glfwSetErrorCallback(null).free();
     }
 
     private void init() {
-        // Setup an error callback. The default implementation
-        // will print the error message in System.err.
-        GLFWErrorCallback.createPrint(System.err).set();
+        if (!glfwInit()) throw new IllegalStateException("GLFW failed!");
 
-        // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if ( !glfwInit() )
-            throw new IllegalStateException("Unable to initialize GLFW");
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        // Configure GLFW
-        glfwDefaultWindowHints(); // optional, the current window hints are already the default
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
+        window = glfwCreateWindow(WIDTH, HEIGHT, "Game", NULL, NULL);
+        if (window == NULL) throw new RuntimeException("Window failed!");
 
-        // Create the window
-        window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
-        if ( window == NULL )
-            throw new RuntimeException("Failed to create the GLFW window");
-
-        // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-        });
-
-        // Get the thread stack and push a new frame
-        try ( MemoryStack stack = stackPush() ) {
-            IntBuffer pWidth = stack.mallocInt(1); // int*
-            IntBuffer pHeight = stack.mallocInt(1); // int*
-
-            // Get the window size passed to glfwCreateWindow
-            glfwGetWindowSize(window, pWidth, pHeight);
-
-            // Get the resolution of the primary monitor
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-            // Center the window
-            glfwSetWindowPos(
-                    window,
-                    (vidmode.width() - pWidth.get(0)) / 2,
-                    (vidmode.height() - pHeight.get(0)) / 2
-            );
-        } // the stack frame is popped automatically
-
-        // Make the OpenGL context current
         glfwMakeContextCurrent(window);
-        // Enable v-sync
-        glfwSwapInterval(1);
+        glfwSwapInterval(1); // VSync
+        GL.createCapabilities();
 
-        // Make the window visible
-        glfwShowWindow(window);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        shaderProgram = loadShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
+
+        TextureAtlas.get();
+        batch = new SpriteBatch();
+        camera = new Camera(WIDTH, HEIGHT);
     }
 
     private void loop() {
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
-        GL.createCapabilities();
+        Sprite player = new Sprite("tile.png", 400, 300, 0.1f);
+        float rotation = 0;
+        float[] matrixBuffer = new float[16];
 
-        // Set the clear color
-        glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+        while (!glfwWindowShouldClose(window)) {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Run the rendering loop until the user has attempted to close
-        // the window or has pressed the ESCAPE key.
-        while ( !glfwWindowShouldClose(window) ) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+            glUseProgram(shaderProgram);
+            int pvLoc = glGetUniformLocation(shaderProgram, "u_ProjectionView");
+            camera.getProjectionViewMatrix().get(matrixBuffer);
+            glUniformMatrix4fv(pvLoc, false, matrixBuffer);
 
-            glfwSwapBuffers(window); // swap the color buffers
+            TextureAtlas.get().bind();
 
-            // Poll for window events. The key callback above will only be
-            // invoked during this call.
+            rotation += 1.0f;
+
+            Texture tex = player.getTexture();
+            batch.draw(tex, player.position.x, player.position.y, player.position.z,
+                    rotation, player.scale.x, player.scale.y, 1, 1, 1, 1);
+
+            for(int i = 0; i < 10; i++) {
+                batch.draw(TextureAtlas.get().getRegion("grass.png"),
+                        i * 64, 100, 0.5f, 0, 64, 64, 1, 1, 1, 1);
+            }
+
+            batch.flush();
+
+            glfwSwapBuffers(window);
             glfwPollEvents();
         }
     }
 
-    public static void main(String[] args) {
-        new Main().run();
+    private int loadShaderProgram(String vertPath, String fragPath) {
+        try {
+            String vertCode = new String(Files.readAllBytes(Paths.get(vertPath)));
+            String fragCode = new String(Files.readAllBytes(Paths.get(fragPath)));
+
+            int vShader = glCreateShader(GL_VERTEX_SHADER);
+            glShaderSource(vShader, vertCode);
+            glCompileShader(vShader);
+            checkShader(vShader);
+
+            int fShader = glCreateShader(GL_FRAGMENT_SHADER);
+            glShaderSource(fShader, fragCode);
+            glCompileShader(fShader);
+            checkShader(fShader);
+
+            int program = glCreateProgram();
+            glAttachShader(program, vShader);
+            glAttachShader(program, fShader);
+            glLinkProgram(program);
+
+            glDeleteShader(vShader);
+            glDeleteShader(fShader);
+            return program;
+        } catch (IOException e) {
+            throw new RuntimeException("Shaders missing!");
+        }
     }
 
+    private void checkShader(int id) {
+        if (glGetShaderi(id, GL_COMPILE_STATUS) == GL_FALSE) {
+            System.err.println(glGetShaderInfoLog(id));
+            throw new RuntimeException("Shader failed to compile!");
+        }
+    }
+
+    public static void main(String[] args) { new Main().run(); }
 }
