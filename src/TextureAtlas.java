@@ -17,7 +17,8 @@ public class TextureAtlas {
     }
 
     public static TextureAtlas get() {
-        if (instance == null) instance = new TextureAtlas();
+        if (instance == null)
+            instance = new TextureAtlas();
         return instance;
     }
 
@@ -26,14 +27,16 @@ public class TextureAtlas {
         glBindTexture(GL_TEXTURE_2D, textureID);
 
         // Initialize empty texture
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ATLAS_SIZE, ATLAS_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer)null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ATLAS_SIZE, ATLAS_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                (ByteBuffer) null);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         File folder = new File("res/textures");
         File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
 
-        if (files == null) return;
+        if (files == null)
+            return;
 
         int curX = 0;
         int curY = 0;
@@ -48,7 +51,8 @@ public class TextureAtlas {
                 stbi_set_flip_vertically_on_load(true);
                 ByteBuffer data = stbi_load(file.getAbsolutePath(), w, h, comp, 4);
 
-                if (data == null) continue;
+                if (data == null)
+                    continue;
 
                 int imgW = w.get();
                 int imgH = h.get();
@@ -88,5 +92,7 @@ public class TextureAtlas {
         return texture;
     }
 
-    public void bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
+    public void bind() {
+        glBindTexture(GL_TEXTURE_2D, textureID);
+    }
 }

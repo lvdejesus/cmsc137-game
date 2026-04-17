@@ -19,5 +19,7 @@ public class Sprite {
         this.rotation = 0.0f;
     }
 
-    public Texture getTexture() { return texture; }
+    public Texture getTexture() {
+        return texture;
+    }
 }

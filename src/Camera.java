@@ -21,9 +21,8 @@ public class Camera {
     public Matrix4f getProjectionViewMatrix() {
         return new Matrix4f(projectionMatrix).mul(
                 viewMatrix.identity()
-                        .rotateZ((float)Math.toRadians(rotation))
-                        .translate(-position.x, -position.y, 0)
-        );
+                        .rotateZ((float) Math.toRadians(rotation))
+                        .translate(-position.x, -position.y, 0));
     }
 
     public void bind(int shaderProgram) {

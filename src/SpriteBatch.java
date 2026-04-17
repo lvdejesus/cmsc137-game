@@ -1,6 +1,4 @@
 import static org.lwjgl.opengl.GL33.*;
-import java.nio.FloatBuffer;
-import org.lwjgl.BufferUtils;
 
 public class SpriteBatch {
     private final int MAX_SPRITES = 1000;
@@ -46,14 +44,16 @@ public class SpriteBatch {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
     }
 
-    public void draw(Texture tex, float x, float y, float z, float rot, float sx, float sy, float r, float g, float b, float a) {
-        if (spriteCount >= MAX_SPRITES) flush();
+    public void draw(Texture tex, float x, float y, float z, float rot, float sx, float sy, float r, float g, float b,
+            float a) {
+        if (spriteCount >= MAX_SPRITES)
+            flush();
 
         float cos = (float) Math.cos(Math.toRadians(rot));
         float sin = (float) Math.sin(Math.toRadians(rot));
 
         // Corner offsets for a centered quad
-        float[][] corners = { {-0.5f, 0.5f}, {0.5f, 0.5f}, {0.5f, -0.5f}, {-0.5f, -0.5f} };
+        float[][] corners = { { -0.5f, 0.5f }, { 0.5f, 0.5f }, { 0.5f, -0.5f }, { -0.5f, -0.5f } };
         float[] uvs = { tex.u1, tex.v1, tex.u2, tex.v1, tex.u2, tex.v2, tex.u1, tex.v2 };
 
         int offset = spriteCount * VERTICES_PER_SPRITE * ELEMENTS_PER_VERTEX;
@@ -77,7 +77,8 @@ public class SpriteBatch {
     }
 
     public void flush() {
-        if (spriteCount == 0) return;
+        if (spriteCount == 0)
+            return;
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferSubData(GL_ARRAY_BUFFER, 0, vertexArray);
 

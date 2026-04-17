@@ -1,4 +1,3 @@
-import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import java.nio.file.*;
 import java.io.IOException;
