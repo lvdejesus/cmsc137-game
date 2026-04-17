@@ -9,6 +9,8 @@ public class SpriteBatch {
     private int spriteCount = 0;
     private int vao, vbo;
 
+    static int GLOBAL_SCALE = 2;
+
     public SpriteBatch() {
         vao = glGenVertexArrays();
         vbo = glGenBuffers();
@@ -58,8 +60,8 @@ public class SpriteBatch {
 
         int offset = spriteCount * VERTICES_PER_SPRITE * ELEMENTS_PER_VERTEX;
         for (int i = 0; i < 4; i++) {
-            float px = corners[i][0] * sx;
-            float py = corners[i][1] * sy;
+            float px = corners[i][0] * sx * GLOBAL_SCALE;
+            float py = corners[i][1] * sy * GLOBAL_SCALE;
 
             vertexArray[offset++] = (px * cos - py * sin) + x;
             vertexArray[offset++] = (px * sin + py * cos) + y;
