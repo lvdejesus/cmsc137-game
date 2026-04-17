@@ -2,7 +2,7 @@ SRC = src
 OUT = out
 LIB = lib
 
-LWJGL = $(LIB)/lwjgl.jar:$(LIB)/lwjgl-glfw.jar:$(LIB)/lwjgl-opengl.jar:$(LIB)/lwjgl-stb.jar:$(LIB)/joml.jar:$(LIB)/joml-1.10.8.jar
+LWJGL = $(LIB)/lwjgl.jar:$(LIB)/lwjgl-glfw.jar:$(LIB)/lwjgl-opengl.jar:$(LIB)/lwjgl-stb.jar:$(LIB)/joml-1.10.8.jar:$(LIB)/joml-primitives-1.10.0.jar
 
 all: run
 
