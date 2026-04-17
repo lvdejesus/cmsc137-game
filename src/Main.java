@@ -52,8 +52,13 @@ public class Main {
         Sprite player = new Sprite("tile.png", 400, 300, 0.1f);
         float rotation = 0;
         float[] matrixBuffer = new float[16];
+        double lastTime = glfwGetTime();
 
         while (!glfwWindowShouldClose(window)) {
+            double currentTime = glfwGetTime();
+            float dt = (float) (currentTime - lastTime);
+            lastTime = currentTime;
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(shaderProgram);
@@ -63,7 +68,7 @@ public class Main {
 
             TextureAtlas.get().bind();
 
-            rotation += 1.0f;
+            rotation += 360.0f * dt;
 
             Texture tex = player.getTexture();
             batch.draw(tex, player.position.x, player.position.y, player.position.z,
