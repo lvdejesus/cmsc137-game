@@ -8,7 +8,7 @@ all: run
 
 build: $(OUT)/Main.class
 
-$(OUT)/Main.class: $(SRC)/Main.java $(SRC)/SpriteBatch.java $(SRC)/Sprite.java $(SRC)/Camera.java $(SRC)/Texture.java $(SRC)/TextureAtlas.java
+$(OUT)/Main.class: $(SRC)/Main.java $(SRC)/SpriteBatch.java $(SRC)/Sprite.java $(SRC)/Camera.java $(SRC)/Texture.java $(SRC)/TextureAtlas.java $(SRC)/Animation.java
 	javac -cp $(LWJGL) -d $(OUT) $^
 
 run: $(OUT)/Main.class

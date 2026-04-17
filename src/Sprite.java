@@ -5,21 +5,28 @@ public class Sprite {
     public Vector3f position;
     public Vector2f scale;
     public float rotation;
-    private Texture texture;
+
+    private Animation animation;
+    private float offset;
 
     public Sprite(String fileName, float x, float y, float z) {
-        this.texture = TextureAtlas.get().getRegion(fileName);
+        this(Animation.createStaticAnimation(fileName), x, y, z);
+    }
 
-        if (texture == null) {
-            throw new RuntimeException(fileName + " not found in the atlas.");
-        }
-
+    public Sprite(Animation animation, float x, float y, float z) {
+        this.animation = animation;
+        this.offset = 0.0f;
         this.position = new Vector3f(x, y, z);
-        this.scale = new Vector2f(texture.width, texture.height);
+        this.scale = new Vector2f(animation.width, animation.height);
         this.rotation = 0.0f;
     }
 
-    public Texture getTexture() {
-        return texture;
+    public Texture getTexture(double time) {
+        if (animation.frameDuration == null) {
+            return animation.frames[0];
+        }
+
+        int index = (int) Math.floor((time - offset) / animation.frameDuration) % animation.frames.length;
+        return animation.frames[index];
     }
 }

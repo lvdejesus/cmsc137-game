@@ -52,8 +52,8 @@ public class Main {
     }
 
     private void loop() {
-        Sprite player = new Sprite("tile.png", 400, 300, 0.1f);
-        float rotation = 0;
+        Sprite player = new Sprite(Animation.fromFile("tile.png", 16, 16, 0.2f), 400, 300, 0.1f);
+
         float[] matrixBuffer = new float[16];
         double lastTime = glfwGetTime();
 
@@ -71,16 +71,9 @@ public class Main {
 
             TextureAtlas.get().bind();
 
-            rotation += 360.0f * dt;
-
-            Texture tex = player.getTexture();
+            Texture tex = player.getTexture(currentTime);
             batch.draw(tex, player.position.x, player.position.y, player.position.z,
-                    rotation, player.scale.x, player.scale.y, 1, 1, 1, 1);
-
-            for (int i = 0; i < 10; i++) {
-                batch.draw(TextureAtlas.get().getRegion("grass.png"),
-                        i * 64, 100, 0.5f, 0, 64, 64, 1, 1, 1, 1);
-            }
+                    0, player.scale.x, player.scale.y, 1, 1, 1, 1);
 
             batch.flush();
 
