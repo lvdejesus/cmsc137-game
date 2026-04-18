@@ -38,13 +38,19 @@ public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
         if (textComp == null || textComp.font == null || textComp.text == null || textComp.text.isEmpty()) {
             return;
         }
-        
-        float x = transform.position.x;
-        float y = transform.position.y;
-        float z = 0;
-        
+
         glBindTexture(GL_TEXTURE_2D, textComp.font.getTextureID());
-        
+
+        float length = 0;
+        for (char c : textComp.text.toCharArray()) {
+            Font.Glyph glyph = textComp.font.getGlyph(c);
+            length += glyph.xAdvance * transform.scale.x * textComp.scale;
+        }
+
+        float x = transform.position.x - length * (transform.anchor.getXOffset());
+        float y = transform.position.y + textComp.font.getAscent() - (textComp.font.getAscent() - textComp.font.getDescent()) * transform.anchor.getYOffset();
+        float z = 0;
+
         for (char c : textComp.text.toCharArray()) {
             Font.Glyph glyph = textComp.font.getGlyph(c);
             if (glyph == null) {
