@@ -1,3 +1,5 @@
+package framework.rendering;
+
 public class Texture {
     public float u1, v1, u2, v2;
 

@@ -1,4 +1,11 @@
+import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
+
+import components.*;
+import framework.engine.*;
+import framework.rendering.*;
+import systems.*;
+
 import java.nio.file.*;
 import java.io.IOException;
 
@@ -9,12 +16,36 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Main {
     private long window;
     private int shaderProgram;
-    private SpriteBatch batch;
     private Camera camera;
     private final int WIDTH = 800, HEIGHT = 600;
+    private Engine<Context> engine;
 
     public void run() {
         init();
+
+        engine = new Engine<>();
+        engine.register(TransformComponent.class);
+        engine.register(MovementComponent.class);
+        engine.register(RenderComponent.class);
+        engine.register(AnimationComponent.class);
+
+        engine.addSystem(new MovementSystem());
+        engine.addSystem(new AnimationSystem());
+        engine.addSystem(new RenderSystem());
+
+        Entity<Context> player = engine.createEntity();
+
+        TransformComponent transformComponent = new TransformComponent(new Vector2f(400.0f, 300.0f));
+        RenderComponent renderComponent = new RenderComponent();
+
+        double currentTime = glfwGetTime();
+        AnimationComponent animationComponent = new AnimationComponent(Animation.fromFile("tile.png", 2, 0.3f),
+                (float) currentTime);
+
+        player.addComponent(renderComponent);
+        player.addComponent(transformComponent);
+        player.addComponent(animationComponent);
+
         loop();
 
         glDeleteProgram(shaderProgram);
@@ -47,20 +78,21 @@ public class Main {
         shaderProgram = loadShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
 
         TextureAtlas.get();
-        batch = new SpriteBatch();
         camera = new Camera(WIDTH, HEIGHT);
     }
 
     private void loop() {
-        Sprite player = new Sprite(Animation.fromFile("tile.png", 16, 16, 0.2f), 400, 300, 0.1f);
-
         float[] matrixBuffer = new float[16];
         double lastTime = glfwGetTime();
 
+        Context ctx = new Context();
         while (!glfwWindowShouldClose(window)) {
             double currentTime = glfwGetTime();
             float dt = (float) (currentTime - lastTime);
             lastTime = currentTime;
+
+            ctx.currentTime = (float) currentTime;
+            ctx.deltaTime = dt;
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -71,11 +103,7 @@ public class Main {
 
             TextureAtlas.get().bind();
 
-            Texture tex = player.getTexture(currentTime);
-            batch.draw(tex, player.position.x, player.position.y, player.position.z,
-                    0, player.scale.x, player.scale.y, 1, 1, 1, 1);
-
-            batch.flush();
+            engine.update(ctx);
 
             glfwSwapBuffers(window);
             glfwPollEvents();

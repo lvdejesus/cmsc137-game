@@ -1,0 +1,33 @@
+package systems;
+
+import components.MovementComponent;
+import components.TransformComponent;
+
+import framework.engine.ComponentMapper;
+import framework.engine.Engine;
+import framework.engine.EntitySystem;
+
+public class MovementSystem extends EntitySystem<Context> {
+    private ComponentMapper<TransformComponent> tm;
+    private ComponentMapper<MovementComponent> mm;
+
+    public MovementSystem() {
+        super(TransformComponent.class, MovementComponent.class);
+    }
+
+    @Override
+    public void setEngine(Engine<Context> engine) {
+        super.setEngine(engine);
+
+        this.tm = engine.getMapper(TransformComponent.class);
+        this.mm = engine.getMapper(MovementComponent.class);
+    }
+
+    @Override
+    public void processEntity(int id, Context ctx) {
+        TransformComponent pos = tm.get(id);
+        MovementComponent vel = mm.get(id);
+
+        pos.position.fma(ctx.deltaTime, vel.velocity);
+    }
+}

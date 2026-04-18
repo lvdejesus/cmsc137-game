@@ -4,14 +4,16 @@ LIB = lib
 
 LWJGL = "$(LIB)/lwjgl.jar;$(LIB)/lwjgl-glfw.jar;$(LIB)/lwjgl-opengl.jar;$(LIB)/lwjgl-stb.jar;$(LIB)/joml-1.10.8.jar
 .jar"
+SOURCES = src\Main.java src\components\*.java src\framework\engine\*.java src\framework\rendering\*.java src\systems\*.java
 
 all: run
 
-build: $(OUT)/Main.class
+build: $(OUT)/.build_stamp
 
-$(OUT)/Main.class: $(SRC)/Main.java $(SRC)/SpriteBatch.java $(SRC)/Sprite.java $(SRC)/Camera.java $(SRC)/Texture.java $(SRC)/TextureAtlas.java
+$(OUT)/.build_stamp: $(SOURCES)
 	@if not exist $(OUT) mkdir $(OUT)
-	javac -cp $(LWJGL) -d $(OUT) $^
+	javac -cp $(LWJGL) -d $(OUT) $(SOURCES)
+	@echo "Build complete" > $(OUT)/.build_stamp
 
 run: build
 	java -cp "$(LWJGL);$(OUT)" -Djava.library.path=$(LIB)/natives/windows/x64 Main

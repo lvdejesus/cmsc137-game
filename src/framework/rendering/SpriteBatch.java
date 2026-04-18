@@ -1,3 +1,5 @@
+package framework.rendering;
+
 import static org.lwjgl.opengl.GL33.*;
 
 public class SpriteBatch {
