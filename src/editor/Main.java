@@ -40,6 +40,11 @@ public class Main {
 
     private EditorComponent editor;
 
+    private static int TILE_SIZE = 16;
+    private static int COLS  = 3;
+    private static float SCALE = 4.0f;
+    private static float GAP = 4.0f;
+
     public void run() {
         init();
         loop();
@@ -54,16 +59,16 @@ public class Main {
             if (!region.startsWith("tiles")) continue;
 
             Texture t = TextureAtlas.get().getRegion(region);
-            int xCount = t.width / 16;
-            int yCount = t.height / 16;
+            int xCount = t.width / TILE_SIZE;
+            int yCount = t.height / TILE_SIZE;
             for (int i = 0; i < yCount; i++) {
                 for (int j = 0; j < xCount; j++) {
-                    float x = (g % 3) * 68;
-                    float y = (float) (Math.floor(g / 3.0f) * 68);
+                    float x = (g % COLS) * (TILE_SIZE * GAP + SCALE);
+                    float y = (float) (g / COLS) * (TILE_SIZE * GAP + SCALE);
 
                     Entity<Context> entity = engine.createEntity();
                     TransformComponent transformComponent = new TransformComponent(new Vector2f(x, y),
-                        new Vector2f(4.0f, 4.0f));
+                        new Vector2f(SCALE, SCALE));
 
                     float du = (t.u2 - t.u1) / xCount;
                     float dv = (t.v2 - t.v1) / yCount;
