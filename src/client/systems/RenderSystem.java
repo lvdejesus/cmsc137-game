@@ -5,17 +5,17 @@ import client.components.TransformComponent;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.EntitySystem;
-import client.rendering.SpriteBatch;
+import client.rendering.Batch;
 import client.rendering.Texture;
 
 public class RenderSystem extends EntitySystem<Context> {
     private ComponentMapper<RenderComponent> rm;
     private ComponentMapper<TransformComponent> tm;
-    private SpriteBatch batch;
+    private Batch batch;
 
     public RenderSystem() {
         super(RenderComponent.class, TransformComponent.class);
-        batch = new SpriteBatch();
+        batch = new Batch();
     }
 
     @Override

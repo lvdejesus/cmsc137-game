@@ -2,7 +2,7 @@ package client.rendering;
 
 import static org.lwjgl.opengl.GL33.*;
 
-public class SpriteBatch {
+public class Batch {
     private final int MAX_SPRITES = 1000;
     private final int VERTICES_PER_SPRITE = 4;
     private final int ELEMENTS_PER_VERTEX = 9; // x,y,z, u,v, r,g,b,a
@@ -11,7 +11,7 @@ public class SpriteBatch {
     private int spriteCount = 0;
     private int vao, vbo;
 
-    public SpriteBatch() {
+    public Batch() {
         vao = glGenVertexArrays();
         vbo = glGenBuffers();
         glBindVertexArray(vao);
