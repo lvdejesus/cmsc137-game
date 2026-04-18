@@ -34,7 +34,7 @@ public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
     public void processEntity(int id, client.systems.Context ctx) {
         TextComponent textComp = tm.get(id);
         TransformComponent transform = trm.get(id);
-        
+
         if (textComp == null || textComp.font == null || textComp.text == null || textComp.text.isEmpty()) {
             return;
         }
@@ -56,12 +56,12 @@ public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
             if (glyph == null) {
                 continue;
             }
-            
+
             float charX = x + glyph.xOffset * textComp.scale;
             float charY = y + glyph.yOffset * textComp.scale;
-            
+
             Texture glyphTex = new Texture(glyph.u1, glyph.v1, glyph.u2, glyph.v2, glyph.width, glyph.height);
-            
+
             batch.draw(
                 glyphTex,
                 charX,
@@ -79,7 +79,7 @@ public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
 
             x += glyph.xAdvance * transform.scale.x * textComp.scale;
         }
-        
+
         batch.flush();
     }
 }
