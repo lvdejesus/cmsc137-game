@@ -189,8 +189,8 @@ public class Main {
         createTiles();
         
         Entity<Context> textEntity = engine.createEntity();
-        TransformComponent textTransform = new TransformComponent(new Vector2f(50, 50), new Vector2f(1, 1));
-        TextComponent textComponent = new TextComponent(font, "test", new Vector4f(1.0f, 1.0f, 0.0f, 1.0f));
+        TransformComponent textTransform = new TransformComponent(new Vector2f(12, 12), new Vector2f(1, 1));
+        TextComponent textComponent = new TextComponent(font, "Tiles", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
         textEntity.addComponent(textTransform);
         textEntity.addComponent(textComponent);
 
