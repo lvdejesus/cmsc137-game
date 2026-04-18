@@ -215,6 +215,7 @@ public class Main {
             ctx.currentTime = (float) currentTime;
             ctx.deltaTime = dt;
 
+            glClearColor(203.0f / 255, 219.0f / 255, 252.0f / 255, 255.0f / 255);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(shaderProgram);
