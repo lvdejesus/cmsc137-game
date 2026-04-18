@@ -14,9 +14,11 @@ import org.joml.Vector2f;
 public class EditorSystem extends EntitySystem<Context> {
     private ComponentMapper<EditorComponent> em;
     private ComponentMapper<ClickEvent> cem;
+    private TransformComponent grid;
 
-    public EditorSystem() {
+    public EditorSystem(TransformComponent grid) {
         super(EditorComponent.class);
+        this.grid = grid;
     }
 
     @Override
@@ -33,8 +35,8 @@ public class EditorSystem extends EntitySystem<Context> {
         ClickEvent ce = cem.get(entityId);
 
         if (ce != null && ec.currentTile != null) {
-            int xTile = (int) Math.floor((ce.x - 200.0f) / 64.0f);
-            int yTile = (int) Math.floor((ce.y - 200.0f) / 64.0f);
+            int xTile = (int) Math.floor((ce.x - grid.position.x) / 64.0f);
+            int yTile = (int) Math.floor((ce.y - grid.position.y) / 64.0f);
 
             Entity<Context> tileEntity = ec.getEntity(xTile, yTile);
             if (tileEntity != null) {
@@ -43,7 +45,7 @@ public class EditorSystem extends EntitySystem<Context> {
             } else {
                 tileEntity = engine.createEntity();
 
-                TransformComponent tc = new TransformComponent(new Vector2f(200.0f + xTile * 64.0f, 200.0f + yTile * 64.0f),
+                TransformComponent tc = new TransformComponent(new Vector2f(grid.position.x + xTile * 64.0f, grid.position.y + yTile * 64.0f),
                     new Vector2f(4.0f, 4.0f));
                 RenderComponent rc = new RenderComponent(ec.tiles.get(ec.currentTile), 1);
 

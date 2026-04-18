@@ -43,7 +43,7 @@ public class Main {
     private static int TILE_SIZE = 16;
     private static int COLS  = 3;
     private static float SCALE = 4.0f;
-    private static float GAP = 4.0f;
+    private static float GAP = 24.0f;
 
     public void run() {
         init();
@@ -54,6 +54,8 @@ public class Main {
     }
 
     private void createTiles() {
+        Texture bgTex =  TextureAtlas.get().getRegion("bg.png");
+
         int g = 0;
         for (String region : TextureAtlas.get().listRegions()) {
             if (!region.startsWith("tiles")) continue;
@@ -63,8 +65,8 @@ public class Main {
             int yCount = t.height / TILE_SIZE;
             for (int i = 0; i < yCount; i++) {
                 for (int j = 0; j < xCount; j++) {
-                    float x = (g % COLS) * (TILE_SIZE * GAP + SCALE);
-                    float y = (float) (g / COLS) * (TILE_SIZE * GAP + SCALE);
+                    float x = 12.0f + (g % COLS) * (TILE_SIZE * SCALE + GAP);
+                    float y = 44.0f + (float) (g / COLS) * (TILE_SIZE * SCALE + GAP);
 
                     Entity<Context> entity = engine.createEntity();
                     TransformComponent transformComponent = new TransformComponent(new Vector2f(x, y),
@@ -79,7 +81,7 @@ public class Main {
                     float v2 = t.v1 + dv * (i + 1);
 
                     Texture tex =  new Texture(u1, v1, u2, v2, 16, 16);
-                    RenderComponent renderComponent = new RenderComponent(tex, 0);
+                    RenderComponent renderComponent = new RenderComponent(tex, 1);
 
                     editor.tiles.add(tex);
 
@@ -98,6 +100,13 @@ public class Main {
                     entity.addComponent(transformComponent);
                     entity.addComponent(clickableComponent);
                     entity.addComponent(tileComponent);
+
+                    Entity<Context> bgEntity = engine.createEntity();
+                    TransformComponent tc = new TransformComponent(new Vector2f(x - 8, y - 8),
+                        new Vector2f(20.0f * (SCALE / 16.0f), 20.0f * (SCALE / 16.0f)));
+                    RenderComponent render = new RenderComponent(bgTex, 0);
+                    bgEntity.addComponent(tc);
+                    bgEntity.addComponent(render);
 
                     g++;
                 }
@@ -164,7 +173,7 @@ public class Main {
 
         Entity<Context> entity = engine.createEntity();
 
-        TransformComponent transformComponent = new TransformComponent(new Vector2f(200, 200),
+        TransformComponent transformComponent = new TransformComponent(new Vector2f(COLS * (TILE_SIZE * SCALE + GAP), 0),
             new Vector2f(16.0f, 16.0f));
 
         Texture t = TextureAtlas.get().getRegion("bg.png");
@@ -191,13 +200,20 @@ public class Main {
         Entity<Context> textEntity = engine.createEntity();
         TransformComponent textTransform = new TransformComponent(new Vector2f(12, 12), new Vector2f(1, 1));
         TextComponent textComponent = new TextComponent(font, "Tiles", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+
         textEntity.addComponent(textTransform);
         textEntity.addComponent(textComponent);
+
+        Entity<Context> bgEntity = engine.createEntity();
+        TransformComponent tc = new TransformComponent(new Vector2f(0.0f, 0.0f), new Vector2f(16.0f, 2.0f));
+        RenderComponent rc = new RenderComponent(t, 0, new Vector4f(0.8f, 0.8f, 0.8f, 1.0f));
+        bgEntity.addComponent(tc);
+        bgEntity.addComponent(rc);
 
         engine.addSystem(new ClickSystem(camera));
         engine.addSystem(new RenderSystem());
         engine.addSystem(new TileSystem(editor));
-        engine.addSystem(new EditorSystem());
+        engine.addSystem(new EditorSystem(transformComponent));
         engine.addSystem(new CleanupSystem());
         engine.addSystem(new TextRenderingSystem());
     }
