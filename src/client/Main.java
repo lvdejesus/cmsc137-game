@@ -1,10 +1,12 @@
+package client;
+
 import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 
-import components.*;
+import client.components.*;
 import framework.engine.*;
-import framework.rendering.*;
-import systems.*;
+import client.rendering.*;
+import client.systems.*;
 
 import java.nio.file.*;
 import java.io.IOException;

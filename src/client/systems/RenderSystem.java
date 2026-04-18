@@ -1,12 +1,12 @@
-package systems;
+package client.systems;
 
-import components.RenderComponent;
-import components.TransformComponent;
+import client.components.RenderComponent;
+import client.components.TransformComponent;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.EntitySystem;
-import framework.rendering.SpriteBatch;
-import framework.rendering.Texture;
+import client.rendering.SpriteBatch;
+import client.rendering.Texture;
 
 public class RenderSystem extends EntitySystem<Context> {
     private ComponentMapper<RenderComponent> rm;
@@ -33,7 +33,7 @@ public class RenderSystem extends EntitySystem<Context> {
 
         Texture tex = rc.texture;
         batch.draw(tex, tc.position.x, tc.position.y, rc.z,
-                0, rc.texture.width * tc.scale.x, rc.texture.height * tc.scale.y, 1, 1, 1, 1);
+                0, rc.texture.width * tc.scale.x, rc.texture.height * tc.scale.y, 1, 1, 1, 1, tc.anchor);
 
         batch.flush();
     }

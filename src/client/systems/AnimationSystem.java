@@ -1,12 +1,12 @@
-package systems;
+package client.systems;
 
-import components.RenderComponent;
-import components.AnimationComponent;
+import client.components.RenderComponent;
+import client.components.AnimationComponent;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.EntitySystem;
-import framework.rendering.Animation;
+import client.rendering.Animation;
 
 public class AnimationSystem extends EntitySystem<Context> {
     private ComponentMapper<AnimationComponent> tm;

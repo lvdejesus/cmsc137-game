@@ -1,7 +1,7 @@
-package systems;
+package client.systems;
 
-import components.MovementComponent;
-import components.TransformComponent;
+import client.components.MovementComponent;
+import client.components.TransformComponent;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;

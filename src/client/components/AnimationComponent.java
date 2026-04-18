@@ -1,7 +1,7 @@
-package components;
+package client.components;
 
 import framework.engine.Component;
-import framework.rendering.Animation;
+import client.rendering.Animation;
 
 public class AnimationComponent implements Component {
     public Animation animation;

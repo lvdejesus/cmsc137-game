@@ -1,4 +1,4 @@
-package framework.rendering;
+package client.rendering;
 
 public class Texture {
     public float u1, v1, u2, v2;

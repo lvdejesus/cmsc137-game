@@ -1,12 +1,21 @@
-package framework.rendering;
+package client.rendering;
 
 import org.lwjgl.system.MemoryStack;
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.stb.STBImage.*;
+
+record TextureEntry(String name, String path) {}
 
 public class TextureAtlas {
     private static TextureAtlas instance;
@@ -34,24 +43,34 @@ public class TextureAtlas {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        File folder = new File("res/textures");
-        File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
+        Path root = Paths.get("res/textures");
 
-        if (files == null)
+        List<TextureEntry> textures;
+        try (Stream<Path> stream = Files.walk(root)) {
+            textures = stream
+                .filter(Files::isRegularFile)
+                .filter(path -> path.toString().toLowerCase().endsWith(".png"))
+                .map(path -> {
+                    String relativePath = root.relativize(path).toString().replace("\\", "/");
+                    return new TextureEntry(relativePath, path.toString());
+                }).toList();
+        } catch (IOException e) {
+            e.printStackTrace();
             return;
+        }
 
         int curX = 0;
         int curY = 0;
         int maxHeightInRow = 0;
 
-        for (File file : files) {
+        for (TextureEntry file : textures) {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 IntBuffer w = stack.mallocInt(1);
                 IntBuffer h = stack.mallocInt(1);
                 IntBuffer comp = stack.mallocInt(1);
 
                 stbi_set_flip_vertically_on_load(true);
-                ByteBuffer data = stbi_load(file.getAbsolutePath(), w, h, comp, 4);
+                ByteBuffer data = stbi_load(file.path(), w, h, comp, 4);
 
                 if (data == null)
                     continue;
@@ -76,7 +95,7 @@ public class TextureAtlas {
                 float u2 = (float) (curX + imgW) / ATLAS_SIZE;
                 float v2 = (float) (curY + imgH) / ATLAS_SIZE;
 
-                regions.put(file.getName(), new Texture(u1, v1, u2, v2, imgW, imgH));
+                regions.put(file.name(), new Texture(u1, v1, u2, v2, imgW, imgH));
 
                 curX += imgW;
                 maxHeightInRow = Math.max(maxHeightInRow, imgH);
@@ -92,6 +111,10 @@ public class TextureAtlas {
             throw new RuntimeException(name + " is not in the atlas.");
         }
         return texture;
+    }
+
+    public Iterable<String> listRegions() {
+        return regions.keySet();
     }
 
     public void bind() {

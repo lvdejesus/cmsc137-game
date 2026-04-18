@@ -1,6 +1,6 @@
-package systems;
+package client.systems;
 
-import components.MovementComponent;
+import client.components.MovementComponent;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;

@@ -1,4 +1,4 @@
-package framework.rendering;
+package client.rendering;
 
 public class Animation {
     public Texture[] frames;

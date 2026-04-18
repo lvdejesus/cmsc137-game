@@ -1,7 +1,7 @@
-package components;
+package client.components;
 
 import framework.engine.Component;
-import framework.rendering.Texture;
+import client.rendering.Texture;
 
 public class RenderComponent implements Component {
     public Texture texture;
