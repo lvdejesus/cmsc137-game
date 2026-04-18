@@ -7,20 +7,27 @@ import editor.systems.EditorSystem;
 import editor.systems.TileSystem;
 import framework.rendering.ShaderProgram;
 import org.joml.Vector2f;
+import org.joml.Vector4f;
 import org.joml.primitives.AABBf;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
 import client.components.*;
 import framework.engine.*;
 import client.rendering.*;
 import client.systems.*;
+import client.rendering.Font;
+import client.components.TextComponent;
 
-import java.nio.file.*;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
-
 
 public class Main {
     private long window;
@@ -28,6 +35,8 @@ public class Main {
     private Camera camera;
     private final int WIDTH = 800, HEIGHT = 600;
     private Engine<Context> engine;
+    
+    private Font font;
 
     private EditorComponent editor;
 
@@ -120,6 +129,16 @@ public class Main {
 
         TextureAtlas.get();
 
+        try {
+            Path fontPath = Paths.get("res/fonts/Inter-Regular.ttf");
+            ByteBuffer fontBuffer = BufferUtils.createByteBuffer((int) Files.size(fontPath));
+            Files.newByteChannel(fontPath).read(fontBuffer);
+            fontBuffer.flip();
+            font = new Font(fontBuffer, 24);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load font", e);
+        }
+
         camera = new Camera();
         camera.setSize(WIDTH, HEIGHT);
 
@@ -136,6 +155,7 @@ public class Main {
         engine.register(EditorComponent.class);
         engine.register(TileComponent.class);
         engine.register(ClickEvent.class);
+        engine.register(TextComponent.class);
 
         Entity<Context> entity = engine.createEntity();
 
@@ -162,12 +182,19 @@ public class Main {
         entity.addComponent(editor);
 
         createTiles();
+        
+        Entity<Context> textEntity = engine.createEntity();
+        TransformComponent textTransform = new TransformComponent(new Vector2f(50, 50), new Vector2f(1, 1));
+        TextComponent textComponent = new TextComponent(font, "test", new Vector4f(1.0f, 1.0f, 0.0f, 1.0f));
+        textEntity.addComponent(textTransform);
+        textEntity.addComponent(textComponent);
 
         engine.addSystem(new ClickSystem(camera));
         engine.addSystem(new RenderSystem());
         engine.addSystem(new TileSystem(editor));
         engine.addSystem(new EditorSystem());
         engine.addSystem(new CleanupSystem());
+        engine.addSystem(new TextRenderingSystem());
     }
 
     private void loop() {
