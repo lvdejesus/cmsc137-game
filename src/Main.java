@@ -84,7 +84,14 @@ public class Main {
         shaderProgram = loadShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
 
         TextureAtlas.get();
-        camera = new Camera(WIDTH, HEIGHT);
+
+        camera = new Camera();
+        camera.setSize(WIDTH, HEIGHT);
+
+        glfwSetFramebufferSizeCallback(window, (window, width, height) -> {
+            camera.setSize(width, height);
+            glViewport(0, 0, width, height);
+        });
     }
 
     private void loop() {
