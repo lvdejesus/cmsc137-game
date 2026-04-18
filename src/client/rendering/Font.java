@@ -18,6 +18,9 @@ public class Font {
     private int textureID;
     private final Map<Character, Glyph> glyphs = new HashMap<>();
     private final int fontSize;
+    private final float ascent;
+    private final float descent;
+    private final float lineGap;
 
     public Font(ByteBuffer ttfBuffer, int fontSize) {
         this.fontSize = fontSize;
@@ -28,8 +31,29 @@ public class Font {
             if (!STBTruetype.stbtt_InitFont(fontInfo, ttfBuffer, fontOffset))
                 throw new RuntimeException("Failed to initialize font");
 
+            float scale = STBTruetype.stbtt_ScaleForPixelHeight(fontInfo, fontSize);
+            IntBuffer ascent = stack.mallocInt(1);
+            IntBuffer descent = stack.mallocInt(1);
+            IntBuffer lineGap = stack.mallocInt(1);
+
+            STBTruetype.stbtt_GetFontVMetrics(fontInfo, ascent, descent, lineGap);
+            this.ascent = ascent.get() * scale;
+            this.descent = descent.get() * scale;
+            this.lineGap = lineGap.get() * scale;
             generateFontAtlas(ttfBuffer, fontSize);
         }
+    }
+
+    public float getAscent() {
+        return ascent;
+    }
+
+    public float getDescent() {
+        return descent;
+    }
+
+    public float getLineGap() {
+        return lineGap;
     }
 
     private void generateFontAtlas(ByteBuffer ttfBuffer, float fontSize) {
