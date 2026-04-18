@@ -33,7 +33,7 @@ public class RenderSystem extends EntitySystem<Context> {
 
         Texture tex = rc.texture;
         batch.draw(tex, tc.position.x, tc.position.y, rc.z,
-                0, rc.texture.width * tc.scale.x, rc.texture.height * tc.scale.y, 1, 1, 1, 1, tc.anchor);
+                0, rc.texture.width * tc.scale.x, rc.texture.height * tc.scale.y, rc.tint.x, rc.tint.y, rc.tint.z, rc.tint.w, tc.anchor);
 
         batch.flush();
     }
