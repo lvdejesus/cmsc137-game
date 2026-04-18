@@ -56,10 +56,16 @@ public class Engine<T> {
     }
 
     @SuppressWarnings("unchecked")
-    void addComponent(int id, Component component) {
+    public void addComponent(int id, Component component) {
         ComponentMapper<Component> mapper = (ComponentMapper<Component>) mappers.get(component.getClass());
         componentBitset[id] |= 1L << mapper.getIndex();
         mapper.set(id, component);
+    }
+
+    public void removeComponent(int id, Class<? extends Component> component) {
+        var mapper =  mappers.get(component);
+        componentBitset[id] ^= 1L << mapper.getIndex();
+        mapper.set(id, null);
     }
 
     public void destroyEntity(int id) {

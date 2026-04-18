@@ -1,5 +1,6 @@
 package client.systems;
 
+import client.components.ClickEvent;
 import client.components.ClickableComponent;
 import client.components.RenderComponent;
 import client.rendering.Camera;
@@ -59,7 +60,7 @@ public class ClickSystem extends EntitySystem<Context> {
             super.update(ctx);
 
             if (winnerId != -1 && event.type == InputHandler.MouseEventType.LEFT_CLICK) {
-                cm.get(winnerId).onClick.onClick(worldMouse.x, worldMouse.y);
+                engine.addComponent(winnerId, new ClickEvent(event.position.x, event.position.y));
                 event.consume();
             }
         }

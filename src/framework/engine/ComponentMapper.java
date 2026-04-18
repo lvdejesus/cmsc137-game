@@ -22,7 +22,7 @@ public class ComponentMapper<T extends Component> {
         return (T) data[id];
     }
 
-    public void set(int id, T component) {
+    void set(int id, T component) {
         data[id] = component;
     }
 }

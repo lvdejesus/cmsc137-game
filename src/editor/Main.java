@@ -1,5 +1,10 @@
 package editor;
 
+import editor.components.EditorComponent;
+import editor.components.TileComponent;
+import editor.systems.CleanupSystem;
+import editor.systems.EditorSystem;
+import editor.systems.TileSystem;
 import framework.rendering.ShaderProgram;
 import org.joml.Vector2f;
 import org.joml.primitives.AABBf;
@@ -11,15 +16,11 @@ import client.rendering.*;
 import client.systems.*;
 
 import java.nio.file.*;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-record IntPair(int x, int y) {}
 
 public class Main {
     private long window;
@@ -28,44 +29,10 @@ public class Main {
     private final int WIDTH = 800, HEIGHT = 600;
     private Engine<Context> engine;
 
-    private ArrayList<Texture> tiles = new ArrayList<>();
-    private Integer currentTile = null;
-    private HashMap<IntPair, Entity<Context>> grid = new HashMap<>();
+    private EditorComponent editor;
 
     public void run() {
         init();
-
-        engine = new Engine<>();
-        engine.register(TransformComponent.class);
-        engine.register(RenderComponent.class);
-        engine.register(ClickableComponent.class);
-
-        engine.addSystem(new ClickSystem(camera));
-        engine.addSystem(new RenderSystem());
-
-        createTiles();
-        Entity<Context> entity = engine.createEntity();
-
-        TransformComponent transformComponent = new TransformComponent(new Vector2f(200, 200),
-            new Vector2f(16.0f, 16.0f));
-
-        Texture t = TextureAtlas.get().getRegion("bg.png");
-        RenderComponent renderComponent = new RenderComponent(t, 0);
-
-        AABBf boundingBox = new AABBf();
-        boundingBox.minX = transformComponent.position.x;
-        boundingBox.minY = transformComponent.position.y;
-        boundingBox.minZ = Float.NEGATIVE_INFINITY;
-        boundingBox.maxX = transformComponent.position.x + renderComponent.texture.width * transformComponent.scale.x;
-        boundingBox.maxY = transformComponent.position.y + renderComponent.texture.width * transformComponent.scale.y;
-        boundingBox.maxZ = Float.POSITIVE_INFINITY;
-
-        ClickableComponent clickableComponent = new ClickableComponent(boundingBox, this::onGridClick);
-
-        entity.addComponent(renderComponent);
-        entity.addComponent(transformComponent);
-        entity.addComponent(clickableComponent);
-
         loop();
 
         glDeleteProgram(shaderProgram);
@@ -100,7 +67,7 @@ public class Main {
                     Texture tex =  new Texture(u1, v1, u2, v2, 16, 16);
                     RenderComponent renderComponent = new RenderComponent(tex, 0);
 
-                    tiles.add(tex);
+                    editor.tiles.add(tex);
 
                     AABBf boundingBox = new AABBf();
                     boundingBox.minX = transformComponent.position.x;
@@ -110,15 +77,13 @@ public class Main {
                     boundingBox.maxY = transformComponent.position.y + renderComponent.texture.width * transformComponent.scale.y;
                     boundingBox.maxZ = Float.POSITIVE_INFINITY;
 
-                    final int tile = g;
-                    ClickableComponent clickableComponent = new ClickableComponent(boundingBox, ( _x, _y) -> {
-                        currentTile = tile;
-                    });
-
+                    ClickableComponent clickableComponent = new ClickableComponent(boundingBox);
+                    TileComponent tileComponent = new TileComponent(g);
 
                     entity.addComponent(renderComponent);
                     entity.addComponent(transformComponent);
                     entity.addComponent(clickableComponent);
+                    entity.addComponent(tileComponent);
 
                     g++;
                 }
@@ -162,6 +127,47 @@ public class Main {
             camera.setSize(width, height);
             glViewport(0, 0, width, height);
         });
+
+        engine = new Engine<>();
+
+        engine.register(TransformComponent.class);
+        engine.register(RenderComponent.class);
+        engine.register(ClickableComponent.class);
+        engine.register(EditorComponent.class);
+        engine.register(TileComponent.class);
+        engine.register(ClickEvent.class);
+
+        Entity<Context> entity = engine.createEntity();
+
+        TransformComponent transformComponent = new TransformComponent(new Vector2f(200, 200),
+            new Vector2f(16.0f, 16.0f));
+
+        Texture t = TextureAtlas.get().getRegion("bg.png");
+        RenderComponent renderComponent = new RenderComponent(t, 0);
+
+        AABBf boundingBox = new AABBf();
+        boundingBox.minX = transformComponent.position.x;
+        boundingBox.minY = transformComponent.position.y;
+        boundingBox.minZ = Float.NEGATIVE_INFINITY;
+        boundingBox.maxX = transformComponent.position.x + renderComponent.texture.width * transformComponent.scale.x;
+        boundingBox.maxY = transformComponent.position.y + renderComponent.texture.width * transformComponent.scale.y;
+        boundingBox.maxZ = Float.POSITIVE_INFINITY;
+
+        ClickableComponent clickableComponent = new ClickableComponent(boundingBox);
+        editor = new EditorComponent();
+
+        entity.addComponent(renderComponent);
+        entity.addComponent(transformComponent);
+        entity.addComponent(clickableComponent);
+        entity.addComponent(editor);
+
+        createTiles();
+
+        engine.addSystem(new ClickSystem(camera));
+        engine.addSystem(new RenderSystem());
+        engine.addSystem(new TileSystem(editor));
+        engine.addSystem(new EditorSystem());
+        engine.addSystem(new CleanupSystem());
     }
 
     private void loop() {
@@ -196,30 +202,5 @@ public class Main {
 
     public static void main(String[] args) {
         new Main().run();
-    }
-
-    private void onGridClick(float x, float y) {
-        if (currentTile == null) return;
-
-        int xTile = (int) Math.floor((x - 200.0f) / 64.0f);
-        int yTile = (int) Math.floor((y - 200.0f) / 64.0f);
-
-        IntPair pair = new IntPair(xTile, yTile);
-        Entity<Context> tileEntity = grid.get(pair);
-        if (tileEntity != null) {
-            RenderComponent rc = tileEntity.getComponent(RenderComponent.class);
-            rc.texture = tiles.get(currentTile);
-        } else {
-            tileEntity = engine.createEntity();
-
-            TransformComponent tc = new TransformComponent(new Vector2f(200.0f + xTile * 64.0f, 200.0f + yTile * 64.0f),
-                new Vector2f(4.0f, 4.0f));
-            RenderComponent rc = new RenderComponent(tiles.get(currentTile), 1);
-
-            tileEntity.addComponent(rc);
-            tileEntity.addComponent(tc);
-
-            grid.put(pair, tileEntity);
-        }
     }
 }

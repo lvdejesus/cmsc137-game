@@ -6,15 +6,8 @@ import org.joml.primitives.AABBf;
 
 public class ClickableComponent implements Component {
     public AABBf boundingBox;
-    public ClickHandler onClick;
 
-    public ClickableComponent(AABBf boundingBox, ClickHandler onClick) {
+    public ClickableComponent(AABBf boundingBox) {
         this.boundingBox = boundingBox;
-        this.onClick = onClick;
-    }
-
-    @FunctionalInterface
-    public interface ClickHandler {
-        void onClick(float x, float y);
     }
 }
