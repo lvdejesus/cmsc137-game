@@ -1,5 +1,6 @@
 package client;
 
+import framework.rendering.ShaderProgram;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 
@@ -83,7 +84,7 @@ public class Main {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        shaderProgram = loadShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
+        shaderProgram = ShaderProgram.getShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
 
         TextureAtlas.get();
 
@@ -123,41 +124,6 @@ public class Main {
 
             glfwSwapBuffers(window);
             glfwPollEvents();
-        }
-    }
-
-    private int loadShaderProgram(String vertPath, String fragPath) {
-        try {
-            String vertCode = new String(Files.readAllBytes(Paths.get(vertPath)));
-            String fragCode = new String(Files.readAllBytes(Paths.get(fragPath)));
-
-            int vShader = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(vShader, vertCode);
-            glCompileShader(vShader);
-            checkShader(vShader);
-
-            int fShader = glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(fShader, fragCode);
-            glCompileShader(fShader);
-            checkShader(fShader);
-
-            int program = glCreateProgram();
-            glAttachShader(program, vShader);
-            glAttachShader(program, fShader);
-            glLinkProgram(program);
-
-            glDeleteShader(vShader);
-            glDeleteShader(fShader);
-            return program;
-        } catch (IOException e) {
-            throw new RuntimeException("Shaders missing!");
-        }
-    }
-
-    private void checkShader(int id) {
-        if (glGetShaderi(id, GL_COMPILE_STATUS) == GL_FALSE) {
-            System.err.println(glGetShaderInfoLog(id));
-            throw new RuntimeException("Shader failed to compile!");
         }
     }
 
