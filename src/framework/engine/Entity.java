@@ -20,6 +20,10 @@ public class Entity<T> {
 
     }
 
+    public <U extends Component> U getComponent(Class<U> component) {
+        return engine.getMapper(component).get(id);
+    }
+
     void destroy() {
         engine.destroyEntity(id);
     }

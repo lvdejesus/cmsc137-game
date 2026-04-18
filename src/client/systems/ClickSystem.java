@@ -1,18 +1,25 @@
 package client.systems;
 
 import client.components.ClickableComponent;
+import client.components.RenderComponent;
 import client.rendering.Camera;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.EntitySystem;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class ClickSystem extends EntitySystem<Context> {
     private ComponentMapper<ClickableComponent> cm;
-    private Camera camera;
+    private ComponentMapper<RenderComponent> rm;
+    private final Camera camera;
+
+    private Vector3f worldMouse;
+    private float maxZ;
+    private int winnerId;
 
     public ClickSystem(Camera camera) {
-        super(ClickableComponent.class);
+        super(ClickableComponent.class, RenderComponent.class);
 
         this.camera = camera;
     }
@@ -22,27 +29,52 @@ public class ClickSystem extends EntitySystem<Context> {
         super.setEngine(engine);
 
         cm = engine.getMapper(ClickableComponent.class);
+        rm = engine.getMapper(RenderComponent.class);
     }
 
     @Override
     public void processEntity(int id, Context ctx) {
         ClickableComponent cc = cm.get(id);
-        var events = InputHandler.getInstance().getEvents();
-        for (var event: events) {
-            int[] viewport = {0, 0, camera.width, camera.height};
-            Vector3f worldSpace = new Vector3f();
-            camera.getProjectionViewMatrix().unproject(
-                event.position.x,
-                camera.height - event.position.y,
-                0.0f,
-                viewport,
-                worldSpace
-            );
-            boolean hasPoint = cc.boundingBox.containsPoint(worldSpace.x, worldSpace.y, 0.0f);
-            if (hasPoint && event.type == InputHandler.MouseEventType.LEFT_CLICK) {
-                System.out.printf("(%f, %f)\n", worldSpace.x, worldSpace.y);
-                cc.onClick.onClick();
+        RenderComponent rc = rm.get(id);
+
+        if (cc.boundingBox.containsPoint(worldMouse.x, worldMouse.y, 0.0f)) {
+            if (rc.z > maxZ) {
+                maxZ = rc.z;
+                winnerId = id;
             }
         }
+    }
+
+    @Override
+    public void update(Context ctx) {
+        var events = InputHandler.getInstance().getEvents();
+
+        for (var event : events) {
+            if (event.consumed) continue;
+
+            worldMouse = unproject(event.position, camera);
+            maxZ = Float.NEGATIVE_INFINITY;
+            winnerId = -1;
+
+            super.update(ctx);
+
+            if (winnerId != -1 && event.type == InputHandler.MouseEventType.LEFT_CLICK) {
+                cm.get(winnerId).onClick.onClick(worldMouse.x, worldMouse.y);
+                event.consume();
+            }
+        }
+    }
+
+    private Vector3f unproject(Vector2f position, Camera camera) {
+        int[] viewport = {0, 0, camera.width, camera.height};
+        Vector3f worldSpace = new Vector3f();
+
+        return camera.getProjectionViewMatrix().unproject(
+            position.x,
+            camera.height - position.y,
+            0.0f,
+            viewport,
+            worldSpace
+        );
     }
 }

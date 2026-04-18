@@ -15,6 +15,6 @@ public class ClickableComponent implements Component {
 
     @FunctionalInterface
     public interface ClickHandler {
-        void onClick(); // Or pass the Entity ID if you need it
+        void onClick(float x, float y);
     }
 }

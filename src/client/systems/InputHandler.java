@@ -104,10 +104,16 @@ public class InputHandler {
     public static class MouseEvent {
         MouseEventType type;
         Vector2f position;
+        boolean consumed;
 
         MouseEvent(MouseEventType type, Vector2f position) {
             this.type = type;
             this.position = position;
+            this.consumed = false;
+        }
+
+        void consume() {
+            this.consumed = true;
         }
     }
 

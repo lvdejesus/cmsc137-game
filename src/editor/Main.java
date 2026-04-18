@@ -12,10 +12,13 @@ import client.systems.*;
 import java.nio.file.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
+
+record IntPair(int x, int y) {}
 
 public class Main {
     private long window;
@@ -26,6 +29,7 @@ public class Main {
 
     private ArrayList<Texture> tiles = new ArrayList<>();
     private Integer currentTile = null;
+    private HashMap<IntPair, Entity<Context>> grid = new HashMap<>();
 
     public void run() {
         init();
@@ -39,6 +43,27 @@ public class Main {
         engine.addSystem(new RenderSystem());
 
         createTiles();
+        Entity<Context> entity = engine.createEntity();
+
+        TransformComponent transformComponent = new TransformComponent(new Vector2f(200, 200),
+            new Vector2f(16.0f, 16.0f));
+
+        Texture t = TextureAtlas.get().getRegion("bg.png");
+        RenderComponent renderComponent = new RenderComponent(t, 0);
+
+        AABBf boundingBox = new AABBf();
+        boundingBox.minX = transformComponent.position.x;
+        boundingBox.minY = transformComponent.position.y;
+        boundingBox.minZ = Float.NEGATIVE_INFINITY;
+        boundingBox.maxX = transformComponent.position.x + renderComponent.texture.width * transformComponent.scale.x;
+        boundingBox.maxY = transformComponent.position.y + renderComponent.texture.width * transformComponent.scale.y;
+        boundingBox.maxZ = Float.POSITIVE_INFINITY;
+
+        ClickableComponent clickableComponent = new ClickableComponent(boundingBox, this::onGridClick);
+
+        entity.addComponent(renderComponent);
+        entity.addComponent(transformComponent);
+        entity.addComponent(clickableComponent);
 
         loop();
 
@@ -85,7 +110,7 @@ public class Main {
                     boundingBox.maxZ = Float.POSITIVE_INFINITY;
 
                     final int tile = g;
-                    ClickableComponent clickableComponent = new ClickableComponent(boundingBox, () -> {
+                    ClickableComponent clickableComponent = new ClickableComponent(boundingBox, ( _x, _y) -> {
                         currentTile = tile;
                     });
 
@@ -205,5 +230,30 @@ public class Main {
 
     public static void main(String[] args) {
         new Main().run();
+    }
+
+    private void onGridClick(float x, float y) {
+        if (currentTile == null) return;
+
+        int xTile = (int) Math.floor((x - 200.0f) / 64.0f);
+        int yTile = (int) Math.floor((y - 200.0f) / 64.0f);
+
+        IntPair pair = new IntPair(xTile, yTile);
+        Entity<Context> tileEntity = grid.get(pair);
+        if (tileEntity != null) {
+            RenderComponent rc = tileEntity.getComponent(RenderComponent.class);
+            rc.texture = tiles.get(currentTile);
+        } else {
+            tileEntity = engine.createEntity();
+
+            TransformComponent tc = new TransformComponent(new Vector2f(200.0f + xTile * 64.0f, 200.0f + yTile * 64.0f),
+                new Vector2f(4.0f, 4.0f));
+            RenderComponent rc = new RenderComponent(tiles.get(currentTile), 1);
+
+            tileEntity.addComponent(rc);
+            tileEntity.addComponent(tc);
+
+            grid.put(pair, tileEntity);
+        }
     }
 }
