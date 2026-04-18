@@ -1,5 +1,10 @@
 package client.systems;
 
+import org.joml.Vector2f;
+import org.lwjgl.system.MemoryStack;
+
+import java.nio.DoubleBuffer;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -12,6 +17,9 @@ public class InputHandler {
     private Set<Integer> pressed = new HashSet<>();
     private Set<Integer> held = new HashSet<>();
     private Set<Integer> released = new HashSet<>();
+
+    private ArrayList<MouseEvent> eventsToAdd = new ArrayList<>();
+    private ArrayList<MouseEvent> events = new ArrayList<>();
 
     private static InputHandler instance;
 
@@ -34,6 +42,20 @@ public class InputHandler {
                 toRelease.add(key);
             }
         });
+
+        glfwSetMouseButtonCallback(windowHandle, (window, button, action, mods) -> {
+            if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+                try (MemoryStack stack = MemoryStack.stackPush()) {
+                    DoubleBuffer xBuffer = stack.mallocDouble(1);
+                    DoubleBuffer yBuffer = stack.mallocDouble(1);
+
+                    glfwGetCursorPos(window, xBuffer, yBuffer);
+
+                    Vector2f cursorPos = new Vector2f((float) xBuffer.get(), (float) yBuffer.get());
+                    eventsToAdd.add(new MouseEvent(MouseEventType.LEFT_CLICK, cursorPos));
+                }
+            }
+        });
     }
 
     public void tick() {
@@ -51,6 +73,10 @@ public class InputHandler {
             held.remove(key);
         }
         toRelease.clear();
+
+        events.clear();
+        events.addAll(eventsToAdd);
+        eventsToAdd.clear();
     }
 
     public boolean keyDown(int key) {
@@ -64,4 +90,25 @@ public class InputHandler {
     public boolean key(int key) {
         return held.contains(key);
     }
+
+    public Iterable<MouseEvent> getEvents() {
+        return events;
+    }
+
+
+    public enum MouseEventType {
+        LEFT_CLICK,
+        RIGHT_CLICK,
+    };
+
+    public static class MouseEvent {
+        MouseEventType type;
+        Vector2f position;
+
+        MouseEvent(MouseEventType type, Vector2f position) {
+            this.type = type;
+            this.position = position;
+        }
+    }
+
 }

@@ -11,13 +11,17 @@ public class Camera {
     private Matrix4f viewMatrix;
     public Vector2f position;
     public float rotation;
+    public int width;
+    public int height;
 
     public Camera() {
         this.position = new Vector2f(0, 0);
         this.rotation = 0.0f;
     }
 
-    public void setSize(float width, float height) {
+    public void setSize(int width, int height) {
+        this.width = width;
+        this.height = height;
         this.projectionMatrix = new Matrix4f().ortho(0, width, height, 0, -1, 1);
         this.viewMatrix = new Matrix4f();
     }
