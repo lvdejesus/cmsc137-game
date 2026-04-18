@@ -1,33 +1,40 @@
 package systems;
 
 import components.MovementComponent;
-import components.TransformComponent;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.EntitySystem;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 public class MovementSystem extends EntitySystem<Context> {
-    private ComponentMapper<TransformComponent> tm;
     private ComponentMapper<MovementComponent> mm;
 
     public MovementSystem() {
-        super(TransformComponent.class, MovementComponent.class);
+        super(MovementComponent.class);
     }
 
     @Override
     public void setEngine(Engine<Context> engine) {
         super.setEngine(engine);
 
-        this.tm = engine.getMapper(TransformComponent.class);
         this.mm = engine.getMapper(MovementComponent.class);
     }
 
     @Override
     public void processEntity(int id, Context ctx) {
-        TransformComponent pos = tm.get(id);
-        MovementComponent vel = mm.get(id);
+        MovementComponent mc = mm.get(id);
+        mc.velocity.set(0.0f, 0.0f);
 
-        pos.position.fma(ctx.deltaTime, vel.velocity);
+        if (InputHandler.getInstance().key(GLFW_KEY_W))
+            mc.velocity.y -= mc.speed;
+        if (InputHandler.getInstance().key(GLFW_KEY_S))
+            mc.velocity.y += mc.speed;
+
+        if (InputHandler.getInstance().key(GLFW_KEY_A))
+            mc.velocity.x -= mc.speed;
+        if (InputHandler.getInstance().key(GLFW_KEY_D))
+            mc.velocity.x += mc.speed;
     }
 }

@@ -30,12 +30,15 @@ public class Main {
         engine.register(AnimationComponent.class);
 
         engine.addSystem(new MovementSystem());
+        engine.addSystem(new PhysicsSystem());
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new RenderSystem());
 
         Entity<Context> player = engine.createEntity();
 
-        TransformComponent transformComponent = new TransformComponent(new Vector2f(400.0f, 300.0f));
+        TransformComponent transformComponent = new TransformComponent(new Vector2f(400.0f, 300.0f),
+                new Vector2f(2.0f, 2.0f));
+        MovementComponent movementComponent = new MovementComponent(200.0f);
         RenderComponent renderComponent = new RenderComponent();
 
         double currentTime = glfwGetTime();
@@ -43,6 +46,7 @@ public class Main {
                 (float) currentTime);
 
         player.addComponent(renderComponent);
+        player.addComponent(movementComponent);
         player.addComponent(transformComponent);
         player.addComponent(animationComponent);
 
@@ -65,6 +69,8 @@ public class Main {
         if (window == NULL) {
             throw new RuntimeException("Window failed!");
         }
+
+        InputHandler.getInstance().register(window);
 
         glfwMakeContextCurrent(window);
         glfwSwapInterval(1); // VSync
@@ -104,6 +110,7 @@ public class Main {
             TextureAtlas.get().bind();
 
             engine.update(ctx);
+            InputHandler.getInstance().tick();
 
             glfwSwapBuffers(window);
             glfwPollEvents();
