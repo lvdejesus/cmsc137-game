@@ -2,17 +2,20 @@ SRC = src
 OUT = out
 LIB = lib
 
-LWJGL = $(LIB)/lwjgl.jar:$(LIB)/lwjgl-glfw.jar:$(LIB)/lwjgl-opengl.jar:$(LIB)/lwjgl-stb.jar:$(LIB)/joml.jar:$(LIB)/joml-1.10.8.jar
+LWJGL = $(LIB)/lwjgl.jar:$(LIB)/lwjgl-glfw.jar:$(LIB)/lwjgl-opengl.jar:$(LIB)/lwjgl-stb.jar:$(LIB)/joml-1.10.8.jar:$(LIB)/joml-primitives-1.10.0.jar
+SOURCES := $(shell find $(SRC) -name "*.java")
 
 all: run
 
-build: $(OUT)/Main.class
+build: $(OUT)/client.Main.class
 
-$(OUT)/Main.class: $(SRC)/Main.java $(SRC)/SpriteBatch.java $(SRC)/Sprite.java $(SRC)/Camera.java $(SRC)/Texture.java $(SRC)/TextureAtlas.java
-	javac -cp $(LWJGL) -d $(OUT) $^
+$(OUT)/.build_stamp: $(SOURCES)
+	@mkdir -p $(OUT)
+	javac -cp "$(LWJGL)" -d $(OUT) $(SOURCES)
+	@touch $(OUT)/.build_stamp
 
-run: $(OUT)/Main.class
-	java -cp $(LWJGL):$(OUT) -Djava.library.path=$(LIB)/natives/linux/x64 Main
+run: $(OUT)/.build_stamp
+	java -cp $(LWJGL):$(OUT) -Djava.library.path=$(LIB)/natives/linux/x64 client.Main
 
 clean:
 	rm -rf $(OUT)
