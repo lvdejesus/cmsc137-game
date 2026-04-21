@@ -1,0 +1,19 @@
+SRC = src
+OUT = out
+LIB = lib
+
+LWJGL = "$(LIB)/lwjgl.jar;$(LIB)/lwjgl-glfw.jar;$(LIB)/lwjgl-opengl.jar;$(LIB)/lwjgl-stb.jar;$(LIB)/joml-1.10.8.jar"
+
+all: run
+
+build: $(OUT)/Main.class
+
+$(OUT)/Main.class: $(SRC)/Main.java $(SRC)/SpriteBatch.java $(SRC)/Sprite.java $(SRC)/Camera.java $(SRC)/Texture.java $(SRC)/TextureAtlas.java
+	@if not exist $(OUT) mkdir $(OUT)
+	javac -cp $(LWJGL) -d $(OUT) $^
+
+run: build
+	java -cp "$(LWJGL);$(OUT)" -Djava.library.path=$(LIB)/natives/windows/x64 Main
+
+clean:
+	@if exist $(OUT) rmdir /s /q $(OUT)
