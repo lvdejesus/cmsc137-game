@@ -23,18 +23,19 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EditorScreen implements Screen<Context> {
-    private Font font;
-
+class TileContainer {
     private static int TILE_SIZE = 16;
-    private static int COLS  = 3;
     private static float SCALE = 4.0f;
-    private static float GAP = 24.0f;
+    private static float GAP = 6.0f;
 
-    List<EntitySystem> systems;
+    private int cols = 3;
 
-    private void createTiles(Engine<Context> engine) {
-        Texture bgTex =  TextureAtlas.get().getRegion("bg.png");
+    TileContainer(int cols) {
+        this.cols = cols;
+    }
+
+    void createTiles(Engine<Context> engine) {
+        Texture bgTex = TextureAtlas.get().getRegion("bg.png");
 
         int g = 0;
         for (String region : TextureAtlas.get().listRegions()) {
@@ -45,8 +46,8 @@ public class EditorScreen implements Screen<Context> {
             int yCount = t.height / TILE_SIZE;
             for (int i = 0; i < yCount; i++) {
                 for (int j = 0; j < xCount; j++) {
-                    float x = 12.0f + (g % COLS) * (TILE_SIZE * SCALE + GAP);
-                    float y = 44.0f + (float) (g / COLS) * (TILE_SIZE * SCALE + GAP);
+                    float x = 12.0f + (g % cols) * (TILE_SIZE * SCALE + GAP * SCALE);
+                    float y = 44.0f + (float) (g / cols) * (TILE_SIZE * SCALE + GAP * SCALE);
 
                     Entity<Context> entity = engine.createEntity();
                     TransformComponent transformComponent = new TransformComponent(new Vector2f(x, y),
@@ -60,7 +61,7 @@ public class EditorScreen implements Screen<Context> {
                     float v1 = t.v1 + dv * i;
                     float v2 = t.v1 + dv * (i + 1);
 
-                    Texture tex =  new Texture(u1, v1, u2, v2, 16, 16);
+                    Texture tex = new Texture(u1, v1, u2, v2, 16, 16);
                     RenderComponent renderComponent = new RenderComponent(tex, 1);
 
                     Entity<Context> editorEntity = engine.queryOne(EditorComponent.class);
@@ -87,7 +88,7 @@ public class EditorScreen implements Screen<Context> {
 
                     Entity<Context> bgEntity = engine.createEntity();
                     TransformComponent tc = new TransformComponent(new Vector2f(x - 8, y - 8),
-                        new Vector2f(20.0f * (SCALE / 16.0f), 20.0f * (SCALE / 16.0f)));
+                        new Vector2f(20.0f * SCALE, 20.0f * SCALE));
                     RenderComponent render = new RenderComponent(bgTex, 0);
                     bgEntity.addComponent(tc);
                     bgEntity.addComponent(render);
@@ -97,6 +98,18 @@ public class EditorScreen implements Screen<Context> {
             }
         }
     }
+
+    float getWidth() {
+        return cols * (TILE_SIZE * SCALE + GAP * SCALE);
+    }
+}
+
+public class EditorScreen implements Screen<Context> {
+    private Font font;
+
+    List<EntitySystem> systems;
+    TileContainer tileContainer = new TileContainer(3);
+
 
     @Override
     public void show(Engine<Context> engine, Camera camera) {
@@ -112,8 +125,8 @@ public class EditorScreen implements Screen<Context> {
 
         Entity<Context> entity = engine.createEntity();
 
-        TransformComponent transformComponent = new TransformComponent(new Vector2f(COLS * (TILE_SIZE * SCALE + GAP), 0),
-            new Vector2f(16.0f, 16.0f));
+        TransformComponent transformComponent = new TransformComponent(new Vector2f(tileContainer.getWidth(), 0),
+            new Vector2f(camera.width - tileContainer.getWidth(), camera.height));
 
         Texture t = TextureAtlas.get().getRegion("bg.png");
         RenderComponent renderComponent = new RenderComponent(t, 0);
@@ -134,7 +147,7 @@ public class EditorScreen implements Screen<Context> {
         entity.addComponent(clickableComponent);
         entity.addComponent(editor);
 
-        createTiles(engine);
+        tileContainer.createTiles(engine);
 
         Entity<Context> textEntity = engine.createEntity();
         TransformComponent textTransform = new TransformComponent(new Vector2f(12, 12), new Vector2f(1, 1));
