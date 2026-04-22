@@ -2,21 +2,20 @@ SRC = src
 OUT = out
 LIB = lib
 
-LWJGL = "$(LIB)/lwjgl.jar;$(LIB)/lwjgl-glfw.jar;$(LIB)/lwjgl-opengl.jar;$(LIB)/lwjgl-stb.jar;$(LIB)/joml-1.10.8.jar
-.jar"
-SOURCES = src\client.Main.java src\client.components\*.java src\framework\engine\*.java src\framework\rendering\*.java src\client.systems\*.java
+LWJGL = $(LIB)/lwjgl.jar;$(LIB)/lwjgl-glfw.jar;$(LIB)/lwjgl-opengl.jar;$(LIB)/lwjgl-stb.jar;$(LIB)/joml-1.10.8.jar
+SOURCES = src\client\Main.java src\client.components\*.java src\framework\engine\*.java src\framework\rendering\*.java src\client.systems\*.java
 
 all: run
 
 build: $(OUT)/.build_stamp
 
-$(OUT)/.build_stamp: $(SOURCES)
+$(OUT)/.build_stamp:
 	@if not exist $(OUT) mkdir $(OUT)
-	javac -cp $(LWJGL) -d $(OUT) $(SOURCES)
-	@echo "Build complete" > $(OUT)/.build_stamp
+	javac -cp "lib/*" -d $(OUT) $(shell dir /s /b src\*.java)
+	@echo Build complete > $(OUT)/.build_stamp
 
 run: build
-	java -cp "$(LWJGL);$(OUT)" -Djava.library.path=$(LIB)/natives/windows/x64 client.Main
+	java -cp "lib/*;out" -Djava.library.path=lib/natives/windows/x64 client.Main
 
 clean:
 	@if exist $(OUT) rmdir /s /q $(OUT)
