@@ -1,10 +1,6 @@
 package framework.engine;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 class ComponentRegistry {
     private int componentCount = 0;
@@ -112,10 +108,21 @@ public class Engine<T> {
         system.setEngine(this);
     }
 
+    public void removeSystem(EntitySystem<T> system) {
+        systems.remove(system);
+    }
+
     public void update(T ctx) {
         for (var system : systems) {
             system.update(ctx);
         }
+    }
+
+    public void clearEntities() {
+        entityReuse.clear();
+        Arrays.fill(componentBitset, 0);
+        Arrays.fill(entityVersions, 0);
+        entityMax = 0;
     }
 
     @SuppressWarnings("unchecked")
@@ -126,5 +133,23 @@ public class Engine<T> {
         }
 
         return (ComponentMapper<U>) mapper;
+    }
+
+    @SafeVarargs
+    public final Entity<T> queryOne(Class<? extends Component>... components) {
+        long familyMask = 0;
+        for (Class<? extends Component> type : components) {
+            int bitIndex = getComponentIndex(type);
+            familyMask |= 1L << bitIndex;
+        }
+
+        long[] bitsets = getBitsets();
+        for (int i = 0; i < entityMax; i++) {
+            if ((bitsets[i] & familyMask) == familyMask) {
+                return new Entity<>(this, i, entityVersions[i]);
+            }
+        }
+
+        return null;
     }
 }

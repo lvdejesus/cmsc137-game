@@ -4,7 +4,7 @@ LIB = lib
 
 LWJGL = "$(LIB)/lwjgl.jar;$(LIB)/lwjgl-glfw.jar;$(LIB)/lwjgl-opengl.jar;$(LIB)/lwjgl-stb.jar;$(LIB)/joml-1.10.8.jar
 .jar"
-SOURCES = src\client.Main.java src\client.components\*.java src\framework\engine\*.java src\framework\rendering\*.java src\client.systems\*.java
+SOURCES = src\game.Main.java src\game.components\*.java src\framework\engine\*.java src\framework\rendering\*.java src\game.systems\*.java
 
 all: run
 
@@ -16,7 +16,7 @@ $(OUT)/.build_stamp: $(SOURCES)
 	@echo "Build complete" > $(OUT)/.build_stamp
 
 run: build
-	java -cp "$(LWJGL);$(OUT)" -Djava.library.path=$(LIB)/natives/windows/x64 client.Main
+	java -cp "$(LWJGL);$(OUT)" -Djava.library.path=$(LIB)/natives/windows/x64 game.Main
 
 clean:
 	@if exist $(OUT) rmdir /s /q $(OUT)

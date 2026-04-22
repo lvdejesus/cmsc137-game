@@ -7,7 +7,7 @@ SOURCES := $(shell find $(SRC) -name "*.java")
 
 all: run
 
-build: $(OUT)/client.Main.class
+build: $(OUT)/game.Main.class
 
 $(OUT)/.build_stamp: $(SOURCES)
 	@mkdir -p $(OUT)
@@ -15,7 +15,7 @@ $(OUT)/.build_stamp: $(SOURCES)
 	@touch $(OUT)/.build_stamp
 
 run: $(OUT)/.build_stamp
-	java -cp $(LWJGL):$(OUT) -Djava.library.path=$(LIB)/natives/linux/x64 client.Main
+	java -cp $(LWJGL):$(OUT) -Djava.library.path=$(LIB)/natives/linux/x64 game.Main
 
 clean:
 	rm -rf $(OUT)

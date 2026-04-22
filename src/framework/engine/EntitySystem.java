@@ -13,6 +13,7 @@ public abstract class EntitySystem<T> {
     public void setEngine(Engine<T> engine) {
         this.engine = engine;
         this.familyMask = 0;
+
         for (Class<? extends Component> type : componentTypes) {
             int bitIndex = engine.getComponentIndex(type);
             this.familyMask |= 1L << bitIndex;
