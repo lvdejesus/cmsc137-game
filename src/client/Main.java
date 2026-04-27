@@ -3,7 +3,7 @@ package client;
 import framework.rendering.ShaderProgram;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
-
+import client.entities.Player;
 import client.components.*;
 import framework.engine.*;
 import client.rendering.*;
@@ -15,6 +15,9 @@ import java.io.IOException;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
+
+//
+import client.entities.Player;
 
 public class Main {
     private long window;
@@ -37,21 +40,8 @@ public class Main {
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new RenderSystem());
 
-        Entity<Context> player = engine.createEntity();
-
-        TransformComponent transformComponent = new TransformComponent(new Vector2f(400.0f, 300.0f),
-                new Vector2f(2.0f, 2.0f));
-        MovementComponent movementComponent = new MovementComponent(200.0f);
-        RenderComponent renderComponent = new RenderComponent();
-
-        double currentTime = glfwGetTime();
-        AnimationComponent animationComponent = new AnimationComponent(Animation.fromFile("tile.png", 2, 0.3f),
-                (float) currentTime);
-
-        player.addComponent(renderComponent);
-        player.addComponent(movementComponent);
-        player.addComponent(transformComponent);
-        player.addComponent(animationComponent);
+        // Create player 
+        Player player = new Player(engine);
 
         loop();
 
