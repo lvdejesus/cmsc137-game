@@ -5,9 +5,11 @@ import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 import client.entities.Player;
 import client.components.*;
+import client.components.player.PlayerTagComponent;
 import framework.engine.*;
 import client.rendering.*;
 import client.systems.*;
+import client.systems.player.PlayerRotationSystem;
 
 import java.nio.file.*;
 import java.io.IOException;
@@ -15,7 +17,11 @@ import java.io.IOException;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
+import org.lwjgl.BufferUtils;
 
+import java.nio.Buffer;
+//
+import java.nio.DoubleBuffer;
 //
 import client.entities.Player;
 
@@ -30,21 +36,26 @@ public class Main {
         init();
 
         engine = new Engine<>();
+        // Register components
         engine.register(TransformComponent.class);
         engine.register(MovementComponent.class);
         engine.register(RenderComponent.class);
         engine.register(AnimationComponent.class);
-
+        engine.register(PlayerTagComponent.class);
+        
+        // Add systems
         engine.addSystem(new MovementSystem());
         engine.addSystem(new PhysicsSystem());
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new RenderSystem());
+        
+        // Player Specific systems
+        engine.addSystem(new PlayerRotationSystem());
 
         // Create player 
         Player player = new Player(engine);
-
+        
         loop();
-
         glDeleteProgram(shaderProgram);
         glfwTerminate();
     }
@@ -88,6 +99,9 @@ public class Main {
     }
 
     private void loop() {
+        DoubleBuffer xBuf = BufferUtils.createDoubleBuffer(1);
+        DoubleBuffer yBuf = BufferUtils.createDoubleBuffer(1);
+        
         float[] matrixBuffer = new float[16];
         double lastTime = glfwGetTime();
 
@@ -99,9 +113,16 @@ public class Main {
 
             ctx.currentTime = (float) currentTime;
             ctx.deltaTime = dt;
-
+            
+            // Update cursor pos
+            glfwGetCursorPos(window, xBuf,yBuf);
+            ctx.cursor.set((float)xBuf.get(0),(float)yBuf.get(0));
+            xBuf.rewind();
+            yBuf.rewind();
+            //
+            
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+            
             glUseProgram(shaderProgram);
             int pvLoc = glGetUniformLocation(shaderProgram, "u_ProjectionView");
             camera.getProjectionViewMatrix().get(matrixBuffer);

@@ -4,6 +4,7 @@ import framework.engine.Entity;
 import framework.engine.Engine;
 import client.systems.Context;
 import client.components.*;
+import client.components.player.PlayerTagComponent;
 import client.rendering.Animation;
 import org.joml.Vector2f;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
@@ -18,6 +19,7 @@ public class Player {
         float movement_speed = 300.0f;
         float friction = 800.0f;
         float acceleration = 2000.0f;
+        double currentTime = glfwGetTime();
 
         // Create a blank entity from the engine
         this.entity = engine.createEntity();
@@ -25,10 +27,9 @@ public class Player {
         // Add components to the internal entity
         entity.addComponent(new TransformComponent(new Vector2f(400.0f, 300.0f), new Vector2f(2.0f, 2.0f)));
         entity.addComponent(new MovementComponent(movement_speed, acceleration, friction, new Vector2f(0.0f, 0.0f)));
-        entity.addComponent(new RenderComponent());
-        
-        double currentTime = glfwGetTime();
+        entity.addComponent(new RenderComponent());        
         entity.addComponent(new AnimationComponent(Animation.fromFile("test-Sheet.png", 22, 0.1f), (float) currentTime));
+        entity.addComponent(new PlayerTagComponent());
     }
 
     public Entity<Context> getEntity() {
