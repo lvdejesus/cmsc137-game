@@ -11,14 +11,14 @@ import static org.lwjgl.glfw.GLFW.*;
 public class MovementSystem extends EntitySystem<Context> {
     private ComponentMapper<MovementComponent> mm;
     
-    private float approach(float current, float target, float delta) {
+    private float approach(float current, float target, float max) {
         if (current < target) {
-            return Math.min(target - current, delta);
+            return Math.min(current + max, target);
         }
         else if (current > target) {
-            return Math.max(target - current, -delta);
+            return Math.max(current - max, target);
         }
-        else {
+        else {  
             return target;
         }
     }
@@ -48,16 +48,20 @@ public class MovementSystem extends EntitySystem<Context> {
         if (InputHandler.getInstance().key(GLFW_KEY_A)) x -= 1;
         if (InputHandler.getInstance().key(GLFW_KEY_D)) x += 1;
 
+
+        // Normalize diagonal movement to prevent diagonal speedup
+        if(x != 0 && y!=0){
+            float len = (float) Math.sqrt((x*x) + (y*y));
+            x /= len;
+            y /= len;
+        }
+        float targetx = mc.speed * x;
+        float targety = mc.speed * y;
+
         // Handle acceleration
-        if (x != 0 || y != 0) {
-            // Accelerate when key is pressed
-            mc.velocity.x += approach(mc.velocity.x, x * mc.speed, mc.acceleration * deltaTime);
-            mc.velocity.y += approach(mc.velocity.y, y * mc.speed, mc.acceleration * deltaTime);
-        }
-        else {
-            // Apply friction when no key is pressed
-            mc.velocity.x += approach(mc.velocity.x, 0, mc.friction * deltaTime);
-            mc.velocity.y += approach(mc.velocity.y, 0, mc.friction * deltaTime);
-        }
+        float accel = (x !=0 || y !=0) ? mc.acceleration:mc.friction;
+        mc.velocity.x = approach(mc.velocity.x, targetx,accel*deltaTime);
+        mc.velocity.y = approach(mc.velocity.y, targety,accel*deltaTime);
+
     }
 }

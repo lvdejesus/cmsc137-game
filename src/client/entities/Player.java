@@ -16,8 +16,8 @@ public class Player {
         // Initialize Player Stats
         int maxHealth = 6;
         int health = 6;
-        float movement_speed = 300.0f;
-        float friction = 800.0f;
+        float movement_speed = 400.0f;
+        float friction = 400.0f;
         float acceleration = 2000.0f;
         double currentTime = glfwGetTime();
 
