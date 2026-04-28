@@ -58,10 +58,34 @@ public class MovementSystem extends EntitySystem<Context> {
         float targetx = mc.speed * x;
         float targety = mc.speed * y;
 
-        // Handle acceleration
-        float accel = (x !=0 || y !=0) ? mc.acceleration:mc.friction;
-        mc.velocity.x = approach(mc.velocity.x, targetx,accel*deltaTime);
-        mc.velocity.y = approach(mc.velocity.y, targety,accel*deltaTime);
+        // Handle Horizontal acceleration
+        float xAccel;
+        if (x==0){
+            xAccel = mc.friction;
+        }
+        // When switching directions
+        else if (Math.signum(x) != Math.signum(mc.velocity.x) && mc.velocity.x !=0){
+            xAccel = mc.acceleration * 4.0f;
+        }
+        else{
+            xAccel = mc.acceleration;
+        }
 
+        // Handle Vertical acceleration
+        float yAccel;
+        if (y==0){
+            yAccel = mc.friction;
+        }
+        // When switching directions
+        else if (Math.signum(y) != Math.signum(mc.velocity.y) && mc.velocity.y !=0){
+            yAccel = mc.acceleration * 4.0f;
+        }
+        else{
+            yAccel = mc.acceleration;
+        }
+
+        // Apply acceleration
+        mc.velocity.x = approach(mc.velocity.x, targetx, xAccel * deltaTime);
+        mc.velocity.y = approach(mc.velocity.y, targety, yAccel * deltaTime);
     }
 }

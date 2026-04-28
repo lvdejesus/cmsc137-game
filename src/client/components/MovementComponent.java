@@ -9,6 +9,7 @@ public class MovementComponent implements Component {
     public float acceleration;
     public float friction;
     public float speed;
+    
 
     public MovementComponent(float speed, float acceleration, float friction, Vector2f velocity) {
         this.speed = speed;
