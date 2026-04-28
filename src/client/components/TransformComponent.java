@@ -18,7 +18,7 @@ public class TransformComponent implements Component {
     }
 
     public TransformComponent(Vector2f position, Vector2f scale) {
-        this(position, scale, Anchor.TOP_LEFT);
+        this(position, scale, Anchor.CENTER);
     }
 
     public TransformComponent(Vector2f position) {

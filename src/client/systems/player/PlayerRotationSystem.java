@@ -24,9 +24,11 @@ public class PlayerRotationSystem extends EntitySystem<Context>{
     @Override
     public void processEntity(int id, Context ctx) {
         TransformComponent tc = tm.get(id);
-        float dx = tc.position.x - ctx.cursor.x;
-        float dy = tc.position.y - ctx.cursor.y;
-        tc.rotation = (float) Math.toDegrees(Math.atan2(dy,dx));
+        float dx = ctx.cursor.x - tc.position.x;
+        float dy = ctx.cursor.y - tc.position.y ;
+        float angle = (float) Math.toDegrees(Math.atan2(dy,dx)) + 90.0f;
+        tc.rotation = angle;
+        
     }
 
 }
