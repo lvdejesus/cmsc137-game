@@ -9,8 +9,10 @@ import client.systems.*;
 import client.util.EngineConfig;
 import java.nio.file.*;
 import java.io.IOException;
-
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.glfw.GLFW.*;
+
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
 import org.lwjgl.BufferUtils;
@@ -22,63 +24,40 @@ import java.nio.DoubleBuffer;
 import client.entities.Player;
 
 public class Main {
-    private long window;
     private int shaderProgram;
     private Camera camera;
-    private final int WIDTH = 800, HEIGHT = 600;
     private Engine<Context> engine;
-
+    private Window window;
     public void run() {
-        init();
+        
+        // Initialize window
+        this.window = Window.getWindow();
+        this.window.init();
+        
+        // Initialize Render
+        shaderProgram = ShaderProgram.getShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
+        TextureAtlas.get();
+        
+        // Initialize Camera
+        this.camera = new Camera();
+        camera.setSize((int)window.getWidth(),(int)window.getHeight());
+        glfwSetFramebufferSizeCallback(window.getHandle(), (handle,width,height) -> {
+            camera.setSize(width, height);
+            glViewport(0, 0, width, height);
+        });
 
+        // ECS set
         engine = new Engine<>();
+        // Add systems and components
         EngineConfig.registerComponents(engine);
         EngineConfig.addSystems(engine);
 
         // Create player 
-        Player player = new Player(engine);
+        new Player(engine);
         
         loop();
         glDeleteProgram(shaderProgram);
         glfwTerminate();
-    }
-
-    private void init() {
-        if (!glfwInit()) {
-            throw new IllegalStateException("GLFW failed!");
-        }
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Game", NULL, NULL);
-        if (window == NULL) {
-            throw new RuntimeException("Window failed!");
-        }
-
-        InputHandler.getInstance().register(window);
-
-        glfwMakeContextCurrent(window);
-        glfwSwapInterval(1); // VSync
-        GL.createCapabilities();
-
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        shaderProgram = ShaderProgram.getShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
-
-        TextureAtlas.get();
-
-        camera = new Camera();
-        camera.setSize(WIDTH, HEIGHT);
-
-        glfwSetFramebufferSizeCallback(window, (window, width, height) -> {
-            camera.setSize(width, height);
-            glViewport(0, 0, width, height);
-        });
     }
 
     private void loop() {
@@ -93,7 +72,7 @@ public class Main {
         // Create context (Stores Golbal Variables)
         Context ctx = new Context();
         
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(this.window.getHandle())) {
             double currentTime = glfwGetTime();
             float dt = (float) (currentTime - lastTime);
             lastTime = currentTime;
@@ -102,7 +81,7 @@ public class Main {
             ctx.deltaTime = dt;
             
             // Update cursor pos
-            glfwGetCursorPos(window, xBuf,yBuf);
+            glfwGetCursorPos(this.window.getHandle(), xBuf,yBuf);
             ctx.cursor.set((float)xBuf.get(0),(float)yBuf.get(0));
             xBuf.rewind();
             yBuf.rewind();
@@ -120,7 +99,7 @@ public class Main {
             engine.update(ctx);
             InputHandler.getInstance().tick();
 
-            glfwSwapBuffers(window);
+            glfwSwapBuffers(this.window.getHandle());
             glfwPollEvents();
         }
     }
