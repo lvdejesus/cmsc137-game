@@ -5,6 +5,7 @@ import org.lwjgl.opengl.*;
 import client.entities.Player;
 import framework.engine.*;
 import client.rendering.*;
+import client.scenes.Scene;
 import client.systems.*;
 import client.util.EngineConfig;
 import java.nio.file.*;
@@ -13,8 +14,6 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-import static org.lwjgl.opengl.GL33.*;
-import static org.lwjgl.system.MemoryUtil.*;
 import org.lwjgl.BufferUtils;
 
 import java.nio.Buffer;
@@ -28,6 +27,7 @@ public class Main {
     private Camera camera;
     private Engine<Context> engine;
     private Window window;
+    private static int currentScene = -1;
     public void run() {
         
         // Initialize window
@@ -45,7 +45,7 @@ public class Main {
             camera.setSize(width, height);
             glViewport(0, 0, width, height);
         });
-
+        
         // ECS set
         engine = new Engine<>();
         // Add systems and components
@@ -62,10 +62,6 @@ public class Main {
 
     private void loop() {
         
-        // Create buffer for storung cursor pos
-        DoubleBuffer xBuf = BufferUtils.createDoubleBuffer(1);
-        DoubleBuffer yBuf = BufferUtils.createDoubleBuffer(1);
-        
         float[] matrixBuffer = new float[16];
         double lastTime = glfwGetTime();
 
@@ -79,14 +75,10 @@ public class Main {
 
             ctx.currentTime = (float) currentTime;
             ctx.deltaTime = dt;
-            
-            // Update cursor pos
-            glfwGetCursorPos(this.window.getHandle(), xBuf,yBuf);
-            ctx.cursor.set((float)xBuf.get(0),(float)yBuf.get(0));
-            xBuf.rewind();
-            yBuf.rewind();
-            //
-            
+            ctx.cursor.set(
+                (float) MouseListener.getX(),
+                (float) MouseListener.getY()
+            );
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             glUseProgram(shaderProgram);

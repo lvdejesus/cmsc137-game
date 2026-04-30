@@ -11,7 +11,6 @@ import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glDepthFunc;
 import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 
@@ -28,12 +27,15 @@ public class Window {
         this.title = "GameTitle";
     }
 
+    // Creates window
     public static Window getWindow() {
         if(Window.window == null){
             Window.window = new Window();
         }
         return Window.window;
     }
+
+
     
     public void init(){
 
@@ -50,6 +52,8 @@ public class Window {
             throw new RuntimeException("Window failed!");
         }
 
+        //Initialize listeners
+        MouseListener.getInstance().register(windowHandle);
         InputHandler.getInstance().register(windowHandle);
 
         glfwMakeContextCurrent(windowHandle);
