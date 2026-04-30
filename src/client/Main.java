@@ -1,17 +1,12 @@
 package client;
 
 import framework.rendering.ShaderProgram;
-import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 import client.entities.Player;
-import client.components.*;
-import client.components.player.PlayerStateComponent;
-import client.components.player.PlayerTagComponent;
 import framework.engine.*;
 import client.rendering.*;
 import client.systems.*;
-import client.systems.player.PlayerRotationSystem;
-
+import client.util.EngineConfig;
 import java.nio.file.*;
 import java.io.IOException;
 
@@ -37,25 +32,8 @@ public class Main {
         init();
 
         engine = new Engine<>();
-        // Register components
-        engine.register(TransformComponent.class);
-        engine.register(MovementComponent.class);
-        engine.register(RenderComponent.class);
-        engine.register(AnimationComponent.class);
-        engine.register(PlayerStateComponent.class);
-        engine.register(TextComponent.class);
-        // Tags
-        engine.register(PlayerTagComponent.class);
-
-        
-        // Add systems
-        engine.addSystem(new MovementSystem());
-        engine.addSystem(new PhysicsSystem());
-        engine.addSystem(new AnimationSystem());
-        engine.addSystem(new RenderSystem());
-        engine.addSystem(new TextRenderingSystem());
-        // Player Specific systems
-        engine.addSystem(new PlayerRotationSystem());
+        EngineConfig.registerComponents(engine);
+        EngineConfig.addSystems(engine);
 
         // Create player 
         Player player = new Player(engine);
