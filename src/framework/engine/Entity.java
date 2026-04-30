@@ -17,7 +17,14 @@ public class Entity<T> {
         } else {
             throw new RuntimeException("Modified a dead entity.");
         }
+    }
 
+    public void removeComponent(Component component){
+        if (engine.isValid(id, version)) {
+            engine.removeComponent(id,component.getClass());;
+        } else {
+            throw new RuntimeException("Modified a dead entity.");
+        }
     }
 
     public <U extends Component> U getComponent(Class<U> component) {

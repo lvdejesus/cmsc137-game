@@ -5,7 +5,6 @@ import client.components.player.PlayerTagComponent;
 import client.systems.Context;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.Entity;
 import framework.engine.EntitySystem;
 
 public class PlayerRotationSystem extends EntitySystem<Context>{

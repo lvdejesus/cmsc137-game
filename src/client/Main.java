@@ -5,6 +5,7 @@ import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 import client.entities.Player;
 import client.components.*;
+import client.components.player.PlayerStateComponent;
 import client.components.player.PlayerTagComponent;
 import framework.engine.*;
 import client.rendering.*;
@@ -41,14 +42,18 @@ public class Main {
         engine.register(MovementComponent.class);
         engine.register(RenderComponent.class);
         engine.register(AnimationComponent.class);
+        engine.register(PlayerStateComponent.class);
+        engine.register(TextComponent.class);
+        // Tags
         engine.register(PlayerTagComponent.class);
+
         
         // Add systems
         engine.addSystem(new MovementSystem());
         engine.addSystem(new PhysicsSystem());
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new RenderSystem());
-        
+        engine.addSystem(new TextRenderingSystem());
         // Player Specific systems
         engine.addSystem(new PlayerRotationSystem());
 
@@ -99,13 +104,17 @@ public class Main {
     }
 
     private void loop() {
+        
+        // Create buffer for storung cursor pos
         DoubleBuffer xBuf = BufferUtils.createDoubleBuffer(1);
         DoubleBuffer yBuf = BufferUtils.createDoubleBuffer(1);
         
         float[] matrixBuffer = new float[16];
         double lastTime = glfwGetTime();
 
+        // Create context (Stores Golbal Variables)
         Context ctx = new Context();
+        
         while (!glfwWindowShouldClose(window)) {
             double currentTime = glfwGetTime();
             float dt = (float) (currentTime - lastTime);

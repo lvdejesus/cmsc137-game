@@ -4,6 +4,7 @@ import framework.engine.Entity;
 import framework.engine.Engine;
 import client.systems.Context;
 import client.components.*;
+import client.components.player.PlayerStateComponent;
 import client.components.player.PlayerTagComponent;
 import client.rendering.Animation;
 import org.joml.Vector2f;
@@ -13,11 +14,10 @@ public class Player {
     private final Entity<Context> entity;
 
     public Player(Engine<Context> engine) {
-        // Initialize Player Stats
+        // Initialize Player Base Stats 
         int maxHealth = 6;
         int health = 6;
         float movement_speed = 1000.0f;
-        float dash_distance = 1000.0f;
         float friction = 200.0f;
         float acceleration = 500.0f;
         double currentTime = glfwGetTime();
@@ -30,6 +30,7 @@ public class Player {
         entity.addComponent(new MovementComponent(movement_speed, acceleration, friction, new Vector2f(0.0f, 0.0f)));
         entity.addComponent(new RenderComponent());        
         entity.addComponent(new AnimationComponent(Animation.fromFile("test-Sheet.png", 22, 0.1f), (float) currentTime));
+        entity.addComponent(new PlayerStateComponent());
         entity.addComponent(new PlayerTagComponent());
     }
 
