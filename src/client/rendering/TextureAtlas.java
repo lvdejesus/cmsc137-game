@@ -43,17 +43,25 @@ public class TextureAtlas {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        Path root = Paths.get("res/textures");
+        Path resRoot = Paths.get("res");
+        List<Path> scanRoots = List.of(Paths.get("res/textures"), Paths.get("res/players"));
 
         List<TextureEntry> textures;
-        try (Stream<Path> stream = Files.walk(root)) {
-            textures = stream
-                .filter(Files::isRegularFile)
-                .filter(path -> path.toString().toLowerCase().endsWith(".png"))
-                .map(path -> {
-                    String relativePath = root.relativize(path).toString().replace("\\", "/");
-                    return new TextureEntry(relativePath, path.toString());
-                }).toList();
+        try {
+            textures = new ArrayList<>();
+            for (Path root : scanRoots) {
+                if (!root.toFile().exists()) continue;
+                try (Stream<Path> stream = Files.walk(root)) {
+                    stream
+                        .filter(Files::isRegularFile)
+                        .filter(path -> path.toString().toLowerCase().endsWith(".png"))
+                        .map(path -> {
+                            String relativePath = resRoot.relativize(path).toString().replace("\\", "/");
+                            return new TextureEntry(relativePath, path.toString());
+                        })
+                        .forEach(textures::add);
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return;

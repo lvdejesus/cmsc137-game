@@ -17,10 +17,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.BufferUtils;
 
 import java.nio.Buffer;
-//
 import java.nio.DoubleBuffer;
-//
-import client.entities.Player;
 
 public class Main {
     private int shaderProgram;
@@ -28,46 +25,43 @@ public class Main {
     private Engine<Context> engine;
     private Window window;
     private static int currentScene = -1;
+
     public void run() {
-        
         // Initialize window
         this.window = Window.getWindow();
         this.window.init();
-        
+
         // Initialize Render
         shaderProgram = ShaderProgram.getShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
         TextureAtlas.get();
-        
+
         // Initialize Camera
         this.camera = new Camera();
-        camera.setSize((int)window.getWidth(),(int)window.getHeight());
-        glfwSetFramebufferSizeCallback(window.getHandle(), (handle,width,height) -> {
+        camera.setSize((int)window.getWidth(), (int)window.getHeight());
+        glfwSetFramebufferSizeCallback(window.getHandle(), (handle, width, height) -> {
             camera.setSize(width, height);
             glViewport(0, 0, width, height);
         });
-        
-        // ECS set
+
+        // ECS setup
         engine = new Engine<>();
-        // Add systems and components
         EngineConfig.registerComponents(engine);
         EngineConfig.addSystems(engine);
 
-        // Create player 
+        // Create player
         new Player(engine);
-        
+
         loop();
         glDeleteProgram(shaderProgram);
         glfwTerminate();
     }
 
     private void loop() {
-        
         float[] matrixBuffer = new float[16];
         double lastTime = glfwGetTime();
 
-        // Create context (Stores Golbal Variables)
         Context ctx = new Context();
-        
+
         while (!glfwWindowShouldClose(this.window.getHandle())) {
             double currentTime = glfwGetTime();
             float dt = (float) (currentTime - lastTime);
@@ -79,8 +73,9 @@ public class Main {
                 (float) MouseListener.getX(),
                 (float) MouseListener.getY()
             );
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            
+
             glUseProgram(shaderProgram);
             int pvLoc = glGetUniformLocation(shaderProgram, "u_ProjectionView");
             camera.getProjectionViewMatrix().get(matrixBuffer);

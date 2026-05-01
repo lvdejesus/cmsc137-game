@@ -27,8 +27,8 @@ public class EngineConfig {
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new RenderSystem());
         engine.addSystem(new TextRenderingSystem());
-        // Player Specific systems
-        engine.addSystem(new PlayerRotationSystem());
+        // PlayerRotationSystem disabled — using 4-directional sprites, no cursor rotation
+        // engine.addSystem(new PlayerRotationSystem());
         engine.addSystem(new MovementSystem());
     }
 }

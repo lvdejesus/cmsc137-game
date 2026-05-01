@@ -46,10 +46,11 @@ public class MovementSystem extends EntitySystem<Context> {
         float x = 0;
         float y = 0;
 
-        if (InputHandler.getInstance().key(GLFW_KEY_W)) y -= 1;
-        if (InputHandler.getInstance().key(GLFW_KEY_S)) y += 1;
-        if (InputHandler.getInstance().key(GLFW_KEY_A)) x -= 1;
-        if (InputHandler.getInstance().key(GLFW_KEY_D)) x += 1;
+        // WASD or Arrow keys — camera is y-down so moving "up" = y decreases
+        if (InputHandler.getInstance().key(GLFW_KEY_W) || InputHandler.getInstance().key(GLFW_KEY_UP))    y -= 1;
+        if (InputHandler.getInstance().key(GLFW_KEY_S) || InputHandler.getInstance().key(GLFW_KEY_DOWN))  y += 1;
+        if (InputHandler.getInstance().key(GLFW_KEY_A) || InputHandler.getInstance().key(GLFW_KEY_LEFT))  x -= 1;
+        if (InputHandler.getInstance().key(GLFW_KEY_D) || InputHandler.getInstance().key(GLFW_KEY_RIGHT)) x += 1;
 
         if(x != 0 || y !=0){
 
