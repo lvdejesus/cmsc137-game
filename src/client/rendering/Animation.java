@@ -38,16 +38,6 @@ public class Animation {
         return fromPixelRow(fileName, xCount, cellW, cellH, row * cellH, frameDuration);
     }
 
-    /**
-     * Extracts an animation row using explicit pixel coordinates.
-     * Handles spritesheets with gaps between rows (non-uniform grids).
-     *
-     * @param xCount    number of columns (frames)
-     * @param cellW     width of each frame in pixels
-     * @param cellH     height of each frame in pixels
-     * @param rowY      Y pixel offset from the TOP of the PNG where this row starts
-     * @param frameDuration seconds per frame
-     */
     public static Animation fromPixelRow(String fileName, int xCount, int cellW, int cellH, int rowY, float frameDuration) {
         Texture texture = TextureAtlas.get().getRegion(fileName);
         Texture[] textures = new Texture[xCount];
@@ -56,10 +46,7 @@ public class Animation {
         float regionH = texture.v2 - texture.v1;
         float regionW = texture.u2 - texture.u1;
 
-        // stbi_set_flip_vertically_on_load(true): texture.v2 = PNG-top, texture.v1 = PNG-bottom.
-        // For a row at PNG-pixel rowY (from top) with height cellH:
-        //   GL-top of cell    = texture.v2 - (rowY / imgH) * regionH
-        //   GL-bottom of cell = texture.v2 - ((rowY + cellH) / imgH) * regionH
+
         float vCellTop = texture.v2 - (rowY / imgH) * regionH;
         float vCellBot = texture.v2 - ((rowY + cellH) / imgH) * regionH;
 
@@ -88,14 +75,14 @@ public class Animation {
         for (int i = 0; i < frameCoords.length; i++) {
             int col = frameCoords[i][0];
             int pngRow = frameCoords[i][1];
-            // stbi flip: PNG row 0 (top) = highest atlas v. Convert accordingly.
+
             int atlasRow = (yCount - 1) - pngRow;
             float cellV1 = texture.v1 + dv * atlasRow;
             float cellV2 = texture.v1 + dv * (atlasRow + 1);
 
             float insetU = 0.5f / texture.width;
             float insetV = 0.5f / texture.height;
-            // Extra crop on the high-v edge (= PNG-top of this row) to hide foot bleed from the row above
+
             float extraTopCrop = 6.0f / texture.height;
 
             textures[i] = new Texture(

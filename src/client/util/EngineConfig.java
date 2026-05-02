@@ -16,15 +16,19 @@ public class EngineConfig {
         engine.register(AnimationComponent.class);
         engine.register(PlayerStateComponent.class);
         engine.register(TextComponent.class);
+        engine.register(BulletComponent.class);
 
         //tags
         engine.register(PlayerTagComponent.class);
+        engine.register(BulletTagComponent.class);
     }
 
     public static void addSystems(Engine<Context> engine){
         // Add systems
         engine.addSystem(new PhysicsSystem());
         engine.addSystem(new AnimationSystem());
+        engine.addSystem(new ShootingSystem());
+        engine.addSystem(new BulletSystem());
         engine.addSystem(new RenderSystem());
         engine.addSystem(new TextRenderingSystem());
         // PlayerRotationSystem disabled — using 4-directional sprites, no cursor rotation

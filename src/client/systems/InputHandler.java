@@ -18,6 +18,14 @@ public class InputHandler {
     private Set<Integer> held = new HashSet<>();
     private Set<Integer> released = new HashSet<>();
 
+    // Mouse button tracking
+    private Set<Integer> mouseToPress = new HashSet<>();
+    private Set<Integer> mouseToRelease = new HashSet<>();
+
+    private Set<Integer> mousePressed = new HashSet<>();
+    private Set<Integer> mouseHeld = new HashSet<>();
+    private Set<Integer> mouseReleased = new HashSet<>();
+
     private ArrayList<MouseEvent> eventsToAdd = new ArrayList<>();
     private ArrayList<MouseEvent> events = new ArrayList<>();
 
@@ -27,12 +35,11 @@ public class InputHandler {
         if (instance == null) {
             instance = new InputHandler();
         }
-
         return instance;
     }
 
     private InputHandler() {
-    };
+    }
 
     public void register(long windowHandle) {
         glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
@@ -44,16 +51,26 @@ public class InputHandler {
         });
 
         glfwSetMouseButtonCallback(windowHandle, (window, button, action, mods) -> {
-            if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-                try (MemoryStack stack = MemoryStack.stackPush()) {
-                    DoubleBuffer xBuffer = stack.mallocDouble(1);
-                    DoubleBuffer yBuffer = stack.mallocDouble(1);
+            if (action == GLFW_PRESS) {
+                mouseToPress.add(button);
 
-                    glfwGetCursorPos(window, xBuffer, yBuffer);
+                if (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT) {
+                    try (MemoryStack stack = MemoryStack.stackPush()) {
+                        DoubleBuffer xBuffer = stack.mallocDouble(1);
+                        DoubleBuffer yBuffer = stack.mallocDouble(1);
 
-                    Vector2f cursorPos = new Vector2f((float) xBuffer.get(), (float) yBuffer.get());
-                    eventsToAdd.add(new MouseEvent(MouseEventType.LEFT_CLICK, cursorPos));
+                        glfwGetCursorPos(window, xBuffer, yBuffer);
+
+                        Vector2f cursorPos = new Vector2f((float) xBuffer.get(), (float) yBuffer.get());
+                        MouseEventType type = (button == GLFW_MOUSE_BUTTON_LEFT)
+                                ? MouseEventType.LEFT_CLICK
+                                : MouseEventType.RIGHT_CLICK;
+
+                        eventsToAdd.add(new MouseEvent(type, cursorPos));
+                    }
                 }
+            } else if (action == GLFW_RELEASE) {
+                mouseToRelease.add(button);
             }
         });
     }
@@ -74,6 +91,22 @@ public class InputHandler {
         }
         toRelease.clear();
 
+        // Mouse state updates
+        mousePressed.clear();
+        mouseReleased.clear();
+
+        for (int button : mouseToPress) {
+            mousePressed.add(button);
+            mouseHeld.add(button);
+        }
+        mouseToPress.clear();
+
+        for (int button : mouseToRelease) {
+            mouseReleased.add(button);
+            mouseHeld.remove(button);
+        }
+        mouseToRelease.clear();
+
         events.clear();
         events.addAll(eventsToAdd);
         eventsToAdd.clear();
@@ -91,15 +124,26 @@ public class InputHandler {
         return held.contains(key);
     }
 
+    public boolean mouseButtonDown(int button) {
+        return mousePressed.contains(button);
+    }
+
+    public boolean mouseButton(int button) {
+        return mouseHeld.contains(button);
+    }
+
+    public boolean mouseButtonUp(int button) {
+        return mouseReleased.contains(button);
+    }
+
     public Iterable<MouseEvent> getEvents() {
         return events;
     }
 
-
     public enum MouseEventType {
         LEFT_CLICK,
         RIGHT_CLICK,
-    };
+    }
 
     public static class MouseEvent {
         MouseEventType type;
@@ -116,5 +160,4 @@ public class InputHandler {
             this.consumed = true;
         }
     }
-
 }
