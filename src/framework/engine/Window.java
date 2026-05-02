@@ -39,7 +39,7 @@ public class Window {
     
     public void init(){
 
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11); // Force X11 (XWayland) — Wayland native breaks on Nvidia
+        // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11); // Force X11 (XWayland) — Wayland native breaks on some NVIDIA setups
         if (!glfwInit()) {
             throw new IllegalStateException("GLFW failed!");
         }
