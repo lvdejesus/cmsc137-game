@@ -1,6 +1,8 @@
 package client.systems;
 
 import client.components.MovementComponent;
+import client.components.WorldComponent;
+import client.components.TransformComponent;
 import client.components.player.PlayerStateComponent;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -11,6 +13,9 @@ import static org.lwjgl.glfw.GLFW.*;
 public class MovementSystem extends EntitySystem<Context> {
     private ComponentMapper<MovementComponent> mm;
     private ComponentMapper<PlayerStateComponent> sm;
+    private ComponentMapper<TransformComponent> tm;
+    private ComponentMapper<WorldComponent> wm;
+    private int worldId = -1;
 
     private float approach(float current, float target, float max) {
         if (current < target) {
@@ -33,6 +38,8 @@ public class MovementSystem extends EntitySystem<Context> {
         super.setEngine(engine);
         this.sm = engine.getMapper(PlayerStateComponent.class);
         this.mm = engine.getMapper(MovementComponent.class);
+        this.tm = engine.getMapper(TransformComponent.class);
+        this.wm = engine.getMapper(WorldComponent.class);
     }
     
     @Override
@@ -102,7 +109,34 @@ public class MovementSystem extends EntitySystem<Context> {
         }
 
         // Apply acceleration
-        mc.velocity.x = approach(mc.velocity.x, targetx, xAccel * deltaTime);
-        mc.velocity.y = approach(mc.velocity.y, targety, yAccel * deltaTime);
+        float nextVelX = approach(mc.velocity.x, targetx, xAccel * deltaTime);
+        float nextVelY = approach(mc.velocity.y, targety, yAccel * deltaTime);
+
+        // Simple Collision Check
+        TransformComponent tc = tm.get(id);
+        if (worldId == -1) {
+            for (int i = 0; i < engine.getEntityMax(); i++) {
+                if (wm.get(i) != null) {
+                    worldId = i;
+                    break;
+                }
+            }
+        }
+
+        if (worldId != -1) {
+            WorldComponent world = wm.get(worldId);
+            // Check future position
+            float futureX = tc.position.x + nextVelX * deltaTime;
+            float futureY = tc.position.y + nextVelY * deltaTime;
+            
+            if (!world.isWalkable(futureX, futureY)) {
+                // If blocked, stop velocity
+                mc.velocity.set(0, 0);
+                return;
+            }
+        }
+
+        mc.velocity.x = nextVelX;
+        mc.velocity.y = nextVelY;
     }
 }

@@ -8,6 +8,8 @@ import client.rendering.*;
 import client.scenes.Scene;
 import client.systems.*;
 import client.util.EngineConfig;
+import client.util.DungeonGenerator;
+import client.components.WorldComponent;
 import java.nio.file.*;
 import java.io.IOException;
 import static org.lwjgl.opengl.GL11.*;
@@ -48,8 +50,27 @@ public class Main {
         EngineConfig.registerComponents(engine);
         EngineConfig.addSystems(engine);
 
+        // Create Dungeon
+        DungeonGenerator generator = new DungeonGenerator(50, 50);
+        int[][] map = generator.generate();
+        engine.createEntity().addComponent(new WorldComponent(map));
+
+        // Find walkable spawn point
+        float spawnX = 400, spawnY = 300;
+        findSpawn:
+        for (int x = 0; x < map.length; x++) {
+            for (int y = 0; y < map[0].length; y++) {
+                if (map[x][y] == 0) { // TILE_FLOOR
+                    spawnX = x * 32;
+                    spawnY = y * 32;
+                    break findSpawn;
+                }
+            }
+        }
+
         // Create player
-        new Player(engine);
+        Player player = new Player(engine);
+        player.getEntity().getComponent(client.components.TransformComponent.class).position.set(spawnX, spawnY);
 
         loop();
         glDeleteProgram(shaderProgram);

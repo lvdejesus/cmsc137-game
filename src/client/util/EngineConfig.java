@@ -21,6 +21,7 @@ public class EngineConfig {
         //tags
         engine.register(PlayerTagComponent.class);
         engine.register(BulletTagComponent.class);
+        engine.register(WorldComponent.class);
     }
 
     public static void addSystems(Engine<Context> engine){
@@ -29,6 +30,7 @@ public class EngineConfig {
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new ShootingSystem());
         engine.addSystem(new BulletSystem());
+        engine.addSystem(new DungeonSystem());
         engine.addSystem(new RenderSystem());
         engine.addSystem(new TextRenderingSystem());
         // PlayerRotationSystem disabled — using 4-directional sprites, no cursor rotation
