@@ -5,9 +5,12 @@ import framework.engine.Engine;
 import client.systems.Context;
 import client.components.*;
 import client.components.bullet.BulletComponent;
+import client.components.CollisionComponent;
 import client.rendering.Texture;
 import client.rendering.TextureAtlas;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.joml.primitives.AABBf;
 
 public class Bullet {
     private final Entity<Context> entity;
@@ -28,6 +31,10 @@ public class Bullet {
         entity.addComponent(new MovementComponent(0, 0, 0, new Vector2f(vx, vy)));
         entity.addComponent(new RenderComponent(bulletTexture));
         entity.addComponent(new BulletComponent());
+        entity.addComponent(new CollisionComponent(new AABBf(
+            new Vector3f(-4.0f, -4.0f, 0.0f),
+            new Vector3f(4.0f, 4.0f, 0.1f)
+        )));
     }
 
     public Entity<Context> getEntity() {

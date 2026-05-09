@@ -17,6 +17,8 @@ public class EngineConfig {
         engine.register(AnimationComponent.class);
         engine.register(PlayerStateComponent.class);
         engine.register(TextComponent.class);
+        engine.register(HealthComponent.class);
+        engine.register(CollisionComponent.class);
 
         //tags
         engine.register(EnemyComponent.class);
@@ -34,7 +36,9 @@ public class EngineConfig {
         // Player Specific systems
         engine.addSystem(new PlayerRotationSystem());
         engine.addSystem(new MovementSystem());
-
+        // Enemy systems
         engine.addSystem(new EnemySystem());
+        engine.addSystem(new BulletSystem());
+        engine.addSystem(new DamageSystem());
     }
 }

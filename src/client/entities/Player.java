@@ -6,8 +6,11 @@ import client.systems.Context;
 import client.components.*;
 import client.components.player.PlayerStateComponent;
 import client.components.player.PlayerTagComponent;
+import client.components.CollisionComponent;
 import client.rendering.Animation;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.joml.primitives.AABBf;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class Player {
@@ -32,6 +35,11 @@ public class Player {
         entity.addComponent(new AnimationComponent(Animation.fromFile("test-Sheet.png", 22, 0.1f), (float) currentTime));
         entity.addComponent(new PlayerStateComponent());
         entity.addComponent(new PlayerTagComponent());
+        entity.addComponent(new CollisionComponent(new AABBf(
+            new Vector3f(-1.0f, -1.0f, 0.0f),
+            new Vector3f(1.0f, 1.0f, 0.1f)
+        )));
+        entity.addComponent(new HealthComponent(100.0f));
     }
 
     public Entity<Context> getEntity() {

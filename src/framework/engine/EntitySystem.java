@@ -28,5 +28,17 @@ public abstract class EntitySystem<T> {
         }
     }
 
+    protected long[] getBitsets() {
+        return engine.getBitsets();
+    }
+    
+    protected int getEntityMax() {
+        return engine.getEntityMax();
+    }
+    
+    protected int getComponentIndex(Class<? extends Component> component) {
+        return engine.getComponentIndex(component);
+    }
+
     protected abstract void processEntity(int entityId, T ctx);
 }
