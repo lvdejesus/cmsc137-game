@@ -8,6 +8,7 @@ import client.components.bullet.BulletComponent;
 import client.components.enemy.EnemyComponent;
 import client.components.TransformComponent;
 import client.components.CollisionComponent;
+import client.components.player.PlayerTagComponent;
 import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
 import client.systems.Context;
@@ -16,6 +17,7 @@ public class DamageSystem extends EntitySystem<Context> {
     private ComponentMapper<HealthComponent> healthM;
     private ComponentMapper<TransformComponent> transformM;
     private ComponentMapper<CollisionComponent> collisionM;
+    private ComponentMapper<BulletComponent> bulletM;
 
     public DamageSystem() {
         super(HealthComponent.class);
@@ -27,6 +29,7 @@ public class DamageSystem extends EntitySystem<Context> {
         this.healthM = engine.getMapper(HealthComponent.class);
         this.transformM = engine.getMapper(TransformComponent.class);
         this.collisionM = engine.getMapper(CollisionComponent.class);
+        this.bulletM = engine.getMapper(BulletComponent.class);
     }
 
     @Override
@@ -41,75 +44,93 @@ public class DamageSystem extends EntitySystem<Context> {
         long[] bitsets = getBitsets();
         int bulletIndex = getComponentIndex(BulletComponent.class);
         int enemyIndex = getComponentIndex(EnemyComponent.class);
+        int playerIndex = getComponentIndex(PlayerTagComponent.class);
 
         long bulletMask = 1L << bulletIndex;
         long enemyMask = 1L << enemyIndex;
+        long playerMask = 1L << playerIndex;
 
         int entityMax = getEntityMax();
         
+        // Player bullets hitting enemies
         for (int bulletId = 0; bulletId < entityMax; bulletId++) {
-            if ((bitsets[bulletId] & bulletMask) != bulletMask) {
+            if (!hasComponents(bitsets[bulletId], bulletMask) || bulletM.get(bulletId).isEnemy) {
                 continue;
             }
 
-            TransformComponent bulletTransform = transformM.get(bulletId);
-            CollisionComponent bulletCollision = collisionM.get(bulletId);
+            AABBf bulletBox = getWorldBox(bulletId);
 
             for (int enemyId = 0; enemyId < entityMax; enemyId++) {
-                if ((bitsets[enemyId] & enemyMask) != enemyMask) {
+                if (!hasComponents(bitsets[enemyId], enemyMask)) {
                     continue;
                 }
 
                 HealthComponent enemyHealth = healthM.get(enemyId);
-                TransformComponent enemyTransform = transformM.get(enemyId);
-                CollisionComponent enemyCollision = collisionM.get(enemyId);
-
                 if (!enemyHealth.isAlive()) {
                     continue;
                 }
 
-                AABBf bulletWorldBox = new AABBf(
-                    new Vector3f(
-                        bulletCollision.boundingBox.minX() + bulletTransform.position.x,
-                        bulletCollision.boundingBox.minY() + bulletTransform.position.y,
-                        bulletCollision.boundingBox.minZ()
-                    ),
-                    new Vector3f(
-                        bulletCollision.boundingBox.maxX() + bulletTransform.position.x,
-                        bulletCollision.boundingBox.maxY() + bulletTransform.position.y,
-                        bulletCollision.boundingBox.maxZ()
-                    )
-                );
+                if (checkIntersection(bulletBox, getWorldBox(enemyId))) {
+                    enemyHealth.damage(25.0f);
+                    engine.destroyEntity(bulletId);
 
-                AABBf enemyWorldBox = new AABBf(
-                    new Vector3f(
-                        enemyCollision.boundingBox.minX() + enemyTransform.position.x,
-                        enemyCollision.boundingBox.minY() + enemyTransform.position.y,
-                        enemyCollision.boundingBox.minZ()
-                    ),
-                    new Vector3f(
-                        enemyCollision.boundingBox.maxX() + enemyTransform.position.x,
-                        enemyCollision.boundingBox.maxY() + enemyTransform.position.y,
-                        enemyCollision.boundingBox.maxZ()
-                    )
-                );
-
-                boolean intersects =
-                    bulletWorldBox.minX() <= enemyWorldBox.maxX() && bulletWorldBox.maxX() >= enemyWorldBox.minX() &&
-                    bulletWorldBox.minY() <= enemyWorldBox.maxY() && bulletWorldBox.maxY() >= enemyWorldBox.minY() &&
-                    bulletWorldBox.minZ() <= enemyWorldBox.maxZ() && bulletWorldBox.maxZ() >= enemyWorldBox.minZ();
-
-                if (!intersects) {
-                    continue;
-                }
-
-                enemyHealth.damage(25.0f);
-                engine.destroyEntity(bulletId);
-
-                if (!enemyHealth.isAlive()) {
-                    engine.destroyEntity(enemyId);
+                    if (!enemyHealth.isAlive()) {
+                        engine.destroyEntity(enemyId);
+                    }
                 }
             }
         }
+
+        // Enemy bullets hitting player
+        for (int bulletId = 0; bulletId < entityMax; bulletId++) {
+            if (!hasComponents(bitsets[bulletId], bulletMask) || !bulletM.get(bulletId).isEnemy) {
+                continue;
+            }
+
+            AABBf bulletBox = getWorldBox(bulletId);
+
+            for (int playerId = 0; playerId < entityMax; playerId++) {
+                if (!hasComponents(bitsets[playerId], playerMask)) {
+                    continue;
+                }
+
+                HealthComponent playerHealth = healthM.get(playerId);
+                if (!playerHealth.isAlive()) {
+                    continue;
+                }
+
+                if (checkIntersection(bulletBox, getWorldBox(playerId))) {
+                    playerHealth.damage(10.0f);
+                    engine.destroyEntity(bulletId);
+                }
+            }
+        }
+    }
+
+    private boolean hasComponents(long bitset, long mask) {
+        return (bitset & mask) == mask;
+    }
+
+    private AABBf getWorldBox(int entityId) {
+        TransformComponent transform = transformM.get(entityId);
+        CollisionComponent collision = collisionM.get(entityId);
+        return new AABBf(
+            new Vector3f(
+                collision.boundingBox.minX() + transform.position.x,
+                collision.boundingBox.minY() + transform.position.y,
+                collision.boundingBox.minZ()
+            ),
+            new Vector3f(
+                collision.boundingBox.maxX() + transform.position.x,
+                collision.boundingBox.maxY() + transform.position.y,
+                collision.boundingBox.maxZ()
+            )
+        );
+    }
+
+    private boolean checkIntersection(AABBf a, AABBf b) {
+        return a.minX() <= b.maxX() && a.maxX() >= b.minX() &&
+               a.minY() <= b.maxY() && a.maxY() >= b.minY() &&
+               a.minZ() <= b.maxZ() && a.maxZ() >= b.minZ();
     }
 }

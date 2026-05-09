@@ -5,4 +5,5 @@ import framework.engine.Component;
 public class BulletComponent implements Component {
     public float lifetime = 2.0f;
     public float age = 0.0f;
+    public boolean isEnemy = false;
 }

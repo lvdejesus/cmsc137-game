@@ -36,8 +36,8 @@ public class Player {
         entity.addComponent(new PlayerStateComponent());
         entity.addComponent(new PlayerTagComponent());
         entity.addComponent(new CollisionComponent(new AABBf(
-            new Vector3f(-1.0f, -1.0f, 0.0f),
-            new Vector3f(1.0f, 1.0f, 0.1f)
+            new Vector3f(-16.0f, -16.0f, 0.0f),
+            new Vector3f(16.0f, 16.0f, 0.1f)
         )));
         entity.addComponent(new HealthComponent(100.0f));
     }

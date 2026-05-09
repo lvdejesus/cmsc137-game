@@ -40,5 +40,9 @@ public abstract class EntitySystem<T> {
         return engine.getComponentIndex(component);
     }
 
+    protected long getFamilyMask() {
+        return familyMask;
+    }
+
     protected abstract void processEntity(int entityId, T ctx);
 }
