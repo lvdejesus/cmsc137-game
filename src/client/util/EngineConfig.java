@@ -1,10 +1,10 @@
 package client.util;
-
 import client.components.enemy.EnemyComponent;
 import framework.engine.*;
 import client.systems.*;
 import client.systems.player.PlayerRotationSystem;
 import client.components.*;
+import client.components.bullet.BulletComponent;
 import client.components.player.*;
 
 
@@ -21,6 +21,8 @@ public class EngineConfig {
         //tags
         engine.register(EnemyComponent.class);
         engine.register(PlayerTagComponent.class);
+        //bullet
+        engine.register(BulletComponent.class);
     }
 
     public static void addSystems(Engine<Context> engine){
