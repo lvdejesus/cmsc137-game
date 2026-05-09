@@ -56,7 +56,7 @@ public class Main {
         engine = new Engine<>();
         // Add systems and components
         EngineConfig.registerComponents(engine);
-        EngineConfig.addSystems(engine);
+        EngineConfig.addSystems(engine, camera);
 
         Player player = new Player(engine);
         this.playerTransform = player.getEntity().getComponent(client.components.TransformComponent.class);

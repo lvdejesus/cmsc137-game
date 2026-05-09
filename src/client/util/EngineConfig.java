@@ -6,7 +6,7 @@ import client.systems.player.PlayerRotationSystem;
 import client.components.*;
 import client.components.bullet.BulletComponent;
 import client.components.player.*;
-
+import client.rendering.Camera;
 
 
 public class EngineConfig {
@@ -27,7 +27,7 @@ public class EngineConfig {
         engine.register(BulletComponent.class);
     }
 
-    public static void addSystems(Engine<Context> engine){
+    public static void addSystems(Engine<Context> engine, Camera camera){
         // Add systems
         engine.addSystem(new PhysicsSystem());
         engine.addSystem(new AnimationSystem());
@@ -40,5 +40,7 @@ public class EngineConfig {
         engine.addSystem(new EnemySystem());
         engine.addSystem(new BulletSystem());
         engine.addSystem(new DamageSystem());
+        // Wall collision
+        engine.addSystem(new WallCollisionSystem(camera));
     }
 }
