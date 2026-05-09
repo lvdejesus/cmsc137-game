@@ -1,5 +1,6 @@
 package client.util;
 
+import client.components.enemy.EnemyComponent;
 import framework.engine.*;
 import client.systems.*;
 import client.systems.player.PlayerRotationSystem;
@@ -18,6 +19,7 @@ public class EngineConfig {
         engine.register(TextComponent.class);
 
         //tags
+        engine.register(EnemyComponent.class);
         engine.register(PlayerTagComponent.class);
     }
 
@@ -30,5 +32,7 @@ public class EngineConfig {
         // Player Specific systems
         engine.addSystem(new PlayerRotationSystem());
         engine.addSystem(new MovementSystem());
+
+        engine.addSystem(new EnemySystem());
     }
 }

@@ -15,26 +15,24 @@ public class MovementSystem extends EntitySystem<Context> {
     private float approach(float current, float target, float max) {
         if (current < target) {
             return Math.min(current + max, target);
-        }
-        else if (current > target) {
+        } else if (current > target) {
             return Math.max(current - max, target);
-        }
-        else {  
+        } else {
             return target;
         }
     }
 
     public MovementSystem() {
-        super(MovementComponent.class);
+        super(MovementComponent.class, PlayerStateComponent.class);
     }
-    
+
     @Override
     public void setEngine(Engine<Context> engine) {
         super.setEngine(engine);
         this.sm = engine.getMapper(PlayerStateComponent.class);
         this.mm = engine.getMapper(MovementComponent.class);
     }
-    
+
     @Override
     public void processEntity(int id, Context ctx) {
         MovementComponent mc = mm.get(id);
@@ -51,52 +49,49 @@ public class MovementSystem extends EntitySystem<Context> {
         if (InputHandler.getInstance().key(GLFW_KEY_A)) x -= 1;
         if (InputHandler.getInstance().key(GLFW_KEY_D)) x += 1;
 
-        if(x != 0 || y !=0){
+        if (x != 0 || y != 0) {
 
             // Change State to moving
             state.set(PlayerStateComponent.State.MOVING);
-            
+
             // Normalize diagonal movement to prevent diagonal speedup
-            if(x != 0 && y!=0){
-                float len = (float) Math.sqrt((x*x) + (y*y));
+            if (x != 0 && y != 0) {
+                float len = (float) Math.sqrt((x * x) + (y * y));
                 x /= len;
                 y /= len;
             }
-            
+
         }
-        
+
         // When fully stopped
-        else if (mc.velocity.lengthSquared() < 0.01f)
-        {
+        else if (mc.velocity.lengthSquared() < 0.01f) {
             state.set(PlayerStateComponent.State.IDLE);
         }
-        
+
         float targetx = mc.speed * x;
         float targety = mc.speed * y;
 
         // Handle Horizontal acceleration
         float xAccel;
-        if (x==0){
+        if (x == 0) {
             xAccel = mc.friction;
         }
         // When switching directions
-        else if (Math.signum(x) != Math.signum(mc.velocity.x) && mc.velocity.x !=0){
+        else if (Math.signum(x) != Math.signum(mc.velocity.x) && mc.velocity.x != 0) {
             xAccel = mc.acceleration * 4.0f;
-        }
-        else{
+        } else {
             xAccel = mc.acceleration;
         }
 
         // Handle Vertical acceleration
         float yAccel;
-        if (y==0){
+        if (y == 0) {
             yAccel = mc.friction;
         }
         // When switching directions
-        else if (Math.signum(y) != Math.signum(mc.velocity.y) && mc.velocity.y !=0){
+        else if (Math.signum(y) != Math.signum(mc.velocity.y) && mc.velocity.y != 0) {
             yAccel = mc.acceleration * 4.0f;
-        }
-        else{
+        } else {
             yAccel = mc.acceleration;
         }
 
