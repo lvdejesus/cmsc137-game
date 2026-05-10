@@ -58,8 +58,8 @@ public class Main {
         EngineConfig.registerComponents(engine);
         EngineConfig.addSystems(engine, camera);
 
-        Player player = new Player(engine);
-        this.playerTransform = player.getEntity().getComponent(client.components.TransformComponent.class);
+        // Set initial scene
+        client.scenes.SceneManager.setScene(new client.scenes.MenuScene(window), engine);
 
         loop();
         glDeleteProgram(shaderProgram);
@@ -94,29 +94,11 @@ public class Main {
 
             TextureAtlas.get().bind();
 
+            // Scene specific update
+            client.scenes.SceneManager.update();
+
             engine.update(ctx);
             InputHandler.getInstance().tick();
-
-            for (InputHandler.MouseEvent event : InputHandler.getInstance().getEvents()) {
-                if (event.type == InputHandler.MouseEventType.LEFT_CLICK && !event.consumed) {
-                    event.consume();
-
-                    if (playerTransform != null) {
-                        float playerX = playerTransform.position.x;
-                        float playerY = playerTransform.position.y;
-
-                        // Calculate angle from player to mouse
-                        float mouseX = event.position.x;
-                        float mouseY = event.position.y;
-
-                        float dx = mouseX - playerX;
-                        float dy = mouseY - playerY;
-                        float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
-
-                        new Bullet(engine, playerX, playerY, angle);
-                    }
-                }
-            }
 
             glfwSwapBuffers(this.window.getHandle());
             glfwPollEvents();

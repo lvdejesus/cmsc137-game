@@ -114,7 +114,17 @@ public class Engine<T> {
 
     public void update(T ctx) {
         for (var system : systems) {
-            system.update(ctx);
+            if (system.isEnabled()) {
+                system.update(ctx);
+            }
+        }
+    }
+
+    public void clearEntities() {
+        for (int i = 0; i < entityMax; i++) {
+            if (componentBitset[i] != 0L) {
+                destroyEntity(i);
+            }
         }
     }
 
@@ -126,5 +136,15 @@ public class Engine<T> {
         }
 
         return (ComponentMapper<U>) mapper;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <U extends EntitySystem<T>> U getSystem(Class<U> type) {
+        for (var system : systems) {
+            if (system.getClass().equals(type)) {
+                return (U) system;
+            }
+        }
+        return null;
     }
 }

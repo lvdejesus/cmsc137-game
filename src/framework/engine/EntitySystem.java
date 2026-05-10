@@ -4,10 +4,19 @@ public abstract class EntitySystem<T> {
     private final Class<? extends Component>[] componentTypes;
     protected Engine<T> engine;
     private long familyMask;
+    private boolean enabled = true;
 
     @SafeVarargs
     public EntitySystem(Class<? extends Component>... types) {
         this.componentTypes = types;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void setEngine(Engine<T> engine) {

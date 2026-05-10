@@ -6,13 +6,16 @@ public class SceneManager {
 
     public static void setScene(Scene newScene, Engine<Context> engine){
         if (currScene != null){
-            // Cleans scene
             currScene.clean();
-            // Todo Erase all entities
+            engine.clearEntities();
         }
         currScene = newScene;
         currScene.init(engine);
     }
 
-
+    public static void update(){
+        if (currScene != null){
+            currScene.update();
+        }
+    }
 }

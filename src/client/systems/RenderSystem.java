@@ -32,8 +32,10 @@ public class RenderSystem extends EntitySystem<Context> {
         TransformComponent tc = tm.get(id);
 
         Texture tex = rc.texture;
-        batch.draw(tex, tc.position.x, tc.position.y, rc.z,
-                tc.rotation, rc.texture.width * tc.scale.x, rc.texture.height * tc.scale.y, rc.tint.x, rc.tint.y, rc.tint.z, rc.tint.w, tc.anchor);
+        if (tex != null) {
+            batch.draw(tex, tc.position.x, tc.position.y, rc.z,
+                    tc.rotation, rc.texture.width * tc.scale.x, rc.texture.height * tc.scale.y, rc.tint.x, rc.tint.y, rc.tint.z, rc.tint.w, tc.anchor);
+        }
 
         batch.flush();
     }

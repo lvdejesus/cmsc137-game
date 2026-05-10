@@ -34,7 +34,10 @@ public class AnimationSystem extends EntitySystem<Context> {
             rc.texture = animation.frames[0];
         }
 
-        int index = (int) Math.floor((ctx.currentTime - ac.offset) / animation.frameDuration) % animation.frames.length;
+        float time = ctx.currentTime - ac.offset;
+        if (time < 0) time = 0;
+        
+        int index = (int) Math.floor(time / animation.frameDuration) % animation.frames.length;
         rc.texture = animation.frames[index];
     }
 }
