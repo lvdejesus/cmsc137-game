@@ -32,7 +32,7 @@ public class Player {
         entity.addComponent(new TransformComponent(new Vector2f(400.0f, 300.0f), new Vector2f(2.0f, 2.0f)));
         entity.addComponent(new MovementComponent(movement_speed, acceleration, friction, new Vector2f(0.0f, 0.0f)));
         entity.addComponent(new RenderComponent());        
-        entity.addComponent(new AnimationComponent(Animation.fromFile("test-Sheet.png", 22, 0.1f), (float) currentTime));
+        entity.addComponent(new AnimationComponent(Animation.fromFile("players/player4.png", 22, 0.1f), (float) currentTime));
         entity.addComponent(new PlayerStateComponent());
         entity.addComponent(new PlayerTagComponent());
         entity.addComponent(new CollisionComponent(new AABBf(
