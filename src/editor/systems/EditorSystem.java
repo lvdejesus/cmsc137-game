@@ -3,6 +3,7 @@ package editor.systems;
 import client.components.ClickEvent;
 import client.components.RenderComponent;
 import client.components.TransformComponent;
+import client.rendering.Anchor;
 import client.systems.Context;
 import editor.components.EditorComponent;
 import framework.engine.ComponentMapper;
@@ -44,7 +45,7 @@ public class EditorSystem extends EntitySystem<Context> {
                 tileEntity = engine.createEntity();
 
                 TransformComponent tc = new TransformComponent(new Vector2f(200.0f + xTile * 64.0f, 200.0f + yTile * 64.0f),
-                    new Vector2f(4.0f, 4.0f));
+                    new Vector2f(4.0f, 4.0f), Anchor.TOP_LEFT);
                 RenderComponent rc = new RenderComponent(ec.tiles.get(ec.currentTile), 1);
 
                 tileEntity.addComponent(rc);

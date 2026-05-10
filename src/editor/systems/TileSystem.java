@@ -34,7 +34,7 @@ public class TileSystem extends EntitySystem<Context> {
         ClickEvent ce = cem.get(entityId);
 
         if (ce != null) {
-            editor.currentTile = tic.tile;
+            editor.currentTile = tic.tileIndex;
         }
     }
 }

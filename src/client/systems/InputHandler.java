@@ -21,6 +21,11 @@ public class InputHandler {
     private ArrayList<MouseEvent> eventsToAdd = new ArrayList<>();
     private ArrayList<MouseEvent> events = new ArrayList<>();
 
+    public Vector2f cursorPosition = new Vector2f(0, 0);
+    public Vector2f lastCursorPosition = new Vector2f(0, 0);
+    public boolean middleMouseHeld = false;
+    public Vector2f middleMouseDragDelta = new Vector2f(0, 0);
+
     private static InputHandler instance;
 
     public static InputHandler getInstance() {
@@ -54,6 +59,23 @@ public class InputHandler {
                     Vector2f cursorPos = new Vector2f((float) xBuffer.get(), (float) yBuffer.get());
                     eventsToAdd.add(new MouseEvent(MouseEventType.LEFT_CLICK, cursorPos));
                 }
+            }
+            if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+                middleMouseHeld = (action == GLFW_PRESS);
+                if (!middleMouseHeld) {
+                    middleMouseDragDelta.set(0, 0);
+                }
+            }
+        });
+
+        glfwSetCursorPosCallback(windowHandle, (window, xpos, ypos) -> {
+            lastCursorPosition.set(cursorPosition);
+            cursorPosition.set((float) xpos, (float) ypos);
+            if (middleMouseHeld) {
+                middleMouseDragDelta.set(
+                    cursorPosition.x - lastCursorPosition.x,
+                    cursorPosition.y - lastCursorPosition.y
+                );
             }
         });
     }

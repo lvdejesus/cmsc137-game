@@ -5,6 +5,9 @@ import editor.components.TileComponent;
 import editor.systems.CleanupSystem;
 import editor.systems.EditorSystem;
 import editor.systems.TileSystem;
+import editor.systems.PropertySystem;
+import editor.systems.PanSystem;
+import editor.util.TileRegistry;
 import framework.rendering.ShaderProgram;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -68,7 +71,7 @@ public class Main {
 
                     Entity<Context> entity = engine.createEntity();
                     TransformComponent transformComponent = new TransformComponent(new Vector2f(x, y),
-                        new Vector2f(SCALE, SCALE));
+                        new Vector2f(SCALE, SCALE), Anchor.TOP_LEFT);
 
                     float du = (t.u2 - t.u1) / xCount;
                     float dv = (t.v2 - t.v1) / yCount;
@@ -92,7 +95,7 @@ public class Main {
                     boundingBox.maxZ = Float.POSITIVE_INFINITY;
 
                     ClickableComponent clickableComponent = new ClickableComponent(boundingBox);
-                    TileComponent tileComponent = new TileComponent(g);
+                    TileComponent tileComponent = new TileComponent(g, false);
 
                     entity.addComponent(renderComponent);
                     entity.addComponent(transformComponent);
@@ -162,42 +165,86 @@ public class Main {
         engine.register(ClickEvent.class);
         engine.register(TextComponent.class);
 
-        Entity<Context> entity = engine.createEntity();
+        // Load tile definitions
+        try {
+            TileRegistry.loadTiles();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        TransformComponent transformComponent = new TransformComponent(new Vector2f(200, 200),
-            new Vector2f(16.0f, 16.0f));
+        // Create tiled grid background for editor area
+        Texture gridTex = TextureAtlas.get().getRegion("tiles/grid.png");
+        int gridCols = 20;
+        int gridRows = 15;
+        float gridScale = 4.0f;
+        float gridSize = 16.0f * gridScale;
 
-        Texture t = TextureAtlas.get().getRegion("bg.png");
-        RenderComponent renderComponent = new RenderComponent(t, 0);
+        for (int row = 0; row < gridRows; row++) {
+            for (int col = 0; col < gridCols; col++) {
+                Entity<Context> gridEntity = engine.createEntity();
+                TransformComponent gridTC = new TransformComponent(
+                    new Vector2f(200 + col * gridSize, 200 + row * gridSize),
+                    new Vector2f(gridScale, gridScale), Anchor.TOP_LEFT);
+                RenderComponent gridRC = new RenderComponent(gridTex, 0);
+                gridEntity.addComponent(gridTC);
+                gridEntity.addComponent(gridRC);
+            }
+        }
 
-        AABBf boundingBox = new AABBf();
-        boundingBox.minX = transformComponent.position.x;
-        boundingBox.minY = transformComponent.position.y;
-        boundingBox.minZ = Float.NEGATIVE_INFINITY;
-        boundingBox.maxX = transformComponent.position.x + renderComponent.texture.width * transformComponent.scale.x;
-        boundingBox.maxY = transformComponent.position.y + renderComponent.texture.width * transformComponent.scale.y;
-        boundingBox.maxZ = Float.POSITIVE_INFINITY;
+        // Editor click area - entire grid region (needs RenderComponent for ClickSystem)
+        AABBf editorBox = new AABBf();
+        editorBox.minX = 200;
+        editorBox.minY = 200;
+        editorBox.minZ = Float.NEGATIVE_INFINITY;
+        editorBox.maxX = 200 + gridCols * gridSize;
+        editorBox.maxY = 200 + gridRows * gridSize;
+        editorBox.maxZ = Float.POSITIVE_INFINITY;
 
-        ClickableComponent clickableComponent = new ClickableComponent(boundingBox);
         editor = new EditorComponent();
 
-        entity.addComponent(renderComponent);
-        entity.addComponent(transformComponent);
-        entity.addComponent(clickableComponent);
+        // Click area for placing tiles in editor
+        Entity<Context> entity = engine.createEntity();
+        TransformComponent editorTC = new TransformComponent(new Vector2f(200, 200), new Vector2f(1, 1), Anchor.TOP_LEFT);
+        entity.addComponent(editorTC);
+        entity.addComponent(new ClickableComponent(editorBox, -1.0f)); // z=-1 so grid shows above it
         entity.addComponent(editor);
 
         createTiles();
         
         Entity<Context> textEntity = engine.createEntity();
-        TransformComponent textTransform = new TransformComponent(new Vector2f(12, 12), new Vector2f(1, 1));
+        TransformComponent textTransform = new TransformComponent(new Vector2f(12, 12), new Vector2f(1, 1), Anchor.TOP_LEFT);
         TextComponent textComponent = new TextComponent(font, "Tiles", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
         textEntity.addComponent(textTransform);
         textEntity.addComponent(textComponent);
+
+        // Solid toggle button - moved to right side to avoid overlap
+        Entity<Context> solidEntity = engine.createEntity();
+        TransformComponent solidTransform = new TransformComponent(new Vector2f(300, 12), new Vector2f(1, 1), Anchor.TOP_LEFT);
+        TextComponent solidText = new TextComponent(font, "Solid: OFF", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        AABBf solidBox = new AABBf();
+        solidBox.minX = 300; solidBox.minY = 12; solidBox.minZ = Float.NEGATIVE_INFINITY;
+        solidBox.maxX = 400; solidBox.maxY = 42; solidBox.maxZ = Float.POSITIVE_INFINITY;
+        solidEntity.addComponent(solidTransform);
+        solidEntity.addComponent(solidText);
+        solidEntity.addComponent(new ClickableComponent(solidBox));
+
+        // Save button
+        Entity<Context> saveEntity = engine.createEntity();
+        TransformComponent saveTransform = new TransformComponent(new Vector2f(300, 52), new Vector2f(1, 1), Anchor.TOP_LEFT);
+        TextComponent saveText = new TextComponent(font, "SAVE", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        AABBf saveBox = new AABBf();
+        saveBox.minX = 300; saveBox.minY = 52; saveBox.minZ = Float.NEGATIVE_INFINITY;
+        saveBox.maxX = 360; saveBox.maxY = 82; saveBox.maxZ = Float.POSITIVE_INFINITY;
+        saveEntity.addComponent(saveTransform);
+        saveEntity.addComponent(saveText);
+        saveEntity.addComponent(new ClickableComponent(saveBox));
 
         engine.addSystem(new ClickSystem(camera));
         engine.addSystem(new RenderSystem());
         engine.addSystem(new TileSystem(editor));
         engine.addSystem(new EditorSystem());
+        engine.addSystem(new PropertySystem(editor, font));
+        engine.addSystem(new PanSystem(camera));
         engine.addSystem(new CleanupSystem());
         engine.addSystem(new TextRenderingSystem());
     }

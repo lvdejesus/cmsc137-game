@@ -2,7 +2,6 @@ package client.systems;
 
 import client.components.ClickEvent;
 import client.components.ClickableComponent;
-import client.components.RenderComponent;
 import client.rendering.Camera;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -12,7 +11,6 @@ import org.joml.Vector3f;
 
 public class ClickSystem extends EntitySystem<Context> {
     private ComponentMapper<ClickableComponent> cm;
-    private ComponentMapper<RenderComponent> rm;
     private final Camera camera;
 
     private Vector3f worldMouse;
@@ -20,7 +18,7 @@ public class ClickSystem extends EntitySystem<Context> {
     private int winnerId;
 
     public ClickSystem(Camera camera) {
-        super(ClickableComponent.class, RenderComponent.class);
+        super(ClickableComponent.class);
 
         this.camera = camera;
     }
@@ -30,17 +28,15 @@ public class ClickSystem extends EntitySystem<Context> {
         super.setEngine(engine);
 
         cm = engine.getMapper(ClickableComponent.class);
-        rm = engine.getMapper(RenderComponent.class);
     }
 
     @Override
     public void processEntity(int id, Context ctx) {
         ClickableComponent cc = cm.get(id);
-        RenderComponent rc = rm.get(id);
 
         if (cc.boundingBox.containsPoint(worldMouse.x, worldMouse.y, 0.0f)) {
-            if (rc.z > maxZ) {
-                maxZ = rc.z;
+            if (cc.z > maxZ) {
+                maxZ = cc.z;
                 winnerId = id;
             }
         }
@@ -60,7 +56,7 @@ public class ClickSystem extends EntitySystem<Context> {
             super.update(ctx);
 
             if (winnerId != -1 && event.type == InputHandler.MouseEventType.LEFT_CLICK) {
-                engine.addComponent(winnerId, new ClickEvent(event.position.x, event.position.y));
+                engine.addComponent(winnerId, new ClickEvent(worldMouse.x, worldMouse.y));
                 event.consume();
             }
         }
