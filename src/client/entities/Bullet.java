@@ -23,7 +23,7 @@ public class Bullet {
         this.entity = engine.createEntity();
 
         TextureAtlas atlas = TextureAtlas.get();
-        String textureName = isEnemy ? "tiles/floor.png" : "tiles/grass.png";
+        String textureName = isEnemy ? "bullets/enemy_bullets.png" : "bullets/friend_bullets.png";
         Texture bulletTexture = atlas.getRegion(textureName);
 
         float angleRadians = (float) Math.toRadians(angleDegrees);
