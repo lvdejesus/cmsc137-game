@@ -17,9 +17,8 @@ public class PropertySystem extends EntitySystem<Context> {
     private ComponentMapper<TextComponent> tcm;
     private ComponentMapper<TransformComponent> tfm;
     private EditorComponent editor;
-    private TextComponent solidText;
-    private TextComponent saveText;
     private Font font;
+    private Integer lastTile = null;
 
     public PropertySystem(EditorComponent editor, Font font) {
         super(ClickEvent.class);
@@ -33,6 +32,17 @@ public class PropertySystem extends EntitySystem<Context> {
         this.cem = engine.getMapper(ClickEvent.class);
         this.tcm = engine.getMapper(TextComponent.class);
         this.tfm = engine.getMapper(TransformComponent.class);
+    }
+
+    @Override
+    public void update(Context ctx) {
+        super.update(ctx);
+        
+        // Update solid text when tile selection changes
+        if (editor.currentTile != null && !editor.currentTile.equals(lastTile)) {
+            lastTile = editor.currentTile;
+            updateSolidText();
+        }
     }
 
     @Override

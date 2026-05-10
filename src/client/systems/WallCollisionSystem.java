@@ -34,9 +34,9 @@ public class WallCollisionSystem extends EntitySystem<Context> {
         CollisionComponent collision = collisionM.get(id);
 
         float minX = -collision.boundingBox.minX();
-        float maxX = camera.width - collision.boundingBox.maxX();
+        float maxX = camera.getWidth() - collision.boundingBox.maxX();
         float minY = -collision.boundingBox.minY();
-        float maxY = camera.height - collision.boundingBox.maxY();
+        float maxY = camera.getHeight() - collision.boundingBox.maxY();
 
         boolean hitLeft = transform.position.x < minX;
         boolean hitRight = transform.position.x > maxX;

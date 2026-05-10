@@ -35,7 +35,9 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Main {
     private long window;
     private int shaderProgram;
-    private Camera camera;
+    private CameraManager cameraManager;
+    private Camera uiCamera;
+    private Camera editorCamera;
     private final int WIDTH = 800, HEIGHT = 600;
     private Engine<Context> engine;
     
@@ -147,11 +149,28 @@ public class Main {
             throw new RuntimeException("Failed to load font", e);
         }
 
-        camera = new Camera();
-        camera.setSize(WIDTH, HEIGHT);
+        // Create cameras - UI on left (0-200), Editor on right (200-800)
+        // UI camera: 200px screen space, 1:1 with world (world = 200xHEIGHT)
+        // Editor camera: fixed world size (1280x960)
+        
+        cameraManager = new CameraManager();
+        uiCamera = new Camera("ui");
+        uiCamera.setViewport(0, 0, 200, HEIGHT);
+        uiCamera.setWorldSize(200, HEIGHT);  // 1:1 scale
+        
+        editorCamera = new Camera("editor");
+        editorCamera.setViewport(200, 0, WIDTH - 200, HEIGHT);
+        editorCamera.setWorldSize(1280, 960);  // Fixed world size
+        
+        cameraManager.addCamera("ui", uiCamera);
+        cameraManager.addCamera("editor", editorCamera);
 
         glfwSetFramebufferSizeCallback(window, (window, width, height) -> {
-            camera.setSize(width, height);
+            uiCamera.setViewport(0, 0, 200, height);
+            uiCamera.setWorldSize(200, height);  // UI keeps 1:1 scale
+            float editorWidth = Math.max(0, width - 200);
+            editorCamera.setViewport(200, 0, editorWidth, height);
+            // Editor world size stays fixed at 1280x960
             glViewport(0, 0, width, height);
         });
 
@@ -239,12 +258,12 @@ public class Main {
         saveEntity.addComponent(saveText);
         saveEntity.addComponent(new ClickableComponent(saveBox));
 
-        engine.addSystem(new ClickSystem(camera));
+        engine.addSystem(new ClickSystem(cameraManager));
         engine.addSystem(new RenderSystem());
         engine.addSystem(new TileSystem(editor));
         engine.addSystem(new EditorSystem());
         engine.addSystem(new PropertySystem(editor, font));
-        engine.addSystem(new PanSystem(camera));
+        engine.addSystem(new PanSystem(editorCamera));
         engine.addSystem(new CleanupSystem());
         engine.addSystem(new TextRenderingSystem());
     }
@@ -265,9 +284,13 @@ public class Main {
             glClearColor(203.0f / 255, 219.0f / 255, 252.0f / 255, 255.0f / 255);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+            // Set viewport for editor camera
+            glViewport((int)editorCamera.viewportX, (int)editorCamera.viewportY, 
+                       (int)editorCamera.viewportWidth, (int)editorCamera.viewportHeight);
+
             glUseProgram(shaderProgram);
             int pvLoc = glGetUniformLocation(shaderProgram, "u_ProjectionView");
-            camera.getProjectionViewMatrix().get(matrixBuffer);
+            editorCamera.getProjectionViewMatrix().get(matrixBuffer);
             glUniformMatrix4fv(pvLoc, false, matrixBuffer);
 
             TextureAtlas.get().bind();
