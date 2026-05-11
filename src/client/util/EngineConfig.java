@@ -30,6 +30,9 @@ public class EngineConfig {
     public static void addSystems(Engine<Context> engine, Camera camera){
         // Add systems
         engine.addSystem(new PhysicsSystem());
+        // Wall collision
+        engine.addSystem(new WallCollisionSystem(camera));
+
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new RenderSystem());
         engine.addSystem(new TextRenderingSystem());
@@ -40,7 +43,5 @@ public class EngineConfig {
         engine.addSystem(new EnemySystem());
         engine.addSystem(new BulletSystem());
         engine.addSystem(new DamageSystem());
-        // Wall collision
-        engine.addSystem(new WallCollisionSystem(camera));
     }
 }

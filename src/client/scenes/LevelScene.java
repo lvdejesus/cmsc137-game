@@ -46,6 +46,12 @@ public class LevelScene implements Scene {
         this.player = new Player(engine);
         this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
 
+        // Load background map
+        Entity<Context> mapBg = engine.createEntity();
+        mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f/1339.0f, 600.0f/1175.0f), Anchor.CENTER));
+        mapBg.addComponent(new RenderComponent(TextureAtlas.get().getRegion("map_1.png"), -0.5f));
+
+
         // Load Font for pause menu
         try {
             ByteBuffer fontBuffer = loadResource("res/fonts/KiwiSoda.ttf");

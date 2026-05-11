@@ -33,24 +33,33 @@ public class WallCollisionSystem extends EntitySystem<Context> {
         TransformComponent transform = transformM.get(id);
         CollisionComponent collision = collisionM.get(id);
 
-        float minX = -collision.boundingBox.minX();
-        float maxX = camera.getWidth() - collision.boundingBox.maxX();
-        float minY = -collision.boundingBox.minY();
-        float maxY = camera.getHeight() - collision.boundingBox.maxY();
+        // Play area boundaries (matching map_1.png scaled to 800x600)
+        float mapWidth = 800.0f;
+        float mapHeight = 600.0f;
+        
+        float paddingX = 15.0f;
+        float paddingBottom = 15.0f;
+        float paddingTop = 60.0f;
+        
+        float minX = paddingX - collision.boundingBox.minX();
+        float maxX = (mapWidth - paddingX) - collision.boundingBox.maxX();
+        float minY = paddingTop - collision.boundingBox.minY();
+        float maxY = (mapHeight - paddingBottom) - collision.boundingBox.maxY();
 
         boolean hitLeft = transform.position.x < minX;
         boolean hitRight = transform.position.x > maxX;
         boolean hitTop = transform.position.y < minY;
         boolean hitBottom = transform.position.y > maxY;
 
+        if (hitLeft) transform.position.x = minX;
+        else if (hitRight) transform.position.x = maxX;
+
+        if (hitTop) transform.position.y = minY;
+        else if (hitBottom) transform.position.y = maxY;
+
         if (!hitLeft && !hitRight && !hitTop && !hitBottom) {
             return;
         }
-
-        if (hitLeft) transform.position.x = minX;
-        if (hitRight) transform.position.x = maxX;
-        if (hitTop) transform.position.y = minY;
-        if (hitBottom) transform.position.y = maxY;
 
         long bitsets[] = getBitsets();
         int bulletIndex = getComponentIndex(BulletComponent.class);
