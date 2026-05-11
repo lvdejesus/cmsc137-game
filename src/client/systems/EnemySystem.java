@@ -43,6 +43,9 @@ public class EnemySystem extends EntitySystem<Context> {
         TransformComponent transform = tm.get(id);
         MovementComponent movement = mm.get(id);
 
+        transform.rotation += 45.0f * ctx.deltaTime;
+        transform.rotation %= 360.0f;
+
         // random movement
         if (random.nextFloat() < 0.02f) {
             float angle = random.nextFloat() * (float) Math.PI * 2;
