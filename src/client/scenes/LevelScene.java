@@ -5,6 +5,7 @@ import client.components.TextComponent;
 import client.components.TransformComponent;
 import client.entities.Bullet;
 import client.entities.Player;
+import client.network.NetworkManager;
 import client.rendering.*;
 import client.systems.Context;
 import client.systems.InputHandler;
@@ -24,6 +25,10 @@ import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.joml.Vector3f;
+
 public class LevelScene implements Scene {
     private Engine<Context> engine;
     private Player player;
@@ -36,6 +41,8 @@ public class LevelScene implements Scene {
     private Vector2f[] optionPositions;
     private Entity<Context> selectorEntity;
 
+    private Map<Integer, Entity<Context>> remotePlayers = new HashMap<>();
+
     @Override
     public void init(Engine<Context> engine) {
         this.engine = engine;
@@ -43,7 +50,8 @@ public class LevelScene implements Scene {
         // Ensure systems are enabled
         setGameSystemsEnabled(true);
 
-        this.player = new Player(engine);
+        int playerIndex = NetworkManager.getInstance().getPlayerIndex();
+        this.player = new Player(engine, playerIndex);
         this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
 
         // Load background map
@@ -109,6 +117,49 @@ public class LevelScene implements Scene {
                 }
             }
         }
+
+        // --- MULTIPLAYER SYNC ---
+        NetworkManager nm = NetworkManager.getInstance();
+
+        // 1. Broadcast our position
+        if (playerTransform != null) {
+            nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation);
+        }
+
+        // 2. Update or spawn remote players
+        for (Map.Entry<Integer, Vector3f> entry : nm.getRemotePlayerStates().entrySet()) {
+            int remoteId = entry.getKey();
+            Vector3f state = entry.getValue(); // x, y, rot
+
+            Entity<Context> remoteEnt = remotePlayers.get(remoteId);
+            if (remoteEnt == null) {
+                // Spawn new remote player
+                remoteEnt = engine.createEntity();
+                remoteEnt.addComponent(new TransformComponent(new Vector2f(state.x, state.y), new Vector2f(2.0f, 2.0f)));
+                remoteEnt.addComponent(new RenderComponent());
+                String spritePath = "players/player" + remoteId + ".png";
+                remoteEnt.addComponent(new client.components.AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) org.lwjgl.glfw.GLFW.glfwGetTime()));
+                remotePlayers.put(remoteId, remoteEnt);
+            } else {
+                // Update existing
+                TransformComponent tc = remoteEnt.getComponent(TransformComponent.class);
+                if (tc != null) {
+                    tc.position.x = state.x;
+                    tc.position.y = state.y;
+                    tc.rotation = state.z;
+                }
+            }
+        }
+
+        // 3. Remove disconnected players
+        remotePlayers.keySet().removeIf(id -> {
+            if (!nm.getRemotePlayerStates().containsKey(id)) {
+                Entity<Context> e = remotePlayers.get(id);
+                if (e != null) engine.destroyEntity(e.getId());
+                return true;
+            }
+            return false;
+        });
     }
 
     private void toggleMenu() {

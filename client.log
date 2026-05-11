@@ -1,0 +1,29 @@
+java -cp lib/lwjgl.jar:lib/lwjgl-glfw.jar:lib/lwjgl-opengl.jar:lib/lwjgl-stb.jar:lib/joml-1.10.8.jar:lib/joml-primitives-1.10.0.jar:out -Djava.library.path=lib/natives/linux/x64/org/lwjgl:lib/natives/linux/x64/org/lwjgl/glfw:lib/natives/linux/x64/org/lwjgl/opengl:lib/natives/linux/x64/org/lwjgl/openal:lib/natives/linux/x64/org/lwjgl/stb client.Main
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by org.lwjgl.system.Library$$Lambda/0x0000000069044f38 in an unnamed module (file:/home/ajdc/Documents/GitHub/cmsc137-game/lib/lwjgl.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[TextureAtlas] Found: tile.png at res/textures/tile.png
+[TextureAtlas] Found: tiles/enemy_1.png at res/textures/tiles/enemy_1.png
+[TextureAtlas] Found: tiles/grass.png at res/textures/tiles/grass.png
+[TextureAtlas] Found: tiles/grid.png at res/textures/tiles/grid.png
+[TextureAtlas] Found: tiles/floor.png at res/textures/tiles/floor.png
+[TextureAtlas] Found: tiles/enemy_2.png at res/textures/tiles/enemy_2.png
+[TextureAtlas] Found: bullets/enemy_bullets.png at res/textures/bullets/enemy_bullets.png
+[TextureAtlas] Found: bullets/friend_bullets.png at res/textures/bullets/friend_bullets.png
+[TextureAtlas] Found: bg.png at res/textures/bg.png
+[TextureAtlas] Found: map_1.png at res/textures/map_1.png
+[TextureAtlas] Found: players/player4.png at res/textures/players/player4.png
+[TextureAtlas] Found: players/player3.png at res/textures/players/player3.png
+[TextureAtlas] Found: players/player1.png at res/textures/players/player1.png
+[TextureAtlas] Found: players/player2.png at res/textures/players/player2.png
+[TextureAtlas] Found: menu_select.png at res/menu_assets/menu_select.png
+[TextureAtlas] Found: menu_bg.png at res/menu_assets/menu_bg.png
+[TextureAtlas] Found: menu_selector.png at res/menu_assets/menu_selector.png
+[TextureAtlas] Found: menu_title.png at res/menu_assets/menu_title.png
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/home/ajdc/Documents/GitHub/cmsc137-game/lib/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+make: *** [Makefile:18: run] Error 143

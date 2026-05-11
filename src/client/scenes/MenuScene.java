@@ -15,9 +15,11 @@ import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import client.network.NetworkManager;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -71,21 +73,26 @@ public class MenuScene implements Scene {
 
         // Options
         optionPositions = new Vector2f[] {
-            new Vector2f(centerX, centerY + 50),
-            new Vector2f(centerX, centerY + 100)
+            new Vector2f(centerX, centerY + 20),
+            new Vector2f(centerX, centerY + 70),
+            new Vector2f(centerX, centerY + 120)
         };
 
         Entity<Context> startText = engine.createEntity();
         startText.addComponent(new TransformComponent(optionPositions[0], new Vector2f(1, 1), Anchor.CENTER));
-        startText.addComponent(new TextComponent(menuFont, "start", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f));
+        startText.addComponent(new TextComponent(menuFont, "start game", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f));
+
+        Entity<Context> joinText = engine.createEntity();
+        joinText.addComponent(new TransformComponent(optionPositions[1], new Vector2f(1, 1), Anchor.CENTER));
+        joinText.addComponent(new TextComponent(menuFont, "join game", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f));
 
         Entity<Context> exitText = engine.createEntity();
-        exitText.addComponent(new TransformComponent(optionPositions[1], new Vector2f(1, 1), Anchor.CENTER));
+        exitText.addComponent(new TransformComponent(optionPositions[2], new Vector2f(1, 1), Anchor.CENTER));
         exitText.addComponent(new TextComponent(menuFont, "exit", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f));
 
         // Selector
         selectorEntity = engine.createEntity();
-        selectorEntity.addComponent(new TransformComponent(new Vector2f(Math.round(optionPositions[0].x - 80), Math.round(optionPositions[0].y)), new Vector2f(1, 1), Anchor.CENTER));
+        selectorEntity.addComponent(new TransformComponent(new Vector2f(Math.round(optionPositions[0].x - 120), Math.round(optionPositions[0].y)), new Vector2f(1, 1), Anchor.CENTER));
         selectorEntity.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_selector.png"), 0.3f));
     }
 
@@ -94,18 +101,31 @@ public class MenuScene implements Scene {
         InputHandler input = InputHandler.getInstance();
 
         if (input.keyDown(GLFW_KEY_UP) || input.keyDown(GLFW_KEY_W)) {
-            selectedOption = (selectedOption - 1 + 2) % 2;
+            selectedOption = (selectedOption - 1 + 3) % 3;
             updateSelector();
         }
         if (input.keyDown(GLFW_KEY_DOWN) || input.keyDown(GLFW_KEY_S)) {
-            selectedOption = (selectedOption + 1) % 2;
+            selectedOption = (selectedOption + 1) % 3;
             updateSelector();
         }
 
         if (input.keyDown(GLFW_KEY_ENTER) || input.keyDown(GLFW_KEY_SPACE)) {
             if (selectedOption == 0) {
-                // Start Game
-                SceneManager.setScene(new LevelScene(), engine);
+                // Start Game (Host)
+                String localIP = NetworkManager.getInstance().getLocalIP();
+                SceneManager.setScene(new LobbyScene(true, localIP), engine);
+            } else if (selectedOption == 1) {
+                // Join Game (Client)
+                String hostIP = javax.swing.JOptionPane.showInputDialog(null, "Enter Host IP:", "Join Game", javax.swing.JOptionPane.QUESTION_MESSAGE);
+                if (hostIP != null && !hostIP.isEmpty()) {
+                    try {
+                        NetworkManager.getInstance().joinGame(hostIP);
+                        SceneManager.setScene(new LobbyScene(false, hostIP), engine);
+                    } catch (IOException e) {
+                        javax.swing.JOptionPane.showMessageDialog(null, "Failed to connect: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                        e.printStackTrace();
+                    }
+                }
             } else {
                 // Exit Game
                 glfwSetWindowShouldClose(window.getHandle(), true);
@@ -116,7 +136,8 @@ public class MenuScene implements Scene {
     private void updateSelector() {
         TransformComponent tc = selectorEntity.getComponent(TransformComponent.class);
         if (tc != null) {
-            tc.position.set(Math.round(optionPositions[selectedOption].x - 80), Math.round(optionPositions[selectedOption].y));
+            float xOffset = (selectedOption == 0) ? -120 : (selectedOption == 1) ? -120 : -80;
+            tc.position.set(Math.round(optionPositions[selectedOption].x + xOffset), Math.round(optionPositions[selectedOption].y));
         }
     }
 
