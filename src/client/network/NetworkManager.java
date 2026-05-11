@@ -135,15 +135,17 @@ public class NetworkManager {
             }
         } else if (clientOut != null) {
             // Client sends to host (who will then broadcast it)
-            try {
-                clientOut.writeInt(MSG_PLAYER_POS);
-                clientOut.writeInt(playerIndex);
-                clientOut.writeFloat(x);
-                clientOut.writeFloat(y);
-                clientOut.writeFloat(rot);
-                clientOut.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
+            synchronized (clientOut) {
+                try {
+                    clientOut.writeInt(MSG_PLAYER_POS);
+                    clientOut.writeInt(playerIndex);
+                    clientOut.writeFloat(x);
+                    clientOut.writeFloat(y);
+                    clientOut.writeFloat(rot);
+                    clientOut.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -251,15 +253,18 @@ public class NetworkManager {
         }
 
         void sendMessage(int type, int id, float x, float y, float rot) {
-            try {
-                out.writeInt(type);
-                out.writeInt(id);
-                out.writeFloat(x);
-                out.writeFloat(y);
-                out.writeFloat(rot);
-                out.flush();
-            } catch (IOException e) {
-                handleDisconnect();
+            synchronized (out) {
+                try {
+                    out.writeInt(type);
+                    out.writeInt(id);
+                    out.writeFloat(x);
+                    out.writeFloat(y);
+                    out.writeFloat(rot);
+                    System.out.printf("Sent: %d %d %f %f %f\n", type, id, x, y, rot);
+                    out.flush();
+                } catch (IOException e) {
+                    handleDisconnect();
+                }
             }
         }
     }
