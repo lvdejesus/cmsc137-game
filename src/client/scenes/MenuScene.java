@@ -38,8 +38,8 @@ public class MenuScene implements Scene {
     public void init(Engine<Context> engine) {
         this.engine = engine;
 
-        // Disable depth test for 2D menu rendering to ensure correct layering by draw order
-        glDisable(GL_DEPTH_TEST);
+        // Ensure depth testing is enabled for proper layering
+        glEnable(GL_DEPTH_TEST);
 
         // Disable game systems
         setGameSystemsEnabled(false);
@@ -66,8 +66,8 @@ public class MenuScene implements Scene {
 
         // Title
         Entity<Context> title = engine.createEntity();
-        title.addComponent(new TransformComponent(new Vector2f(centerX, centerY - 100), new Vector2f(1, 1)));
-        title.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_title.png"), 0.0f));
+        title.addComponent(new TransformComponent(new Vector2f(centerX, centerY - 100), new Vector2f(1, 1), Anchor.CENTER));
+        title.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_title.png"), 0.1f));
 
         // Options
         optionPositions = new Vector2f[] {
@@ -77,16 +77,16 @@ public class MenuScene implements Scene {
 
         Entity<Context> startText = engine.createEntity();
         startText.addComponent(new TransformComponent(optionPositions[0], new Vector2f(1, 1), Anchor.CENTER));
-        startText.addComponent(new TextComponent(menuFont, "start"));
+        startText.addComponent(new TextComponent(menuFont, "start", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f));
 
         Entity<Context> exitText = engine.createEntity();
         exitText.addComponent(new TransformComponent(optionPositions[1], new Vector2f(1, 1), Anchor.CENTER));
-        exitText.addComponent(new TextComponent(menuFont, "exit"));
+        exitText.addComponent(new TextComponent(menuFont, "exit", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f));
 
         // Selector
         selectorEntity = engine.createEntity();
-        selectorEntity.addComponent(new TransformComponent(new Vector2f(optionPositions[0].x - 60, optionPositions[0].y), new Vector2f(1, 1)));
-        selectorEntity.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_selector.png"), 0.0f));
+        selectorEntity.addComponent(new TransformComponent(new Vector2f(Math.round(optionPositions[0].x - 80), Math.round(optionPositions[0].y)), new Vector2f(1, 1), Anchor.CENTER));
+        selectorEntity.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_selector.png"), 0.3f));
     }
 
     @Override
@@ -116,7 +116,7 @@ public class MenuScene implements Scene {
     private void updateSelector() {
         TransformComponent tc = selectorEntity.getComponent(TransformComponent.class);
         if (tc != null) {
-            tc.position.set(optionPositions[selectedOption].x - 60, optionPositions[selectedOption].y);
+            tc.position.set(Math.round(optionPositions[selectedOption].x - 80), Math.round(optionPositions[selectedOption].y));
         }
     }
 
@@ -140,8 +140,6 @@ public class MenuScene implements Scene {
 
     @Override
     public void clean() {
-        // Re-enable depth test for the game
-        glEnable(GL_DEPTH_TEST);
         // We re-enable systems when leaving the menu scene
         setGameSystemsEnabled(true);
     }

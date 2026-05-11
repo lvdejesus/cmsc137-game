@@ -49,7 +49,7 @@ public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
 
         float x = transform.position.x - length * (transform.anchor.getXOffset());
         float y = transform.position.y + textComp.font.getAscent() - (textComp.font.getAscent() - textComp.font.getDescent()) * transform.anchor.getYOffset();
-        float z = 0;
+        float z = textComp.z;
 
         for (char c : textComp.text.toCharArray()) {
             Font.Glyph glyph = textComp.font.getGlyph(c);

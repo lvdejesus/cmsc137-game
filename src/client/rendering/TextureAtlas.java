@@ -84,7 +84,7 @@ public class TextureAtlas {
 
                 if (curX + imgW > ATLAS_SIZE) {
                     curX = 0;
-                    curY += maxHeightInRow;
+                    curY += maxHeightInRow + 2; // Added 2px vertical padding
                     maxHeightInRow = 0;
                 }
 
@@ -101,7 +101,7 @@ public class TextureAtlas {
 
                 regions.put(file.name(), new Texture(u1, v1, u2, v2, imgW, imgH));
 
-                curX += imgW;
+                curX += imgW + 2; // Added 2px horizontal padding
                 maxHeightInRow = Math.max(maxHeightInRow, imgH);
 
                 stbi_image_free(data);

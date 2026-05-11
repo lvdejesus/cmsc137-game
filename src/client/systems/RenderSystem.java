@@ -27,6 +27,12 @@ public class RenderSystem extends EntitySystem<Context> {
     }
 
     @Override
+    public void update(Context ctx) {
+        super.update(ctx);
+        batch.flush();
+    }
+
+    @Override
     public void processEntity(int id, Context ctx) {
         RenderComponent rc = rm.get(id);
         TransformComponent tc = tm.get(id);
@@ -36,7 +42,5 @@ public class RenderSystem extends EntitySystem<Context> {
             batch.draw(tex, tc.position.x, tc.position.y, rc.z,
                     tc.rotation, rc.texture.width * tc.scale.x, rc.texture.height * tc.scale.y, rc.tint.x, rc.tint.y, rc.tint.z, rc.tint.w, tc.anchor);
         }
-
-        batch.flush();
     }
 }

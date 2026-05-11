@@ -11,6 +11,10 @@ public class Entity<T> {
         this.version = version;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public void addComponent(Component component) {
         if (engine.isValid(id, version)) {
             engine.addComponent(id, component);
@@ -31,7 +35,7 @@ public class Entity<T> {
         return engine.getMapper(component).get(id);
     }
 
-    void destroy() {
+    public void destroy() {
         engine.destroyEntity(id);
     }
 }
