@@ -24,9 +24,9 @@ public class Enemy {
         Texture enemyTexture;
         Random rand = new Random();
         if (rand.nextBoolean()) {
-            enemyTexture = atlas.getRegion("tiles/grass.png");
+            enemyTexture = atlas.getRegion("tiles/enemy_1.png");
         } else {
-            enemyTexture = atlas.getRegion("tiles/floor.png");
+            enemyTexture = atlas.getRegion("tiles/enemy_2.png");
         }
 
         float x = rand.nextFloat() * 800;
