@@ -2,20 +2,28 @@ SRC = src
 OUT = out
 LIB = lib
 
-LWJGL = $(LIB)/lwjgl.jar:$(LIB)/lwjgl-glfw.jar:$(LIB)/lwjgl-opengl.jar:$(LIB)/lwjgl-stb.jar:$(LIB)/joml-1.10.8.jar:$(LIB)/joml-primitives-1.10.0.jar
+# Finds all .java files
 SOURCES := $(shell find $(SRC) -name "*.java")
+
+# Dynamically builds the classpath using all .jar files found in LIB
+# The 'sed' command removes the trailing colon
+CLASSPATH := $(shell find $(LIB) -name "*.jar" | tr '\n' ':').:$(OUT)
+
+# Ensure the native path matches your actual folder structure
+NATIVE_PATH = $(LIB)/natives/x64/linux
+
+.PHONY: all build run clean
 
 all: run
 
-build: $(OUT)/client.Main.class
-
-$(OUT)/.build_stamp: $(SOURCES)
+build:
 	@mkdir -p $(OUT)
-	javac -cp "$(LWJGL)" -d $(OUT) $(SOURCES)
-	@touch $(OUT)/.build_stamp
+	javac -cp "$(CLASSPATH)" -d $(OUT) $(SOURCES)
 
-run: $(OUT)/.build_stamp
-	java -cp $(LWJGL):$(OUT) -Djava.library.path=$(LIB)/natives/linux/x64 client.Main
+run: build
+	java -cp "$(CLASSPATH)" \
+		-Djava.library.path="$(NATIVE_PATH)" \
+		client.Main
 
 clean:
 	rm -rf $(OUT)
