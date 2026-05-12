@@ -15,7 +15,7 @@ import static org.lwjgl.opengl.GL33.*;
 public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
     private ComponentMapper<TextComponent> tm;
     private ComponentMapper<TransformComponent> trm;
-    private Batch batch;
+    private final Batch batch;
 
     public TextRenderingSystem() {
         super(TextComponent.class, TransformComponent.class);
@@ -44,7 +44,7 @@ public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
         float length = 0;
         for (char c : textComp.text.toCharArray()) {
             Font.Glyph glyph = textComp.font.getGlyph(c);
-            length += glyph.xAdvance * transform.scale.x * textComp.scale;
+            length += glyph.xAdvance() * transform.scale.x * textComp.scale;
         }
 
         float x = transform.position.x - length * (transform.anchor.getXOffset());
@@ -57,10 +57,10 @@ public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
                 continue;
             }
 
-            float charX = x + glyph.xOffset * textComp.scale;
-            float charY = y + glyph.yOffset * textComp.scale;
+            float charX = x + glyph.xOffset() * textComp.scale;
+            float charY = y + glyph.yOffset() * textComp.scale;
 
-            Texture glyphTex = new Texture(glyph.u1, glyph.v1, glyph.u2, glyph.v2, glyph.width, glyph.height);
+            Texture glyphTex = new Texture(glyph.u1(), glyph.v1(), glyph.u2(), glyph.v2(), glyph.width(), glyph.height());
 
             batch.draw(
                 glyphTex,
@@ -68,8 +68,8 @@ public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
                 charY,
                 z,
                 transform.rotation,
-                glyph.width * transform.scale.x * textComp.scale,
-                glyph.height * transform.scale.y * textComp.scale,
+                glyph.width() * transform.scale.x * textComp.scale,
+                glyph.height() * transform.scale.y * textComp.scale,
                 textComp.color.x,
                 textComp.color.y,
                 textComp.color.z,
@@ -77,7 +77,7 @@ public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
                 Anchor.TOP_LEFT
             );
 
-            x += glyph.xAdvance * transform.scale.x * textComp.scale;
+            x += glyph.xAdvance() * transform.scale.x * textComp.scale;
         }
 
         batch.flush();

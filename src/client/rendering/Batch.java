@@ -7,9 +7,10 @@ public class Batch {
     private final int VERTICES_PER_SPRITE = 4;
     private final int ELEMENTS_PER_VERTEX = 9; // x,y,z, u,v, r,g,b,a
 
-    private float[] vertexArray = new float[MAX_SPRITES * VERTICES_PER_SPRITE * ELEMENTS_PER_VERTEX];
+    private final float[] vertexArray = new float[MAX_SPRITES * VERTICES_PER_SPRITE * ELEMENTS_PER_VERTEX];
     private int spriteCount = 0;
-    private int vao, vbo;
+    private final int vao;
+    private final int vbo;
 
     public Batch() {
         vao = glGenVertexArrays();
@@ -32,12 +33,12 @@ public class Batch {
         int[] indices = new int[MAX_SPRITES * 6];
         int v = 0;
         for (int i = 0; i < indices.length; i += 6) {
-            indices[i + 0] = v + 0;
+            indices[i] = v;
             indices[i + 1] = v + 1;
             indices[i + 2] = v + 2;
             indices[i + 3] = v + 2;
             indices[i + 4] = v + 3;
-            indices[i + 5] = v + 0;
+            indices[i + 5] = v;
             v += 4;
         }
 

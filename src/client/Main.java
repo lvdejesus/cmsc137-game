@@ -31,7 +31,7 @@ public class Main {
     private Camera camera;
     private Engine<Context> engine;
     private Window window;
-    private static int currentScene = -1;
+    private static final int currentScene = -1;
     private client.components.TransformComponent playerTransform;
 
     public void run() {

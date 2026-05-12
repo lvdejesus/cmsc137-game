@@ -1,7 +1,7 @@
 package framework.engine;
 
 public class ComponentMapper<T extends Component> {
-    private int index;
+    private final int index;
     private Object[] data;
 
     ComponentMapper(int index, int initialCapacity) {

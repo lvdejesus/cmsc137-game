@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CameraManager {
-    private Map<String, Camera> cameras = new HashMap<>();
+    private final Map<String, Camera> cameras = new HashMap<>();
 
     public void addCamera(String name, Camera camera) {
         cameras.put(name, camera);

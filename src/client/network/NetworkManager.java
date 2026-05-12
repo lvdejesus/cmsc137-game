@@ -26,15 +26,15 @@ public class NetworkManager {
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
-    private List<ClientHandler> connectedClients = new CopyOnWriteArrayList<>();
+    private final List<ClientHandler> connectedClients = new CopyOnWriteArrayList<>();
     private volatile boolean isHost = false;
-    private String localIP;
+    private final String localIP;
     private volatile int playerIndex = 1; // Default for host
     private volatile int remotePlayerCount = 1;
     private volatile boolean gameStarted = false;
 
     // Remote player positional data (ID -> Vector3f(x, y, rotation))
-    private ConcurrentHashMap<Integer, Vector3f> remotePlayerStates = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, Vector3f> remotePlayerStates = new ConcurrentHashMap<>();
 
     private Thread serverThread;
     private Thread discoveryThread;

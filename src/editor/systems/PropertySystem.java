@@ -16,8 +16,8 @@ public class PropertySystem extends EntitySystem<Context> {
     private ComponentMapper<ClickEvent> cem;
     private ComponentMapper<TextComponent> tcm;
     private ComponentMapper<TransformComponent> tfm;
-    private EditorComponent editor;
-    private Font font;
+    private final EditorComponent editor;
+    private final Font font;
     private Integer lastTile = null;
 
     public PropertySystem(EditorComponent editor, Font font) {
@@ -73,7 +73,6 @@ public class PropertySystem extends EntitySystem<Context> {
                 e.printStackTrace();
             }
             engine.removeComponent(entityId, ClickEvent.class);
-            return;
         }
     }
 

@@ -18,11 +18,11 @@ public class EnemySystem extends EntitySystem<Context> {
     private ComponentMapper<MovementComponent> mm;
     private ComponentMapper<HealthComponent> healthM;
     private Engine<Context> engine;
-    private Random random = new Random();
+    private final Random random = new Random();
     private float spawnTimer = 0.0f;
-    private float spawnInterval = 3.0f;
+    private final float spawnInterval = 3.0f;
     private float shootTimer = 0.0f;
-    private float shootInterval = 1.0f;
+    private final float shootInterval = 1.0f;
 
     public EnemySystem() {
         super(EnemyComponent.class);

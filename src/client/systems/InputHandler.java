@@ -11,15 +11,15 @@ import java.util.HashSet;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class InputHandler {
-    private Set<Integer> toPress = new HashSet<>();
-    private Set<Integer> toRelease = new HashSet<>();
+    private final Set<Integer> toPress = new HashSet<>();
+    private final Set<Integer> toRelease = new HashSet<>();
 
-    private Set<Integer> pressed = new HashSet<>();
-    private Set<Integer> held = new HashSet<>();
-    private Set<Integer> released = new HashSet<>();
+    private final Set<Integer> pressed = new HashSet<>();
+    private final Set<Integer> held = new HashSet<>();
+    private final Set<Integer> released = new HashSet<>();
 
-    private ArrayList<MouseEvent> eventsToAdd = new ArrayList<>();
-    private ArrayList<MouseEvent> events = new ArrayList<>();
+    private final ArrayList<MouseEvent> eventsToAdd = new ArrayList<>();
+    private final ArrayList<MouseEvent> events = new ArrayList<>();
 
     public Vector2f cursorPosition = new Vector2f(0, 0);
     public Vector2f lastCursorPosition = new Vector2f(0, 0);
@@ -37,7 +37,7 @@ public class InputHandler {
     }
 
     private InputHandler() {
-    };
+    }
 
     public void register(long windowHandle) {
         glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
@@ -121,7 +121,7 @@ public class InputHandler {
     public enum MouseEventType {
         LEFT_CLICK,
         RIGHT_CLICK,
-    };
+    }
 
     public static class MouseEvent {
         public MouseEventType type;

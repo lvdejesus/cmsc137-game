@@ -11,7 +11,7 @@ import client.rendering.Texture;
 public class RenderSystem extends EntitySystem<Context> {
     private ComponentMapper<RenderComponent> rm;
     private ComponentMapper<TransformComponent> tm;
-    private Batch batch;
+    private final Batch batch;
 
     public RenderSystem() {
         super(RenderComponent.class, TransformComponent.class);

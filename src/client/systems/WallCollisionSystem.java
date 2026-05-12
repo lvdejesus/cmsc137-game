@@ -13,7 +13,7 @@ public class WallCollisionSystem extends EntitySystem<Context> {
     private ComponentMapper<TransformComponent> transformM;
     private ComponentMapper<CollisionComponent> collisionM;
     private ComponentMapper<MovementComponent> movementM;
-    private Camera camera;
+    private final Camera camera;
 
     public WallCollisionSystem(Camera camera) {
         super(TransformComponent.class, CollisionComponent.class);
@@ -61,7 +61,7 @@ public class WallCollisionSystem extends EntitySystem<Context> {
             return;
         }
 
-        long bitsets[] = getBitsets();
+        long[] bitsets = getBitsets();
         int bulletIndex = getComponentIndex(BulletComponent.class);
         long bulletMask = 1L << bulletIndex;
 

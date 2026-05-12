@@ -25,7 +25,7 @@ public class Entity<T> {
 
     public void removeComponent(Component component){
         if (engine.isValid(id, version)) {
-            engine.removeComponent(id,component.getClass());;
+            engine.removeComponent(id,component.getClass());
         } else {
             throw new RuntimeException("Modified a dead entity.");
         }

@@ -28,10 +28,10 @@ public class LobbyScene implements Scene {
     private Font font;
     private Entity<Context> statusTextEntity;
     private Entity<Context> ipTextEntity;
-    private List<Entity<Context>> entities = new ArrayList<>();
+    private final List<Entity<Context>> entities = new ArrayList<>();
     
-    private boolean isHost;
-    private String hostIP;
+    private final boolean isHost;
+    private final String hostIP;
 
     private static final int NUM_PLAYERS = 1;
 

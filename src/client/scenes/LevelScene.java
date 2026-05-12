@@ -36,12 +36,12 @@ public class LevelScene implements Scene {
     
     private boolean isPaused = false;
     private Font pauseFont;
-    private List<Entity<Context>> pauseMenuEntities = new ArrayList<>();
+    private final List<Entity<Context>> pauseMenuEntities = new ArrayList<>();
     private int selectedOption = 0; // 0: restart, 1: back to title
     private Vector2f[] optionPositions;
     private Entity<Context> selectorEntity;
 
-    private Map<Integer, Entity<Context>> remotePlayers = new HashMap<>();
+    private final Map<Integer, Entity<Context>> remotePlayers = new HashMap<>();
 
     @Override
     public void init(Engine<Context> engine) {

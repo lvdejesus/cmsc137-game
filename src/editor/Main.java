@@ -45,10 +45,10 @@ public class Main {
 
     private EditorComponent editor;
 
-    private static int TILE_SIZE = 16;
-    private static int COLS  = 3;
-    private static float SCALE = 4.0f;
-    private static float GAP = 4.0f;
+    private static final int TILE_SIZE = 16;
+    private static final int COLS  = 3;
+    private static final float SCALE = 4.0f;
+    private static final float GAP = 4.0f;
 
     public void run() {
         init();

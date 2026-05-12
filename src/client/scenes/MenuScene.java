@@ -26,7 +26,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class MenuScene implements Scene {
     private Engine<Context> engine;
-    private Window window;
+    private final Window window;
     private Font menuFont;
     private int selectedOption = 0; // 0: Start, 1: Exit
     private Entity<Context> selectorEntity;

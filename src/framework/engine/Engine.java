@@ -8,7 +8,7 @@ import java.util.Queue;
 
 class ComponentRegistry {
     private int componentCount = 0;
-    private Map<Class<? extends Component>, Integer> componentIndex = new HashMap<>();
+    private final Map<Class<? extends Component>, Integer> componentIndex = new HashMap<>();
 
     int register(Class<? extends Component> type) {
         int id = componentCount++;
@@ -29,12 +29,12 @@ public class Engine<T> {
     private static final int INITIAL_CAPACITY = 128;
 
     private int entityMax = 0;
-    private Queue<Integer> entityReuse = new ArrayDeque<Integer>();
+    private final Queue<Integer> entityReuse = new ArrayDeque<Integer>();
     private long[] componentBitset = new long[INITIAL_CAPACITY];
     private int[] entityVersions = new int[INITIAL_CAPACITY];
-    private Map<Class<? extends Component>, ComponentMapper<? extends Component>> mappers = new HashMap<>();
-    private ComponentRegistry componentRegistry = new ComponentRegistry();
-    private ArrayList<EntitySystem<T>> systems = new ArrayList<>();
+    private final Map<Class<? extends Component>, ComponentMapper<? extends Component>> mappers = new HashMap<>();
+    private final ComponentRegistry componentRegistry = new ComponentRegistry();
+    private final ArrayList<EntitySystem<T>> systems = new ArrayList<>();
 
     public Entity<T> createEntity() {
         int index;

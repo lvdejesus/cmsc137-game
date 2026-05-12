@@ -7,11 +7,11 @@ import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.EntitySystem;
 
-public class PlayerRotationSystem extends EntitySystem<Context>{
+public class PlayerRotationSystem extends EntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
-    
+
     public PlayerRotationSystem() {
-        super(TransformComponent.class,PlayerTagComponent.class);
+        super(TransformComponent.class, PlayerTagComponent.class);
     }
 
     @Override
@@ -24,10 +24,9 @@ public class PlayerRotationSystem extends EntitySystem<Context>{
     public void processEntity(int id, Context ctx) {
         TransformComponent tc = tm.get(id);
         float dx = ctx.cursor.x - tc.position.x;
-        float dy = ctx.cursor.y - tc.position.y ;
-        float angle = (float) Math.toDegrees(Math.atan2(dy,dx)) + 90.0f;
+        float dy = ctx.cursor.y - tc.position.y;
+        float angle = (float) Math.toDegrees(Math.atan2(dy, dx)) + 90.0f;
         tc.rotation = angle;
-        
     }
 
 }
