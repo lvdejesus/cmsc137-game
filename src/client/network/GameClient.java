@@ -10,22 +10,28 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class GameClient {
     private final ClientRegistry clientRegistry = new ClientRegistry();
     private final ServerRegistry serverRegistry = new ServerRegistry();
-    
+
     private Socket socket;
     private DataOutputStream out;
     private volatile boolean connected = false;
 
-    public interface MessageHandler {
-        void onMessage(Message msg);
-    }
-    private MessageHandler handler;
+    private final Map<Class<?>, NetworkManager.MessageHandler<?>> handlers;
+    private final ConcurrentLinkedQueue<Message> inQueue;
 
-    public void setMessageHandler(MessageHandler handler) {
-        this.handler = handler;
+    public GameClient(Map<Class<?>, NetworkManager.MessageHandler<?>> handlers, ConcurrentLinkedQueue<Message> inQueue) {
+        this.handlers = handlers;
+        this.inQueue = inQueue;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void invokeHandler(NetworkManager.MessageHandler<T> handler, Message msg) {
+        handler.handle((T) msg);
     }
 
     public void connect(String ip, int port) {
@@ -41,8 +47,11 @@ public class GameClient {
                     try (DataInputStream in = new DataInputStream(socket.getInputStream())) {
                         while (!socket.isClosed()) {
                             Message msg = serverRegistry.receive(in);
-                            if (handler != null) {
-                                handler.onMessage(msg);
+                            var handler = handlers.get(msg.getClass());
+                            if (handler == null) {
+                                inQueue.offer(msg);
+                            } else {
+                                invokeHandler(handler, msg);
                             }
                         }
                     } catch (IOException e) {
@@ -68,12 +77,12 @@ public class GameClient {
         }
     }
 
-    public boolean isConnected() { return connected; }
-
     public void stop() {
         connected = false;
         try {
             if (socket != null) socket.close();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

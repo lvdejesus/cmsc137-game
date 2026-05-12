@@ -35,7 +35,6 @@ public class C_PlayerPosition implements Message {
         float x = in.readFloat();
         float y = in.readFloat();
         float rotation = in.readFloat();
-        System.out.println("C_PlayerPosition{senderId=" + senderId + ", x=" + x + ", y=" + y + ", rot=" + rotation + "}");
         return new C_PlayerPosition(senderId, x, y, rotation);
     }
 }

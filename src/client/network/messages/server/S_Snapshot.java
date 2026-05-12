@@ -10,9 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class S_Snapshot implements Message {
-    private List<EntitySnapshot> entitySnapshots;
+    private final List<EntitySnapshot> entitySnapshots;
 
     public S_Snapshot(List<EntitySnapshot> entitySnapshots) {
+        this.entitySnapshots = entitySnapshots;
     }
 
     @Override
@@ -32,5 +33,9 @@ public class S_Snapshot implements Message {
 
         System.out.println("S_Snapshot{...}");
         return new S_Snapshot(entitySnapshots);
+    }
+
+    public List<EntitySnapshot> getEntitySnapshots() {
+        return entitySnapshots;
     }
 }

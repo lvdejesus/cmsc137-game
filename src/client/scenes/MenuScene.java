@@ -112,8 +112,9 @@ public class MenuScene implements Scene {
         if (input.keyDown(GLFW_KEY_ENTER) || input.keyDown(GLFW_KEY_SPACE)) {
             if (selectedOption == 0) {
                 // Start Game (Host) - start server first, then join
-                GameServer server = new GameServer();
-                server.start("0.0.0.0");
+                GameServer server = new GameServer("0.0.0.0");
+                new Thread(server).start();
+
                 NetworkManager.getInstance().joinGame("127.0.0.1");
                 SceneManager.setScene(new LobbyScene("127.0.0.1"), engine);
             } else if (selectedOption == 1) {

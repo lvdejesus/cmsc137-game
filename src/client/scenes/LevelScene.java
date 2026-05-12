@@ -1,11 +1,17 @@
 package client.scenes;
 
+import client.components.AnimationComponent;
 import client.components.RenderComponent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
 import client.entities.Bullet;
 import client.entities.Player;
 import client.network.NetworkManager;
+import client.network.messages.Message;
+import client.network.messages.server.S_AssignId;
+import client.network.messages.server.S_PlayerCount;
+import client.network.messages.server.S_Snapshot;
+import client.network.messages.server.S_StartGame;
 import client.rendering.*;
 import client.systems.client.*;
 import framework.engine.Engine;
@@ -27,13 +33,13 @@ import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.joml.Vector3f;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LevelScene implements Scene {
     private Engine<Context> engine;
     private Player player;
     private TransformComponent playerTransform;
-    
+
     private boolean isPaused = false;
     private Font pauseFont;
     private final List<Entity<Context>> pauseMenuEntities = new ArrayList<>();
@@ -41,24 +47,23 @@ public class LevelScene implements Scene {
     private Vector2f[] optionPositions;
     private Entity<Context> selectorEntity;
 
-    private final Map<Integer, Entity<Context>> remotePlayers = new HashMap<>();
+    private final Map<Integer, Integer> networkEntityMap = new ConcurrentHashMap<>();
 
     @Override
     public void init(Engine<Context> engine) {
         this.engine = engine;
-        
+
         // Ensure systems are enabled
         setGameSystemsEnabled(true);
 
         int playerIndex = NetworkManager.getInstance().getPlayerIndex();
-        this.player = new Player(engine, playerIndex);
+        this.player = new Player(engine, playerIndex, NetworkManager.getInstance().getNetworkId());
         this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
 
         // Load background map
         Entity<Context> mapBg = engine.createEntity();
-        mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f/1339.0f, 600.0f/1175.0f), Anchor.CENTER));
+        mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f / 1339.0f, 600.0f / 1175.0f), Anchor.CENTER));
         mapBg.addComponent(new RenderComponent(TextureAtlas.get().getRegion("map_1.png"), -0.5f));
-
 
         // Load Font for pause menu
         try {
@@ -126,45 +131,57 @@ public class LevelScene implements Scene {
             nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation);
         }
 
-        // 2. Update or spawn remote players
-        for (Map.Entry<Integer, Vector3f> entry : nm.getRemotePlayerStates().entrySet()) {
-            int remoteId = entry.getKey();
-            Vector3f state = entry.getValue(); // x, y, rot
+        Message msg;
+        while ((msg = nm.inQueue.poll()) != null) {
+            if (msg instanceof S_Snapshot m) {
+                for (var entitySnapshot : m.getEntitySnapshots()) {
+                    // implicit player spawn for now
+                    Integer entityId = networkEntityMap.get(entitySnapshot.getNetworkId());
+                    if (entitySnapshot.getNetworkId() == nm.networkId) continue;
 
-            Entity<Context> remoteEnt = remotePlayers.get(remoteId);
-            if (remoteEnt == null) {
-                // Spawn new remote player
-                remoteEnt = engine.createEntity();
-                remoteEnt.addComponent(new TransformComponent(new Vector2f(state.x, state.y), new Vector2f(2.0f, 2.0f)));
-                remoteEnt.addComponent(new RenderComponent());
-                String spritePath = "players/player" + remoteId + ".png";
-                remoteEnt.addComponent(new client.components.AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) org.lwjgl.glfw.GLFW.glfwGetTime()));
-                remotePlayers.put(remoteId, remoteEnt);
-            } else {
-                // Update existing
-                TransformComponent tc = remoteEnt.getComponent(TransformComponent.class);
-                if (tc != null) {
-                    tc.position.x = state.x;
-                    tc.position.y = state.y;
-                    tc.rotation = state.z;
+                    if (entityId == null) {
+                        // spawn
+                        var remoteEnt = engine.createEntity();
+                        var tc = new TransformComponent(new Vector2f(0.0f, 0.0f), new Vector2f(2.0f, 2.0f));
+                        for (var component : entitySnapshot.getComponents()) {
+                            if (component.getComponentId() == 0) {
+                                TransformComponent.Sync sync = TransformComponent.Sync.fromBytes(component.getData());
+                                sync.apply(tc);
+                            }
+                        }
+                        remoteEnt.addComponent(tc);
+                        remoteEnt.addComponent(new RenderComponent());
+
+                        // TODO: should be able to get network to playerid in a map with explicit spawning
+                        String spritePath = "players/player1.png";
+                        remoteEnt.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) org.lwjgl.glfw.GLFW.glfwGetTime()));
+                        networkEntityMap.put(entitySnapshot.getNetworkId(), remoteEnt.getId());
+                    } else {
+                        TransformComponent tc = engine.getMapper(TransformComponent.class).get(entityId);
+                        for (var component : entitySnapshot.getComponents()) {
+                            if (component.getComponentId() == 0) {
+                                TransformComponent.Sync sync = TransformComponent.Sync.fromBytes(component.getData());
+                                sync.apply(tc);
+                            }
+                        }
+                    }
                 }
             }
         }
-
         // 3. Remove disconnected players
-        remotePlayers.keySet().removeIf(id -> {
-            if (!nm.getRemotePlayerStates().containsKey(id)) {
-                Entity<Context> e = remotePlayers.get(id);
-                if (e != null) engine.destroyEntity(e.getId());
-                return true;
-            }
-            return false;
-        });
+//        remotePlayers.keySet().removeIf(id -> {
+//            if (!nm.getRemotePlayerStates().containsKey(id)) {
+//                Entity<Context> e = remotePlayers.get(id);
+//                if (e != null) engine.destroyEntity(e.getId());
+//                return true;
+//            }
+//            return false;
+//        });
     }
 
     private void toggleMenu() {
         isPaused = !isPaused;
-        
+
         if (isPaused) {
             showPauseMenu();
         } else {
@@ -184,11 +201,7 @@ public class LevelScene implements Scene {
         pauseMenuEntities.add(popup);
 
         // Options
-        optionPositions = new Vector2f[] {
-            new Vector2f(centerX, centerY - 15),
-            new Vector2f(centerX, centerY + 35),
-            new Vector2f(centerX, centerY + 85)
-        };
+        optionPositions = new Vector2f[]{new Vector2f(centerX, centerY - 15), new Vector2f(centerX, centerY + 35), new Vector2f(centerX, centerY + 85)};
 
         Entity<Context> backToGameText = engine.createEntity();
         backToGameText.addComponent(new TransformComponent(optionPositions[0], new Vector2f(1, 1), Anchor.CENTER));
@@ -210,7 +223,7 @@ public class LevelScene implements Scene {
         selectorEntity.addComponent(new TransformComponent(new Vector2f(optionPositions[selectedOption].x - 120, optionPositions[selectedOption].y), new Vector2f(1, 1), Anchor.CENTER));
         selectorEntity.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_selector.png"), 0.8f));
         pauseMenuEntities.add(selectorEntity);
-        
+
         updateSelector();
     }
 
@@ -251,7 +264,7 @@ public class LevelScene implements Scene {
             TransformComponent tc = selectorEntity.getComponent(TransformComponent.class);
             if (tc != null) {
                 // Adjusting X offset based on text length to position selector correctly
-                float xOffset = (selectedOption == 0) ? -120 : (selectedOption == 1) ? -80 : -140; 
+                float xOffset = (selectedOption == 0) ? -120 : (selectedOption == 1) ? -80 : -140;
                 // Using Math.round to avoid subpixel rendering artifacts (the 'little line')
                 tc.position.set(Math.round(optionPositions[selectedOption].x + xOffset), Math.round(optionPositions[selectedOption].y));
             }

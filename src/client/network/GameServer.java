@@ -1,9 +1,19 @@
 package client.network;
 
+import client.components.NetworkIdComponent;
+import client.components.TransformComponent;
 import client.network.messages.Message;
 import client.network.messages.client.C_PlayerPosition;
 import client.network.messages.client.ClientRegistry;
 import client.network.messages.server.*;
+import client.systems.client.Context;
+import client.systems.server.ServerNetworkInputSystem;
+import client.systems.server.ServerNetworkOutputSystem;
+import client.systems.server.SnapshotSystem;
+import client.util.EngineConfig;
+import framework.engine.ComponentMapper;
+import framework.engine.Engine;
+import org.joml.Vector2f;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,64 +21,50 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class GameServer {
+public class GameServer implements Runnable {
     private static final int TCP_PORT = 12345;
 
     private final ClientRegistry clientRegistry = new ClientRegistry();
     private final ServerRegistry serverRegistry = new ServerRegistry();
+
     private final DiscoveryService discoveryService = new DiscoveryService();
-    private final List<ClientConnection> connectedClients = new CopyOnWriteArrayList<>();
+
+    private int lastId = 1;
+    private final Map<Integer, ClientConnection> connectedClients = new ConcurrentHashMap<>();
 
     private ServerSocket serverSocket;
     private volatile boolean gameStarted = false;
 
     private static final int NUM_PLAYERS = 2;
+    private String localIP;
 
-    public void start(String localIP) {
+    private final ConcurrentLinkedQueue<MessagePair> inQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<MessagePair> outQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<EntitySnapshot> snapshotQueue = new ConcurrentLinkedQueue<>();
+
+    private static final double NANO_TO_SECOND = 1_000_000_000.0;
+
+    public GameServer(String localIP) {
+        this.localIP = localIP;
         this.gameStarted = false;
-        new Thread(() -> {
-            try {
-                serverSocket = new ServerSocket();
-                serverSocket.setReuseAddress(true);
-                serverSocket.bind(new InetSocketAddress(TCP_PORT));
-                System.out.println("Server started on IP: " + localIP);
-
-                discoveryService.startResponding(localIP);
-
-                while (!serverSocket.isClosed() && !gameStarted) {
-                    try {
-                        Socket socket = serverSocket.accept();
-                        int playerId = connectedClients.size() + 1;
-                        ClientConnection client = new ClientConnection(socket, playerId);
-                        connectedClients.add(client);
-                        broadcastPlayerCount();
-                        checkStartGame();
-                        System.out.println("Client connected: " + socket.getInetAddress() + " assigned ID: " + playerId);
-                    } catch (IOException e) {
-                        if (!serverSocket.isClosed()) e.printStackTrace();
-                    }
-                }
-            } catch (IOException e) {
-                System.err.println("Failed to start server: " + e.getMessage());
-            }
-        }).start();
     }
 
     public void startGame() {
-        if (!gameStarted) {
-            gameStarted = true;
-            for (ClientConnection client : connectedClients) {
-                client.send(new S_StartGame());
-            }
+        if (gameStarted) return;
+
+        gameStarted = true;
+        for (ClientConnection client : connectedClients.values()) {
+            client.send(new S_StartGame());
         }
     }
 
     private void broadcastPlayerCount() {
         int count = connectedClients.size();
-        for (ClientConnection client : connectedClients) {
+        for (ClientConnection client : connectedClients.values()) {
             client.send(new S_PlayerCount(count));
         }
     }
@@ -83,46 +79,118 @@ public class GameServer {
         discoveryService.stop();
         try {
             if (serverSocket != null) serverSocket.close();
-            for (ClientConnection c : connectedClients) c.close();
+            for (ClientConnection c : connectedClients.values()) c.close();
             connectedClients.clear();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private class ClientConnection {
+    @Override
+    public void run() {
+        try {
+            serverSocket = new ServerSocket();
+            serverSocket.setReuseAddress(true);
+            serverSocket.bind(new InetSocketAddress(TCP_PORT));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Server failed to start.");
+            return;
+        }
+
+        System.out.println("Server started on IP: " + localIP);
+        discoveryService.startResponding(localIP);
+
+        int networkId = 0;
+
+        Engine<Context> engine = new Engine<>();
+        EngineConfig.registerSyncComponents(engine);
+
+        Map<Integer, Integer> playerToEntityMap = new HashMap<>();
+        Map<Integer, Integer> playerToNetworkMap = new HashMap<>();
+
+        while (!serverSocket.isClosed() && !gameStarted) {
+            try {
+                Socket socket = serverSocket.accept();
+                int playerId = lastId++;
+
+                ClientConnection client = new ClientConnection(inQueue, socket, playerId, networkId);
+                playerToNetworkMap.put(playerId, networkId);
+
+                connectedClients.put(lastId, client);
+                broadcastPlayerCount();
+
+                var entity = engine.createEntity();
+                entity.addComponent(new TransformComponent(new Vector2f(200.0f, 200.0f)));
+                entity.addComponent(new NetworkIdComponent(networkId));
+
+                playerToEntityMap.put(playerId, entity.getId());
+
+                checkStartGame();
+                System.out.println("Client connected: " + socket.getInetAddress() + " assigned ID: " + playerId);
+
+                networkId++;
+            } catch (IOException e) {
+                if (!serverSocket.isClosed()) e.printStackTrace();
+            }
+        }
+
+        Map<Class<? extends Message>, ServerNetworkInputSystem.MessageHandler> handlers = new HashMap<>();
+        final ComponentMapper<TransformComponent> tm = engine.getMapper(TransformComponent.class);
+
+        handlers.put(C_PlayerPosition.class, (id, message) -> {
+            if (!(message instanceof C_PlayerPosition pp)) return;
+
+            int entityId = playerToEntityMap.get(id);
+            TransformComponent tc = tm.get(entityId);
+
+            tc.position.x = pp.getX();
+            tc.position.y = pp.getY();
+            tc.rotation = pp.getRotation();
+        });
+
+        engine.addSystem(new ServerNetworkInputSystem(inQueue, handlers));
+        engine.addSystem(new SnapshotSystem(snapshotQueue, outQueue));
+        engine.addSystem(new ServerNetworkOutputSystem(outQueue, connectedClients));
+
+        double lastTime = System.nanoTime() / NANO_TO_SECOND;
+        Context ctx = new Context();
+
+        while (true) {
+            double currentTime = System.nanoTime() / NANO_TO_SECOND;
+            float dt = (float) (currentTime - lastTime);
+            lastTime = currentTime;
+
+            ctx.currentTime = (float) currentTime;
+            ctx.deltaTime = dt;
+
+            engine.update(ctx);
+        }
+    }
+
+    public class ClientConnection {
         Socket socket;
         DataOutputStream out;
         int playerId;
 
-        ClientConnection(Socket socket, int playerId) throws IOException {
+        ClientConnection(ConcurrentLinkedQueue<MessagePair> queue, Socket socket, int playerId, int networkId) throws IOException {
             this.socket = socket;
             this.playerId = playerId;
             this.out = new DataOutputStream(socket.getOutputStream());
-            send(new S_AssignId(playerId));
+            send(new S_AssignId(playerId, networkId));
 
             new Thread(() -> {
                 try {
                     DataInputStream in = new DataInputStream(socket.getInputStream());
                     while (!socket.isClosed()) {
                         Message msg = clientRegistry.receive(in);
-                        handleMessage(msg);
+                        queue.offer(new MessagePair(playerId, msg));
                     }
                 } catch (IOException e) {
                     System.out.println("Client " + playerId + " disconnected.");
                     handleDisconnect();
                 }
             }).start();
-        }
-
-        private void handleMessage(Message msg) {
-            if (msg instanceof C_PlayerPosition m) {
-                for (ClientConnection client : connectedClients) {
-                    if (client.playerId != this.playerId) {
-                        client.send(new S_PlayerPosition(m.getSenderId(), m.getX(), m.getY(), m.getRotation()));
-                    }
-                }
-            }
         }
 
         private void handleDisconnect() {
@@ -134,7 +202,7 @@ public class GameServer {
             }
         }
 
-        void send(Message msg) {
+        public void send(Message msg) {
             synchronized (out) {
                 try {
                     serverRegistry.send(out, msg);

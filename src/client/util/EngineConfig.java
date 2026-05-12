@@ -10,8 +10,14 @@ import client.rendering.Camera;
 
 
 public class EngineConfig {
-    public static void registerComponents(Engine<Context> engine){
+    public static void registerSyncComponents(Engine<Context> engine) {
         engine.register(TransformComponent.class);
+        engine.register(NetworkIdComponent.class);
+    }
+
+    public static void registerComponents(Engine<Context> engine){
+        registerSyncComponents(engine);
+
         engine.register(MovementComponent.class);
         engine.register(RenderComponent.class);
         engine.register(AnimationComponent.class);

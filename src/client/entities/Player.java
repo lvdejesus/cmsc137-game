@@ -16,7 +16,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 public class Player {
     private final Entity<Context> entity;
 
-    public Player(Engine<Context> engine, int playerIndex) {
+    public Player(Engine<Context> engine, int playerIndex, int networkId) {
         // Initialize Player Base Stats 
         int maxHealth = 6;
         int health = 6;
@@ -42,6 +42,7 @@ public class Player {
             new Vector3f(16.0f, 16.0f, 0.1f)
         )));
         entity.addComponent(new HealthComponent(100.0f));
+        entity.addComponent(new NetworkIdComponent(networkId));
     }
 
     public Entity<Context> getEntity() {

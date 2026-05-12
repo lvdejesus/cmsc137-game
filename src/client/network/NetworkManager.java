@@ -1,9 +1,20 @@
 package client.network;
 
+import client.components.AnimationComponent;
+import client.components.RenderComponent;
+import client.components.TransformComponent;
+import client.network.messages.Message;
 import client.network.messages.server.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import client.rendering.Animation;
+import client.systems.client.Context;
+import framework.engine.Entity;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class NetworkManager {
@@ -13,25 +24,40 @@ public class NetworkManager {
     private final GameClient client;
     private final ConcurrentHashMap<Integer, Vector3f> remotePlayerStates = new ConcurrentHashMap<>();
 
-    private volatile int playerIndex = 1;
+    private final ConcurrentHashMap<Integer, Integer> networkEntityMap = new ConcurrentHashMap<>();
+
+    public volatile int playerIndex = 1;
+    public int networkId;
     private volatile int playerCount = 0;
     private volatile boolean gameStarted = false;
 
+    public ConcurrentLinkedQueue<Message> inQueue = new ConcurrentLinkedQueue<>();
+
+    private final Map<Class<?>, MessageHandler<?>> handlers = new HashMap<>();
+
+    @FunctionalInterface
+    public interface MessageHandler<T> {
+        void handle(T msg);
+    }
+
+    private <T extends Message> void registerHandler(Class<T> clazz, MessageHandler<T> handler) {
+        handlers.put(clazz, handler);
+    }
+
     private NetworkManager() {
-        this.client = new GameClient();
-        client.setMessageHandler(msg -> {
-            if (msg instanceof S_AssignId m) {
-                playerIndex = m.getPlayerId();
-            } else if (msg instanceof S_PlayerCount m) {
-                playerCount = m.getCount();
-            } else if (msg instanceof S_StartGame) {
-                gameStarted = true;
-            } else if (msg instanceof S_Snapshot m) {
-            } else if (msg instanceof S_PlayerPosition m) {
-                if (m.getSenderId() != playerIndex) {
-                    remotePlayerStates.put(m.getSenderId(), new Vector3f(m.getX(), m.getY(), m.getRotation()));
-                }
-            }
+        this.client = new GameClient(handlers, inQueue);
+
+        registerHandler(S_AssignId.class, (m) -> {
+            playerIndex = m.getPlayerId();
+            networkId = m.getNetworkId();
+        });
+
+        registerHandler(S_PlayerCount.class, (m) -> {
+            playerCount = m.getCount();
+        });
+
+        registerHandler(S_StartGame.class, (m) -> {
+            gameStarted = true;
         });
     }
 
@@ -41,6 +67,7 @@ public class NetworkManager {
     }
 
     public int getPlayerIndex() { return playerIndex; }
+    public int getNetworkId() { return networkId; }
     public int getPlayerCount() { return playerCount; }
     public boolean isGameStarted() { return gameStarted; }
     public ConcurrentHashMap<Integer, Vector3f> getRemotePlayerStates() { return remotePlayerStates; }

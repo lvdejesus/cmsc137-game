@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EntitySnapshot {
-    private int networkId;
-    private List<ComponentSnapshot> components;
+    private final int networkId;
+    private final List<ComponentSnapshot> components;
 
     public EntitySnapshot(int networkId, List<ComponentSnapshot> components) {
         this.networkId = networkId;
@@ -27,10 +27,19 @@ public class EntitySnapshot {
         int networkId = in.readInt();
         int length = in.readInt();
         List<ComponentSnapshot> components = new ArrayList<>();
-        for (int i = 0 ; i < length; i++) {
+        for (int i = 0; i < length; i++) {
             components.add(ComponentSnapshot.deserialize(in));
         }
 
         return new EntitySnapshot(networkId, components);
     }
+
+    public int getNetworkId() {
+        return networkId;
+    }
+
+    public List<ComponentSnapshot> getComponents() {
+        return components;
+    }
+
 }

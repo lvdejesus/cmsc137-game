@@ -5,8 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ComponentSnapshot {
-    private int componentId;
-    private byte[] data;
+    private final int componentId;
+    private final byte[] data;
 
     public ComponentSnapshot(int componentId, byte[] data) {
         this.componentId = componentId;
@@ -25,5 +25,13 @@ public class ComponentSnapshot {
         byte[] data = in.readNBytes(length);
 
         return new ComponentSnapshot(componentId, data);
+    }
+
+    public int getComponentId() {
+        return componentId;
+    }
+
+    public byte[] getData() {
+        return data;
     }
 }
