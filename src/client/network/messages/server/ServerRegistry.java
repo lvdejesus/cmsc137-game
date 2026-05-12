@@ -9,5 +9,6 @@ public class ServerRegistry extends Registry {
         register(S_StartGame.class, S_StartGame::deserialize);
         register(S_PlayerPosition.class, S_PlayerPosition::deserialize);
         register(S_Snapshot.class, S_Snapshot::deserialize);
+        register(S_Spawn.class, S_Spawn::deserialize);
     }
 }

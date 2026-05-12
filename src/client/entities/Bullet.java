@@ -12,15 +12,18 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
 
-public class Bullet {
-    private final Entity<Context> entity;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
+public class Bullet extends Prefab {
     public Bullet(Engine<Context> engine, float x, float y, float angleDegrees) {
-        this(engine, x, y, angleDegrees, false);
+        this(engine, -1, x, y, angleDegrees, false);
     }
 
-    public Bullet(Engine<Context> engine, float x, float y, float angleDegrees, boolean isEnemy) {
-        this.entity = engine.createEntity();
+    public Bullet(Engine<Context> engine, int networkId, float x, float y, float angleDegrees, boolean isEnemy) {
+        super(engine);
 
         TextureAtlas atlas = TextureAtlas.get();
         String textureName = isEnemy ? "bullets/enemy_bullets.png" : "bullets/friend_bullets.png";
@@ -45,9 +48,26 @@ public class Bullet {
             new Vector3f(-4.0f, -4.0f, 0.0f),
             new Vector3f(4.0f, 4.0f, 0.1f)
         )));
+        entity.addComponent(new NetworkIdComponent(networkId));
     }
 
-    public Entity<Context> getEntity() {
-        return entity;
+    public static Bullet deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
+        float x = bytes.getFloat();
+        float y = bytes.getFloat();
+        float angleDegrees = bytes.getFloat();
+        boolean isEnemy = bytes.get() == 1;
+
+        return new Bullet(engine, networkId, x, y, angleDegrees, isEnemy);
+    }
+
+    public static byte[] serialize(float x, float y, float angle, boolean isEnemy) {
+        ByteBuffer bytes = ByteBuffer.allocate(13);
+
+        bytes.putFloat(x);
+        bytes.putFloat(y);
+        bytes.putFloat(angle);
+        bytes.put((byte) (isEnemy ? 1 : 0));
+
+        return bytes.array();
     }
 }

@@ -4,14 +4,10 @@ import client.components.AnimationComponent;
 import client.components.RenderComponent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
-import client.entities.Bullet;
-import client.entities.Player;
+import client.entities.*;
 import client.network.NetworkManager;
 import client.network.messages.Message;
-import client.network.messages.server.S_AssignId;
-import client.network.messages.server.S_PlayerCount;
-import client.network.messages.server.S_Snapshot;
-import client.network.messages.server.S_StartGame;
+import client.network.messages.server.*;
 import client.rendering.*;
 import client.systems.client.*;
 import framework.engine.Engine;
@@ -46,6 +42,7 @@ public class LevelScene implements Scene {
     private int selectedOption = 0; // 0: restart, 1: back to title
     private Vector2f[] optionPositions;
     private Entity<Context> selectorEntity;
+    private ClientPrefabRegistry prefabRegistry = new ClientPrefabRegistry();
 
     private final Map<Integer, Integer> networkEntityMap = new ConcurrentHashMap<>();
 
@@ -133,29 +130,20 @@ public class LevelScene implements Scene {
 
         Message msg;
         while ((msg = nm.inQueue.poll()) != null) {
-            if (msg instanceof S_Snapshot m) {
+            if (msg instanceof S_Spawn m) {
+                // if self, skip
+                if (nm.networkId == m.getNetworkId()) continue;
+
+                Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
+                networkEntityMap.put(m.getNetworkId(), prefab.getEntity().getId());
+            } if (msg instanceof S_Snapshot m) {
                 for (var entitySnapshot : m.getEntitySnapshots()) {
                     // implicit player spawn for now
                     Integer entityId = networkEntityMap.get(entitySnapshot.getNetworkId());
                     if (entitySnapshot.getNetworkId() == nm.networkId) continue;
 
                     if (entityId == null) {
-                        // spawn
-                        var remoteEnt = engine.createEntity();
-                        var tc = new TransformComponent(new Vector2f(0.0f, 0.0f), new Vector2f(2.0f, 2.0f));
-                        for (var component : entitySnapshot.getComponents()) {
-                            if (component.getComponentId() == 0) {
-                                TransformComponent.Sync sync = TransformComponent.Sync.fromBytes(component.getData());
-                                sync.apply(tc);
-                            }
-                        }
-                        remoteEnt.addComponent(tc);
-                        remoteEnt.addComponent(new RenderComponent());
-
-                        // TODO: should be able to get network to playerid in a map with explicit spawning
-                        String spritePath = "players/player1.png";
-                        remoteEnt.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) org.lwjgl.glfw.GLFW.glfwGetTime()));
-                        networkEntityMap.put(entitySnapshot.getNetworkId(), remoteEnt.getId());
+                        throw new RuntimeException("Entity with ID not found.");
                     } else {
                         TransformComponent tc = engine.getMapper(TransformComponent.class).get(entityId);
                         for (var component : entitySnapshot.getComponents()) {

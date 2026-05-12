@@ -2,6 +2,9 @@ package client.network;
 
 import client.components.NetworkIdComponent;
 import client.components.TransformComponent;
+import client.entities.ClientPrefabRegistry;
+import client.entities.PrefabRegistry;
+import client.entities.RemotePlayer;
 import client.network.messages.Message;
 import client.network.messages.client.C_PlayerPosition;
 import client.network.messages.client.ClientRegistry;
@@ -30,6 +33,7 @@ public class GameServer implements Runnable {
 
     private final ClientRegistry clientRegistry = new ClientRegistry();
     private final ServerRegistry serverRegistry = new ServerRegistry();
+    private final PrefabRegistry prefabRegistry = new ClientPrefabRegistry();
 
     private final DiscoveryService discoveryService = new DiscoveryService();
 
@@ -128,6 +132,10 @@ public class GameServer implements Runnable {
 
                 checkStartGame();
                 System.out.println("Client connected: " + socket.getInetAddress() + " assigned ID: " + playerId);
+
+                int prefabId = prefabRegistry.get(RemotePlayer.class);
+                Message msg = new S_Spawn(prefabId, networkId, RemotePlayer.serialize(playerId));
+                outQueue.add(new MessagePair(-1, msg));
 
                 networkId++;
             } catch (IOException e) {

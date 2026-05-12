@@ -59,7 +59,6 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
     public void update(Context ctx) {
         super.update(ctx);
 
-
         spawnTimer -= ctx.deltaTime;
         if (spawnTimer <= 0.0f) {
             spawnEnemy();
@@ -74,7 +73,7 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
     }
 
     private void spawnEnemy() {
-        new Enemy(engine);
+        new Enemy(engine, -1);
     }
 
     private void shootAtPlayer() {
@@ -106,7 +105,7 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
                         float dy = playerTransform.position.y - enemyTransform.position.y;
                         float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
 
-                        new Bullet(engine, enemyTransform.position.x, enemyTransform.position.y, angle, true);
+                        new Bullet(engine, -1, enemyTransform.position.x, enemyTransform.position.y, angle, true);
                     }
                 }
                 break;

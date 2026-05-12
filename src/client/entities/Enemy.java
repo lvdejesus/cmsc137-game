@@ -1,5 +1,6 @@
 package client.entities;
 
+import client.components.bullet.BulletComponent;
 import framework.engine.Entity;
 import framework.engine.Engine;
 import client.systems.client.Context;
@@ -11,11 +12,16 @@ import client.rendering.TextureAtlas;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Random;
 
-public record Enemy(Entity<Context> entity) {
-    public Enemy(Engine<Context> entity) {
-        this(entity.createEntity());
+public class Enemy extends Prefab {
+    public Enemy(Engine<Context> engine, int networkId) {
+        super(engine);
 
         TextureAtlas atlas = TextureAtlas.get();
 
@@ -39,5 +45,14 @@ public record Enemy(Entity<Context> entity) {
             new Vector3f(12.0f, 12.0f, 0.1f)
         )));
         this.entity.addComponent(new HealthComponent(50.0f)); // Enemy health
+        this.entity.addComponent(new NetworkIdComponent(networkId));
+    }
+
+    public static Enemy deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
+        return new Enemy(engine, networkId);
+    }
+
+    public static byte[] serialize() {
+        return new byte[0];
     }
 }

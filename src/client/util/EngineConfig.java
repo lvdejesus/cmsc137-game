@@ -12,6 +12,7 @@ import client.rendering.Camera;
 public class EngineConfig {
     public static void registerSyncComponents(Engine<Context> engine) {
         engine.register(TransformComponent.class);
+        engine.register(PlayerNetworkComponent.class);
         engine.register(NetworkIdComponent.class);
     }
 
