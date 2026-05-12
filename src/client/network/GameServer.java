@@ -41,7 +41,7 @@ public class GameServer {
                 while (!serverSocket.isClosed() && !gameStarted) {
                     try {
                         Socket socket = serverSocket.accept();
-                        int playerId = connectedClients.size();
+                        int playerId = connectedClients.size() + 1;
                         ClientConnection client = new ClientConnection(socket, playerId);
                         connectedClients.add(client);
                         broadcastPlayerCount();
