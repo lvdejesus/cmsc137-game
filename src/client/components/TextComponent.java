@@ -11,6 +11,7 @@ public class TextComponent implements Component {
     public float scale;
     public float z;
 
+    
     public TextComponent(Font font, String text, Vector4f color, float scale, float z) {
         this.font = font;
         this.text = text;

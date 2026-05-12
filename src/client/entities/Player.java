@@ -34,7 +34,7 @@ public class Player {
         entity.addComponent(new RenderComponent());        
         
         String spritePath = "players/player" + playerIndex + ".png";
-        entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) currentTime));
+        entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) currentTime, 0, 0, false));
         entity.addComponent(new PlayerStateComponent());
         entity.addComponent(new PlayerTagComponent());
         entity.addComponent(new CollisionComponent(new AABBf(
@@ -42,6 +42,11 @@ public class Player {
             new Vector3f(16.0f, 16.0f, 0.1f)
         )));
         entity.addComponent(new HealthComponent(100.0f));
+    }
+
+    public String getState() {
+        PlayerStateComponent stateComponent = entity.getComponent(PlayerStateComponent.class);
+        return stateComponent != null ? stateComponent.get() : "unknown";
     }
 
     public Entity<Context> getEntity() {

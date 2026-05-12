@@ -40,9 +40,10 @@ public class LevelScene implements Scene {
     private int selectedOption = 0; // 0: restart, 1: back to title
     private Vector2f[] optionPositions;
     private Entity<Context> selectorEntity;
-
     private final Map<Integer, Entity<Context>> remotePlayers = new HashMap<>();
-
+    
+    //Debug text
+    private DebugText debugText;
     @Override
     public void init(Engine<Context> engine) {
         this.engine = engine;
@@ -67,6 +68,10 @@ public class LevelScene implements Scene {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        // Initialize debug text
+        debugText = DebugText.create(engine, "State: idle");
+
     }
 
     private void setGameSystemsEnabled(boolean enabled) {
@@ -88,7 +93,7 @@ public class LevelScene implements Scene {
     @Override
     public void update() {
         InputHandler input = InputHandler.getInstance();
-
+        this.debugText.setText("State: " + player.getState());
         // Toggle menu with Esc
         if (input.keyDown(GLFW_KEY_ESCAPE)) {
             toggleMenu();
@@ -138,7 +143,13 @@ public class LevelScene implements Scene {
                 remoteEnt.addComponent(new TransformComponent(new Vector2f(state.x, state.y), new Vector2f(2.0f, 2.0f)));
                 remoteEnt.addComponent(new RenderComponent());
                 String spritePath = "players/player" + remoteId + ".png";
-                remoteEnt.addComponent(new client.components.AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) org.lwjgl.glfw.GLFW.glfwGetTime()));
+                remoteEnt.addComponent(new client.components.AnimationComponent(
+                    Animation.fromFile(spritePath, 22, 0.1f), 
+                    (float) org.lwjgl.glfw.GLFW.glfwGetTime(),
+                    0,
+                    21,  
+                    true      
+                ));
                 remotePlayers.put(remoteId, remoteEnt);
             } else {
                 // Update existing

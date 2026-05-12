@@ -17,4 +17,8 @@ public class PlayerStateComponent implements Component{
             this.current = next ;
         }
     }
+    
+    public String get(){
+        return this.current.toString();
+    }
 }
