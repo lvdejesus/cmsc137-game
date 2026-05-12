@@ -9,10 +9,12 @@ import java.util.Queue;
 class ComponentRegistry {
     private int componentCount = 0;
     private final Map<Class<? extends Component>, Integer> componentIndex = new HashMap<>();
+    private final Map<Integer, Class<? extends Component>> invertedIndex = new HashMap<>();
 
     int register(Class<? extends Component> type) {
         int id = componentCount++;
         componentIndex.put(type, id);
+        invertedIndex.put(id, type);
         return id;
     }
 
@@ -22,6 +24,10 @@ class ComponentRegistry {
             throw new RuntimeException(String.format("%s is not registered.", type.getName()));
         }
         return index;
+    }
+
+    Class<? extends Component> index(int index) {
+        return invertedIndex.get(index);
     }
 }
 
@@ -139,12 +145,16 @@ public class Engine<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <U extends IteratingEntitySystem<T>> U getSystem(Class<U> type) {
+    public <U extends EntitySystem<T>> U getSystem(Class<U> type) {
         for (var system : systems) {
             if (system.getClass().equals(type)) {
                 return (U) system;
             }
         }
         return null;
+    }
+
+    public Class<? extends Component> getComponentClass(int componentId) {
+        return componentRegistry.index(componentId);
     }
 }

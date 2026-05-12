@@ -10,10 +10,7 @@ import client.network.messages.Message;
 import client.network.messages.server.*;
 import client.rendering.*;
 import client.systems.client.*;
-import framework.engine.Engine;
-import framework.engine.Entity;
-import framework.engine.IteratingEntitySystem;
-import framework.engine.Window;
+import framework.engine.*;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
@@ -142,7 +139,8 @@ public class LevelScene implements Scene {
                 if (nm.networkId == m.getNetworkId()) continue;
                 Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
                 networkEntityMap.put(m.getNetworkId(), prefab.getEntity().getId());
-            } if (msg instanceof S_Snapshot m) {
+            }
+            if (msg instanceof S_Snapshot m) {
                 for (var entitySnapshot : m.getEntitySnapshots()) {
                     // implicit player spawn for now
                     Integer entityId = networkEntityMap.get(entitySnapshot.getNetworkId());
@@ -150,14 +148,12 @@ public class LevelScene implements Scene {
 
                     if (entityId == null) {
                         throw new RuntimeException("Entity with ID not found.");
-                    } else {
-                        TransformComponent tc = engine.getMapper(TransformComponent.class).get(entityId);
-                        for (var component : entitySnapshot.getComponents()) {
-                            if (component.getComponentId() == 0) {
-                                TransformComponent.Sync sync = TransformComponent.Sync.fromBytes(component.getData());
-                                sync.apply(tc);
-                            }
-                        }
+                    }
+
+                    for (var component : entitySnapshot.getComponents()) {
+                        var cc = engine.getComponentClass(component.getComponentId());
+                        var tc = (SyncComponent) engine.getMapper(cc).get(entityId);
+                        tc.syncFromBytes(component.getData());
                     }
                 }
             }

@@ -1,13 +1,14 @@
 package client.components;
 
 import client.rendering.Anchor;
+import framework.engine.SyncComponent;
 import org.joml.Vector2f;
 
 import framework.engine.Component;
 
 import java.nio.ByteBuffer;
 
-public class TransformComponent implements Component {
+public class TransformComponent implements SyncComponent {
     public Vector2f position;
     public Vector2f scale;
     public Anchor anchor;
@@ -25,6 +26,12 @@ public class TransformComponent implements Component {
 
     public TransformComponent(Vector2f position) {
         this(position, new Vector2f(1.0f, 1.0f));
+    }
+
+    @Override
+    public void syncFromBytes(byte[] bytes) {
+        Sync sync = Sync.fromBytes(bytes);
+        sync.apply(this);
     }
 
     public static class Sync {
