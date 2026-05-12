@@ -1,8 +1,6 @@
 package client.entities;
 
-import client.components.bullet.BulletComponent;
 import client.components.player.PlayerNetworkComponent;
-import framework.engine.Entity;
 import framework.engine.Engine;
 import client.systems.client.Context;
 import client.components.*;
@@ -14,8 +12,6 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -38,7 +34,7 @@ public class Player extends Prefab {
         entity.addComponent(new RenderComponent());
 
         String spritePath = "players/player" + playerIndex + ".png";
-        entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) currentTime));
+        entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) currentTime, 0, 0, false));
         entity.addComponent(new PlayerNetworkComponent(playerIndex));
         entity.addComponent(new PlayerStateComponent());
         entity.addComponent(new PlayerTagComponent());
@@ -59,5 +55,10 @@ public class Player extends Prefab {
         ByteBuffer bytes = ByteBuffer.allocate(4);
         bytes.putInt(playerIndex);
         return bytes.array();
+    }
+
+    public String getState() {
+        PlayerStateComponent stateComponent = entity.getComponent(PlayerStateComponent.class);
+        return stateComponent != null ? stateComponent.get() : "unknown";
     }
 }

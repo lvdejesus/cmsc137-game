@@ -1,6 +1,7 @@
 package client.rendering;
 
 import org.lwjgl.system.MemoryStack;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -15,13 +16,14 @@ import java.util.stream.Stream;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.stb.STBImage.*;
 
-record TextureEntry(String name, String path) {}
+record TextureEntry(String name, String path) {
+}
 
 public class TextureAtlas {
     private static TextureAtlas instance;
     private final Map<String, Texture> regions = new HashMap<>();
     private int textureID;
-    private final int ATLAS_SIZE = 2048;
+    private final int ATLAS_SIZE = 4096;
 
     private TextureAtlas() {
         init();
@@ -39,26 +41,26 @@ public class TextureAtlas {
 
         // Initialize empty texture
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ATLAS_SIZE, ATLAS_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                (ByteBuffer) null);
+            (ByteBuffer) null);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        Path[] roots = { Paths.get("res/textures"), Paths.get("res/menu_assets") };
+        Path[] roots = {Paths.get("res/textures"), Paths.get("res/menu_assets")};
         List<TextureEntry> textures = new ArrayList<>();
 
         for (Path root : roots) {
             if (!Files.exists(root)) continue;
-                    try (Stream<Path> stream = Files.walk(root)) {
-                        List<TextureEntry> rootTextures = stream
-                                .filter(Files::isRegularFile)
-                                .filter(path -> path.toString().toLowerCase().endsWith(".png"))
-                                .map(path -> {
-                                    String relativePath = root.relativize(path).toString().replace("\\", "/");
-                                    System.out.println("[TextureAtlas] Found: " + relativePath + " at " + path);
-                                    return new TextureEntry(relativePath, path.toString());
-                                }).toList();
-                        textures.addAll(rootTextures);
-                    } catch (IOException e) {
+            try (Stream<Path> stream = Files.walk(root)) {
+                List<TextureEntry> rootTextures = stream
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.toString().toLowerCase().endsWith(".png"))
+                    .map(path -> {
+                        String relativePath = root.relativize(path).toString().replace("\\", "/");
+                        System.out.println("[TextureAtlas] Found: " + relativePath + " at " + path);
+                        return new TextureEntry(relativePath, path.toString());
+                    }).toList();
+                textures.addAll(rootTextures);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

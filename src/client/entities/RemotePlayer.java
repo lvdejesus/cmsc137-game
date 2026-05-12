@@ -27,7 +27,7 @@ public class RemotePlayer extends Prefab {
         entity.addComponent(new RenderComponent());
 
         String spritePath = "players/player" + playerIndex + ".png";
-        entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) glfwGetTime()));
+        entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) glfwGetTime(), 0, 21, true));
         entity.addComponent(new PlayerNetworkComponent(playerIndex));
         entity.addComponent(new NetworkIdComponent(networkId));
     }

@@ -46,6 +46,9 @@ public class LevelScene implements Scene {
 
     private final Map<Integer, Integer> networkEntityMap = new ConcurrentHashMap<>();
 
+    //Debug text
+    private DebugText debugText;
+
     @Override
     public void init(Engine<Context> engine) {
         this.engine = engine;
@@ -69,6 +72,10 @@ public class LevelScene implements Scene {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        // Initialize debug text
+        debugText = DebugText.create(engine, "State: idle");
+
     }
 
     private void setGameSystemsEnabled(boolean enabled) {
@@ -90,7 +97,7 @@ public class LevelScene implements Scene {
     @Override
     public void update() {
         InputHandler input = InputHandler.getInstance();
-
+        this.debugText.setText("State: " + player.getState());
         // Toggle menu with Esc
         if (input.keyDown(GLFW_KEY_ESCAPE)) {
             toggleMenu();
@@ -133,7 +140,6 @@ public class LevelScene implements Scene {
             if (msg instanceof S_Spawn m) {
                 // if self, skip
                 if (nm.networkId == m.getNetworkId()) continue;
-
                 Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
                 networkEntityMap.put(m.getNetworkId(), prefab.getEntity().getId());
             } if (msg instanceof S_Snapshot m) {

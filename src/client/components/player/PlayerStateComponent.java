@@ -5,6 +5,10 @@ public class PlayerStateComponent implements Component{
     public enum State {
         IDLE,
         MOVING,
+        TILTL,
+        TILTR,
+        HARDTILTL,
+        HARDTILTR,
     }
 
     public State current = State.IDLE;
@@ -16,5 +20,9 @@ public class PlayerStateComponent implements Component{
             this.previous = this.current;
             this.current = next ;
         }
+    }
+    
+    public String get(){
+        return this.current.toString();
     }
 }
