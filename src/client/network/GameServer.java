@@ -16,21 +16,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameServer {
     private static final int TCP_PORT = 12345;
-    
+
     private final ClientRegistry clientRegistry = new ClientRegistry();
     private final ServerRegistry serverRegistry = new ServerRegistry();
     private final DiscoveryService discoveryService = new DiscoveryService();
     private final List<ClientConnection> connectedClients = new CopyOnWriteArrayList<>();
 
     private ServerSocket serverSocket;
-    private Thread serverThread;
     private volatile boolean gameStarted = false;
 
     private static final int NUM_PLAYERS = 2;
 
     public void start(String localIP) {
         this.gameStarted = false;
-        this.serverThread = new Thread(() -> {
+        new Thread(() -> {
             try {
                 serverSocket = new ServerSocket();
                 serverSocket.setReuseAddress(true);
@@ -39,10 +38,10 @@ public class GameServer {
 
                 discoveryService.startResponding(localIP);
 
-                while (!serverSocket.isClosed() && connectedClients.size() < 3) {
+                while (!serverSocket.isClosed() && !gameStarted) {
                     try {
                         Socket socket = serverSocket.accept();
-                        int playerId = connectedClients.size() + 2;
+                        int playerId = connectedClients.size();
                         ClientConnection client = new ClientConnection(socket, playerId);
                         connectedClients.add(client);
                         broadcastPlayerCount();
@@ -55,8 +54,7 @@ public class GameServer {
             } catch (IOException e) {
                 System.err.println("Failed to start server: " + e.getMessage());
             }
-        });
-        this.serverThread.start();
+        }).start();
     }
 
     public void startGame() {
@@ -87,7 +85,9 @@ public class GameServer {
             if (serverSocket != null) serverSocket.close();
             for (ClientConnection c : connectedClients) c.close();
             connectedClients.clear();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class ClientConnection {
@@ -128,7 +128,10 @@ public class GameServer {
         private void handleDisconnect() {
             connectedClients.remove(this);
             broadcastPlayerCount();
-            try { socket.close(); } catch (IOException ignored) {}
+            try {
+                socket.close();
+            } catch (IOException ignored) {
+            }
         }
 
         void send(Message msg) {
@@ -142,7 +145,10 @@ public class GameServer {
         }
 
         void close() {
-            try { socket.close(); } catch (IOException ignored) {}
+            try {
+                socket.close();
+            } catch (IOException ignored) {
+            }
         }
     }
 }
