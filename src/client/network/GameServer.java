@@ -1,9 +1,11 @@
 package client.network;
 
 import client.components.TransformComponent;
+import client.components.player.MovementInputComponent;
+import client.components.player.PlayerStateComponent;
 import client.entities.*;
 import client.network.messages.Message;
-import client.network.messages.client.C_PlayerPosition;
+import client.network.messages.client.C_PlayerState;
 import client.network.messages.client.C_Shoot;
 import client.network.messages.client.ClientRegistry;
 import client.network.messages.server.*;
@@ -133,16 +135,29 @@ public class GameServer implements Runnable {
 
         Map<Class<? extends Message>, ServerNetworkInputSystem.MessageHandler> handlers = new HashMap<>();
         final ComponentMapper<TransformComponent> tm = engine.getMapper(TransformComponent.class);
+        final ComponentMapper<MovementInputComponent> mim = engine.getMapper(MovementInputComponent.class);
+        final ComponentMapper<PlayerStateComponent> sm = engine.getMapper(PlayerStateComponent.class);
 
-        handlers.put(C_PlayerPosition.class, (id, message) -> {
-            if (!(message instanceof C_PlayerPosition pp)) return;
+        handlers.put(C_PlayerState.class, (id, message) -> {
+            if (!(message instanceof C_PlayerState pp)) return;
 
             int entityId = playerToEntityMap.get(id);
+
             TransformComponent tc = tm.get(entityId);
 
             tc.position.x = pp.getX();
             tc.position.y = pp.getY();
             tc.rotation = pp.getRotation();
+
+            MovementInputComponent mic = mim.get(entityId);
+
+            mic.x = pp.getMx();
+            mic.y = pp.getMy();
+
+            PlayerStateComponent sc = sm.get(entityId);
+
+            sc.previous = pp.getPrevious();
+            sc.current = pp.getCurrent();
         });
 
         handlers.put(C_Shoot.class, (id, message) -> {

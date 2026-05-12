@@ -1,5 +1,6 @@
 package client.entities;
 
+import client.components.player.MovementInputComponent;
 import client.components.player.PlayerNetworkComponent;
 import framework.engine.Engine;
 import client.systems.client.Context;
@@ -50,6 +51,7 @@ public class Player extends Prefab {
             new Vector3f(16.0f, 16.0f, 0.1f)
         )));
         entity.addComponent(new HealthComponent(100.0f));
+        entity.addComponent(new MovementInputComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
     }
 

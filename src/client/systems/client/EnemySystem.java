@@ -101,7 +101,6 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
                 float dy = playerTransform.position.y - enemyTransform.position.y;
                 float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
 
-                System.out.printf("spawned enemy bullet at %f %f with angle %f%n", enemyTransform.position.x, enemyTransform.position.y, angle);
                 nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, angle, true));
             }
             break;

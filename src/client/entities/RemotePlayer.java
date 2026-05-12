@@ -1,7 +1,9 @@
 package client.entities;
 
 import client.components.*;
+import client.components.player.MovementInputComponent;
 import client.components.player.PlayerNetworkComponent;
+import client.components.player.PlayerStateComponent;
 import client.rendering.Animation;
 import client.systems.client.Context;
 import framework.engine.Engine;
@@ -30,7 +32,7 @@ public class RemotePlayer extends Prefab {
         entity.addComponent(new RenderComponent());
 
         String spritePath = "players/player" + playerIndex + ".png";
-        entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) glfwGetTime(), 0, 21, true));
+        entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 22, 0.1f), (float) glfwGetTime(), 0, 0, false));
 
         spawnServer();
     }
@@ -45,6 +47,8 @@ public class RemotePlayer extends Prefab {
             new Vector3f(16.0f, 16.0f, 0.1f)
         )));
         entity.addComponent(new PlayerNetworkComponent(playerIndex));
+        entity.addComponent(new PlayerStateComponent());
+        entity.addComponent(new MovementInputComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
     }
 

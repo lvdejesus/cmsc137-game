@@ -3,6 +3,7 @@ package client.network;
 import client.components.AnimationComponent;
 import client.components.RenderComponent;
 import client.components.TransformComponent;
+import client.components.player.PlayerStateComponent;
 import client.network.messages.Message;
 import client.network.messages.server.*;
 
@@ -20,11 +21,8 @@ import org.joml.Vector3f;
 public class NetworkManager {
     private static NetworkManager instance;
     private static final int TCP_PORT = 12345;
-    
-    private final GameClient client;
-    private final ConcurrentHashMap<Integer, Vector3f> remotePlayerStates = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<Integer, Integer> networkEntityMap = new ConcurrentHashMap<>();
+    private final GameClient client;
 
     public volatile int playerIndex = 1;
     public int networkId;
@@ -66,11 +64,21 @@ public class NetworkManager {
         return instance;
     }
 
-    public int getPlayerIndex() { return playerIndex; }
-    public int getNetworkId() { return networkId; }
-    public int getPlayerCount() { return playerCount; }
-    public boolean isGameStarted() { return gameStarted; }
-    public ConcurrentHashMap<Integer, Vector3f> getRemotePlayerStates() { return remotePlayerStates; }
+    public int getPlayerIndex() {
+        return playerIndex;
+    }
+
+    public int getNetworkId() {
+        return networkId;
+    }
+
+    public int getPlayerCount() {
+        return playerCount;
+    }
+
+    public boolean isGameStarted() {
+        return gameStarted;
+    }
 
     public java.util.List<String> discoverHosts() {
         return new DiscoveryService().discoverHosts();
@@ -80,32 +88,15 @@ public class NetworkManager {
         client.connect(ip, TCP_PORT);
     }
 
-    public void broadcastPosition(float x, float y, float rot) {
-        client.sendPosition(playerIndex, x, y, rot);
+    public void broadcastPosition(float x, float y, float rot, PlayerStateComponent.State previous, PlayerStateComponent.State current, float mx, float my) {
+        client.sendPosition(x, y, rot, previous, current, mx, my);
     }
 
     public void shoot(float px, float py, float angle) {
         client.sendBullet(playerIndex, px, py, angle);
     }
 
-    private String findLocalIP() {
-        try {
-            java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                java.net.NetworkInterface ni = interfaces.nextElement();
-                if (ni.isLoopback() || !ni.isUp()) continue;
-                java.util.Enumeration<java.net.InetAddress> addresses = ni.getInetAddresses();
-                while (addresses.hasMoreElements()) {
-                    java.net.InetAddress addr = addresses.nextElement();
-                    if (addr instanceof java.net.Inet4Address) return addr.getHostAddress();
-                }
-            }
-        } catch (java.net.SocketException e) { e.printStackTrace(); }
-        return "127.0.0.1";
-    }
-
     public void stop() {
         client.stop();
-        remotePlayerStates.clear();
     }
 }

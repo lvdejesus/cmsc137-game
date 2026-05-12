@@ -4,6 +4,8 @@ import client.components.AnimationComponent;
 import client.components.RenderComponent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
+import client.components.player.MovementInputComponent;
+import client.components.player.PlayerStateComponent;
 import client.entities.*;
 import client.network.NetworkManager;
 import client.network.messages.Message;
@@ -31,7 +33,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LevelScene implements Scene {
     private Engine<Context> engine;
     private Player player;
+
     private TransformComponent playerTransform;
+    private MovementInputComponent playerMovementInput;
+    private PlayerStateComponent playerState;
 
     private boolean isPaused = false;
     private Font pauseFont;
@@ -56,7 +61,10 @@ public class LevelScene implements Scene {
         int playerIndex = NetworkManager.getInstance().getPlayerIndex();
         this.player = new Player(engine, playerIndex, NetworkManager.getInstance().getNetworkId());
         this.player.spawn();
+
         this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
+        this.playerMovementInput = player.getEntity().getComponent(MovementInputComponent.class);
+        this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
 
         // Load background map
         Entity<Context> mapBg = engine.createEntity();
@@ -129,8 +137,8 @@ public class LevelScene implements Scene {
         }
 
         // 1. Broadcast our position
-        if (playerTransform != null) {
-            nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation);
+        if (playerTransform != null && playerState != null && playerMovementInput != null) {
+            nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovementInput.x, playerMovementInput.y);
         }
 
         Message msg;

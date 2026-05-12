@@ -1,7 +1,8 @@
 package client.network;
 
+import client.components.player.PlayerStateComponent;
 import client.network.messages.Message;
-import client.network.messages.client.C_PlayerPosition;
+import client.network.messages.client.C_PlayerState;
 import client.network.messages.client.C_Shoot;
 import client.network.messages.client.ClientRegistry;
 import client.network.messages.server.ServerRegistry;
@@ -67,11 +68,11 @@ public class GameClient {
         }).start();
     }
 
-    public void sendPosition(int playerIndex, float x, float y, float rot) {
+    public void sendPosition(float x, float y, float rot, PlayerStateComponent.State previous, PlayerStateComponent.State current, float mx, float my) {
         if (!connected || out == null) return;
         synchronized (out) {
             try {
-                clientRegistry.send(out, new C_PlayerPosition(playerIndex, x, y, rot));
+                clientRegistry.send(out, new C_PlayerState(x, y, rot, previous, current, mx, my));
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -13,7 +13,7 @@ public class ComponentMapper<T extends Component> {
         data = java.util.Arrays.copyOf(data, capacity);
     }
 
-    int getIndex() {
+    public int getIndex() {
         return index;
     }
 

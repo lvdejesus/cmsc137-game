@@ -3,6 +3,7 @@ package client.util;
 import client.components.enemy.EnemyComponent;
 import client.network.NetworkSpawnManager;
 import client.systems.client.*;
+import client.systems.client.player.PlayerTiltSystem;
 import framework.engine.*;
 import client.systems.client.player.PlayerRotationSystem;
 import client.components.*;
@@ -13,13 +14,14 @@ import client.components.player.*;
 public class EngineConfig {
     public static void registerSyncComponents(Engine<Context> engine) {
         engine.register(TransformComponent.class);
+        engine.register(MovementInputComponent.class);
+        engine.register(PlayerStateComponent.class);
         engine.register(PlayerNetworkComponent.class);
         engine.register(NetworkIdComponent.class);
         engine.register(EnemyComponent.class);
         engine.register(BulletComponent.class);
         engine.register(CollisionComponent.class);
         engine.register(MovementComponent.class);
-        engine.register(PlayerStateComponent.class);
         engine.register(HealthComponent.class);
     }
 
@@ -45,7 +47,9 @@ public class EngineConfig {
         engine.addSystem(new TextRenderingSystem());
         // Player Specific systems
         engine.addSystem(new PlayerRotationSystem());
+        engine.addSystem(new MovementInputSystem());
         engine.addSystem(new MovementSystem());
+        engine.addSystem(new PlayerTiltSystem());
         // Enemy systems
         // engine.addSystem(new EnemySystem());
     }
