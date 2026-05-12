@@ -5,6 +5,10 @@ public class PlayerStateComponent implements Component{
     public enum State {
         IDLE,
         MOVING,
+        TILTL,
+        TILTR,
+        HARDTILTL,
+        HARDTILTR,
     }
 
     public State current = State.IDLE;

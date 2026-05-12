@@ -1,6 +1,8 @@
 package client.systems;
 
+import client.components.AnimationComponent;
 import client.components.MovementComponent;
+import client.components.TransformComponent;
 import client.components.player.PlayerStateComponent;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -11,6 +13,8 @@ import static org.lwjgl.glfw.GLFW.*;
 public class MovementSystem extends EntitySystem<Context> {
     private ComponentMapper<MovementComponent> mm;
     private ComponentMapper<PlayerStateComponent> sm;
+    private ComponentMapper<TransformComponent> tm;
+    private ComponentMapper<AnimationComponent> am;
 
     private float approach(float current, float target, float max) {
         if (current < target) {
@@ -31,12 +35,16 @@ public class MovementSystem extends EntitySystem<Context> {
         super.setEngine(engine);
         this.sm = engine.getMapper(PlayerStateComponent.class);
         this.mm = engine.getMapper(MovementComponent.class);
+        this.tm = engine.getMapper(TransformComponent.class);
+        this.am = engine.getMapper(AnimationComponent.class);
     }
 
     @Override
     public void processEntity(int id, Context ctx) {
         MovementComponent mc = mm.get(id);
         PlayerStateComponent state = sm.get(id);
+        TransformComponent tc = tm.get(id);
+        AnimationComponent ac = am.get(id);
 
         // To get time from last frame 
         float deltaTime = ctx.deltaTime;
@@ -49,10 +57,81 @@ public class MovementSystem extends EntitySystem<Context> {
         if (InputHandler.getInstance().key(GLFW_KEY_A)) x -= 1;
         if (InputHandler.getInstance().key(GLFW_KEY_D)) x += 1;
 
+
+        PlayerStateComponent.State nextState = PlayerStateComponent.State.IDLE;
+
+
+        // Tilting
+        int max = ac.animation.frames.length - 1;
+        float animDuration = ctx.currentTime - ac.offset;
+        float tiltThreshold = 0.3f; // Time threshold to switch to hard tilt
+
+        if (x > 0) {
+            if((state.current == PlayerStateComponent.State.TILTR || state.current == PlayerStateComponent.State.HARDTILTR) && animDuration >= tiltThreshold){
+                nextState = PlayerStateComponent.State.HARDTILTR;
+            }
+            else if (state.current != PlayerStateComponent.State.HARDTILTR) {
+                nextState = PlayerStateComponent.State.TILTR;
+            }
+        } else if (x < 0) {
+            if((state.current == PlayerStateComponent.State.TILTL || state.current == PlayerStateComponent.State.HARDTILTL) && animDuration >= tiltThreshold){
+                nextState = PlayerStateComponent.State.HARDTILTL;
+            }
+            else if (state.current != PlayerStateComponent.State.HARDTILTL) {
+                nextState = PlayerStateComponent.State.TILTL;
+            }
+        } else if (y != 0) {
+            nextState = PlayerStateComponent.State.MOVING;
+        } else {
+            nextState = PlayerStateComponent.State.IDLE;
+        }
+
+
+
+        if (state.current != nextState) {
+            state.set(nextState);
+            if(state.current != PlayerStateComponent.State.HARDTILTL && state.current != PlayerStateComponent.State.HARDTILTR){
+                ac.offset = ctx.currentTime; // Used to track how long we've been in the current animation state
+            }
+        }
+        
+        switch (nextState) {
+            case TILTR:
+                ac.startFrame = 0;
+                ac.endFrame = 2;
+                ac.loop = false;
+                ac.reverse = false;
+                break;
+            case TILTL:
+                ac.startFrame = max; 
+                ac.endFrame = max-3;
+                ac.loop = false;
+                ac.reverse = true;
+                break;
+            case HARDTILTR:
+                ac.startFrame = 2;
+                ac.endFrame = 3; 
+                ac.loop = false;
+                ac.reverse = false;
+                break;
+            case HARDTILTL:
+                ac.startFrame = max - 3;
+                ac.endFrame = max - 4;
+                ac.loop = false;
+                ac.reverse = true;
+                break;
+            default:
+                ac.startFrame = 0;
+                ac.endFrame = 0;
+                ac.loop = true;
+                break;
+        }
+        
+
         if (x != 0 || y != 0) {
 
             // Change State to moving
-            state.set(PlayerStateComponent.State.MOVING);
+
 
             // Normalize diagonal movement to prevent diagonal speedup
             if (x != 0 && y != 0) {
@@ -60,11 +139,10 @@ public class MovementSystem extends EntitySystem<Context> {
                 x /= len;
                 y /= len;
             }
-
         }
 
         // When fully stopped
-        else if (mc.velocity.lengthSquared() < 0.01f) {
+        else if (y == 0 && x == 0) {
             state.set(PlayerStateComponent.State.IDLE);
         }
 

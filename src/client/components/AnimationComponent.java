@@ -9,6 +9,7 @@ public class AnimationComponent implements Component {
     public int startFrame = 0;
     public int endFrame = -1;
     public boolean loop = true;
+    public boolean reverse = false;
 
     public AnimationComponent(Animation animation, float offset, boolean loop) {
         this.animation = animation;
@@ -24,6 +25,7 @@ public class AnimationComponent implements Component {
         this.endFrame = animation.frames.length - 1;
         this.loop = loop;
     }
+    
 
     public AnimationComponent(Animation animation, float offset, int startFrame, int endFrame, boolean loop) {
         this.animation = animation;
@@ -31,5 +33,14 @@ public class AnimationComponent implements Component {
         this.startFrame = startFrame;
         this.endFrame = endFrame;
         this.loop = loop;
+    }
+
+        public AnimationComponent(Animation animation, float offset, int startFrame, int endFrame, boolean loop,boolean reverse) {
+        this.animation = animation;
+        this.offset = offset;
+        this.startFrame = startFrame;
+        this.endFrame = endFrame;
+        this.loop = loop;
+        this.reverse = reverse;
     }
 }
