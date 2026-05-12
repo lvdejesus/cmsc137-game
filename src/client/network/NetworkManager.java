@@ -24,8 +24,8 @@ public class NetworkManager {
     private static final int TCP_PORT = 12345;
     
     private final DiscoveryService discoveryService = new DiscoveryService();
-    private final ServerRegistry serverRegistry = ServerRegistry.getInstance();
-    private final ClientRegistry clientRegistry = ClientRegistry.getInstance();
+    private final ServerRegistry serverRegistry = new ServerRegistry();
+    private final ClientRegistry clientRegistry = new ClientRegistry();
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
@@ -121,7 +121,7 @@ public class NetworkManager {
         } else if (clientOut != null) {
             synchronized (clientOut) {
                 try {
-                    clientRegistry.serializeAndSend(clientOut, 0, msg);
+                    clientRegistry.send(clientOut, msg);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -140,7 +140,7 @@ public class NetworkManager {
         clientListenerThread = new Thread(() -> {
             try (DataInputStream in = new DataInputStream(clientSocket.getInputStream())) {
                 while (!clientSocket.isClosed()) {
-                    Message msg = serverRegistry.deserialize(in);
+                    Message msg = serverRegistry.receive(in);
                     handleServerMessage(msg);
                 }
             } catch (IOException e) {
@@ -190,7 +190,7 @@ public class NetworkManager {
             new Thread(() -> {
                 try {
                     while (!socket.isClosed()) {
-                        Message msg = clientRegistry.deserialize(in);
+                        Message msg = clientRegistry.receive(in);
                         handleClientMessage(msg);
                     }
                 } catch (IOException e) {
@@ -221,7 +221,7 @@ public class NetworkManager {
         void sendMessage(Message msg) {
             synchronized (out) {
                 try {
-                    serverRegistry.serialize(out, msg);
+                    serverRegistry.send(out, msg);
                     System.out.println("Sent: " + msg.getClass().getSimpleName());
                 } catch (IOException e) {
                     handleDisconnect();
