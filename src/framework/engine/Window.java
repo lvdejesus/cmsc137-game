@@ -55,7 +55,6 @@ public class Window {
         }
 
         //Initialize listeners
-        MouseListener.getInstance().register(windowHandle);
         InputHandler.getInstance().register(windowHandle);
 
         glfwMakeContextCurrent(windowHandle);

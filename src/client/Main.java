@@ -81,10 +81,7 @@ public class Main {
 
             ctx.currentTime = (float) currentTime;
             ctx.deltaTime = dt;
-            ctx.cursor.set(
-                (float) MouseListener.getX(),
-                (float) MouseListener.getY()
-            );
+            ctx.cursor.set(InputHandler.getInstance().cursorPosition);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(shaderProgram);
