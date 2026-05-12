@@ -19,6 +19,7 @@ import java.util.List;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import client.network.GameServer;
 import client.network.NetworkManager;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -111,20 +112,17 @@ public class MenuScene implements Scene {
 
         if (input.keyDown(GLFW_KEY_ENTER) || input.keyDown(GLFW_KEY_SPACE)) {
             if (selectedOption == 0) {
-                // Start Game (Host)
-                String localIP = NetworkManager.getInstance().getLocalIP();
-                SceneManager.setScene(new LobbyScene(true, localIP), engine);
+                // Start Game (Host) - start server first, then join
+                GameServer server = new GameServer();
+                server.start("0.0.0.0");
+                NetworkManager.getInstance().joinGame("127.0.0.1");
+                SceneManager.setScene(new LobbyScene("127.0.0.1"), engine);
             } else if (selectedOption == 1) {
                 // Join Game (Client)
                 String hostIP = javax.swing.JOptionPane.showInputDialog(null, "Enter Host IP:", "Join Game", javax.swing.JOptionPane.QUESTION_MESSAGE);
                 if (hostIP != null && !hostIP.isEmpty()) {
-                    try {
-                        NetworkManager.getInstance().joinGame(hostIP);
-                        SceneManager.setScene(new LobbyScene(false, hostIP), engine);
-                    } catch (IOException e) {
-                        javax.swing.JOptionPane.showMessageDialog(null, "Failed to connect: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-                        e.printStackTrace();
-                    }
+                    NetworkManager.getInstance().joinGame(hostIP);
+                    SceneManager.setScene(new LobbyScene(hostIP), engine);
                 }
             } else {
                 // Exit Game

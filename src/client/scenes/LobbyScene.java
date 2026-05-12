@@ -30,13 +30,9 @@ public class LobbyScene implements Scene {
     private Entity<Context> ipTextEntity;
     private final List<Entity<Context>> entities = new ArrayList<>();
     
-    private final boolean isHost;
     private final String hostIP;
 
-    private static final int NUM_PLAYERS = 2;
-
-    public LobbyScene(boolean isHost, String hostIP) {
-        this.isHost = isHost;
+    public LobbyScene(String hostIP) {
         this.hostIP = hostIP;
     }
 
@@ -71,10 +67,6 @@ public class LobbyScene implements Scene {
         ipTextEntity.addComponent(new TextComponent(font, "Host IP: " + hostIP, new Vector4f(1, 1, 1, 1), 1.0f, 0.4f));
         entities.add(ipTextEntity);
 
-        if (isHost) {
-            NetworkManager.getInstance().startHost();
-        }
-
         // Disable game systems while waiting
         setGameSystemsEnabled(false);
     }
@@ -105,21 +97,16 @@ public class LobbyScene implements Scene {
         int count = nm.getPlayerCount();
 
         if (count != lastCount) {
-            System.out.println("UI Update: Player count is now " + count + "/4 (isHost: " + isHost + ")");
+            System.out.println("UI Update: Player count is now " + count + "/4");
             lastCount = count;
         }
 
         TextComponent tc = statusTextEntity.getComponent(TextComponent.class);
         if (tc != null) {
-            tc.text = "Waiting for players (" + count + "/" + NUM_PLAYERS + ")";
+            tc.text = "Waiting for players (" + count + ")";
         }
 
-        // Host triggers start for everyone
-        if (isHost && count >= NUM_PLAYERS && !nm.isGameStarted()) {
-            nm.startGame();
-        }
-
-        // Both host and client transition when gameStarted is true
+        // Transition to LevelScene when game starts
         if (nm.isGameStarted()) {
             SceneManager.setScene(new LevelScene(), engine);
         }

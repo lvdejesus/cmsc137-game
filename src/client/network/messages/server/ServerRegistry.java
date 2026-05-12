@@ -1,11 +1,5 @@
 package client.network.messages.server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import client.network.messages.Message;
 import client.network.messages.Registry;
 
 public class ServerRegistry extends Registry {
