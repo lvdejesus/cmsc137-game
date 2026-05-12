@@ -1,7 +1,9 @@
 package client.network;
 
-import client.network.messages.server.S_PlayerPosition;
+import client.network.messages.server.*;
+
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.joml.Vector3f;
 
 public class NetworkManager {
@@ -10,7 +12,7 @@ public class NetworkManager {
     
     private final GameClient client;
     private final ConcurrentHashMap<Integer, Vector3f> remotePlayerStates = new ConcurrentHashMap<>();
-    
+
     private volatile int playerIndex = 1;
     private volatile int playerCount = 0;
     private volatile boolean gameStarted = false;
@@ -18,12 +20,13 @@ public class NetworkManager {
     private NetworkManager() {
         this.client = new GameClient();
         client.setMessageHandler(msg -> {
-            if (msg instanceof client.network.messages.server.S_AssignId m) {
+            if (msg instanceof S_AssignId m) {
                 playerIndex = m.getPlayerId();
-            } else if (msg instanceof client.network.messages.server.S_PlayerCount m) {
+            } else if (msg instanceof S_PlayerCount m) {
                 playerCount = m.getCount();
-            } else if (msg instanceof client.network.messages.server.S_StartGame) {
+            } else if (msg instanceof S_StartGame) {
                 gameStarted = true;
+            } else if (msg instanceof S_Snapshot m) {
             } else if (msg instanceof S_PlayerPosition m) {
                 if (m.getSenderId() != playerIndex) {
                     remotePlayerStates.put(m.getSenderId(), new Vector3f(m.getX(), m.getY(), m.getRotation()));
