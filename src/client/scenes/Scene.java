@@ -1,5 +1,5 @@
 package client.scenes;
-import client.systems.Context;
+import client.systems.client.Context;
 import framework.engine.Engine;
 
 public interface Scene {

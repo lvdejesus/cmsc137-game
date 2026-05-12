@@ -1,5 +1,6 @@
 package editor;
 
+import client.systems.client.*;
 import editor.components.EditorComponent;
 import editor.components.TileComponent;
 import editor.systems.CleanupSystem;
@@ -18,7 +19,6 @@ import org.lwjgl.opengl.*;
 import client.components.*;
 import framework.engine.*;
 import client.rendering.*;
-import client.systems.*;
 import client.rendering.Font;
 import client.components.TextComponent;
 

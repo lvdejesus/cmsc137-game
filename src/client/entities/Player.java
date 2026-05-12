@@ -2,7 +2,7 @@ package client.entities;
 
 import framework.engine.Entity;
 import framework.engine.Engine;
-import client.systems.Context;
+import client.systems.client.Context;
 import client.components.*;
 import client.components.player.PlayerStateComponent;
 import client.components.player.PlayerTagComponent;

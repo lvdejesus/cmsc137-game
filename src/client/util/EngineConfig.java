@@ -1,8 +1,8 @@
 package client.util;
 import client.components.enemy.EnemyComponent;
+import client.systems.client.*;
 import framework.engine.*;
-import client.systems.*;
-import client.systems.player.PlayerRotationSystem;
+import client.systems.client.player.PlayerRotationSystem;
 import client.components.*;
 import client.components.bullet.BulletComponent;
 import client.components.player.*;

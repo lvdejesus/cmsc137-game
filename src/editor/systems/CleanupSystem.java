@@ -1,7 +1,7 @@
 package editor.systems;
 
 import client.components.ClickEvent;
-import client.systems.Context;
+import client.systems.client.Context;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;

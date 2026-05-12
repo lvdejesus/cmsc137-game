@@ -1,7 +1,7 @@
 package editor.systems;
 
-import client.systems.Context;
-import client.systems.InputHandler;
+import client.systems.client.Context;
+import client.systems.client.InputHandler;
 import client.rendering.Camera;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;

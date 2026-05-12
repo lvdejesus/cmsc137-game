@@ -1,4 +1,4 @@
-package client.systems;
+package client.systems.client;
 
 import client.components.TextComponent;
 import client.components.TransformComponent;
@@ -23,7 +23,7 @@ public class TextRenderingSystem extends IteratingEntitySystem<Context> {
     }
 
     @Override
-    public void setEngine(Engine<client.systems.Context> engine) {
+    public void setEngine(Engine<Context> engine) {
         super.setEngine(engine);
 
         this.tm = engine.getMapper(TextComponent.class);
@@ -31,7 +31,7 @@ public class TextRenderingSystem extends IteratingEntitySystem<Context> {
     }
 
     @Override
-    public void processEntity(int id, client.systems.Context ctx) {
+    public void processEntity(int id, Context ctx) {
         TextComponent textComp = tm.get(id);
         TransformComponent transform = trm.get(id);
 

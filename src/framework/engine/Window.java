@@ -1,7 +1,7 @@
 package framework.engine;
 
+import client.systems.client.InputHandler;
 import org.lwjgl.opengl.*;
-import client.systems.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_BLEND;

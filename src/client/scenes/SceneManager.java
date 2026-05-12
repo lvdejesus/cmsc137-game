@@ -1,5 +1,5 @@
 package client.scenes;
-import client.systems.Context;
+import client.systems.client.Context;
 import framework.engine.*;
 public class SceneManager {
     private static Scene currScene;

@@ -1,4 +1,4 @@
-package client.systems;
+package client.systems.client;
 
 import client.components.ClickEvent;
 import client.components.ClickableComponent;

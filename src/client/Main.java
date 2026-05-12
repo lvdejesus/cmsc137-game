@@ -1,30 +1,19 @@
 package client;
 
+import client.systems.client.Context;
+import client.systems.client.InputHandler;
 import framework.rendering.ShaderProgram;
-import org.lwjgl.opengl.*;
-import client.entities.Player;
-import client.entities.Bullet;
 import framework.engine.*;
 import client.rendering.*;
-import client.scenes.Scene;
-import client.systems.*;
-import client.components.TransformComponent;
 import client.util.EngineConfig;
-
-import java.nio.file.*;
-import java.io.IOException;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-import org.lwjgl.BufferUtils;
+//
+//
 
-import java.nio.Buffer;
-//
-import java.nio.DoubleBuffer;
-//
-import client.entities.Player;
 
 public class Main {
     private int shaderProgram;

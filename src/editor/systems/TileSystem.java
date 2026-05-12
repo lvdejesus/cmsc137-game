@@ -1,7 +1,7 @@
 package editor.systems;
 
 import client.components.ClickEvent;
-import client.systems.Context;
+import client.systems.client.Context;
 import editor.components.EditorComponent;
 import editor.components.TileComponent;
 import framework.engine.ComponentMapper;

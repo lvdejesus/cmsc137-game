@@ -1,14 +1,10 @@
 package editor.util;
 
-import editor.components.TileComponent;
-import framework.engine.Engine;
 import framework.json.JsonPair;
 import framework.json.JsonReader;
 import framework.json.JsonValue;
 import client.rendering.Texture;
 import client.rendering.TextureAtlas;
-import client.systems.Context;
-import org.joml.Vector2f;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package client.systems;
+package client.systems.client;
 import org.joml.Vector2f;
 
 public class Context {

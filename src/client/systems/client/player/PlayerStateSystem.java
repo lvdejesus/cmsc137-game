@@ -1,6 +1,6 @@
 
-package client.systems.player;
-import client.systems.Context;
+package client.systems.client.player;
+import client.systems.client.Context;
 
 import client.components.player.PlayerStateComponent;
 

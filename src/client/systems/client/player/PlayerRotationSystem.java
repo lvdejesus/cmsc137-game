@@ -1,8 +1,8 @@
-package client.systems.player;
+package client.systems.client.player;
 
 import client.components.TransformComponent;
 import client.components.player.PlayerTagComponent;
-import client.systems.Context;
+import client.systems.client.Context;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;

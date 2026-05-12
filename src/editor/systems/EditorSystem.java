@@ -4,7 +4,7 @@ import client.components.ClickEvent;
 import client.components.RenderComponent;
 import client.components.TransformComponent;
 import client.rendering.Anchor;
-import client.systems.Context;
+import client.systems.client.Context;
 import editor.components.EditorComponent;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;

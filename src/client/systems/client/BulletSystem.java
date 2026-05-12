@@ -1,4 +1,4 @@
-package client.systems;
+package client.systems.client;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;

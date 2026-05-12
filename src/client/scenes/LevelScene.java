@@ -7,8 +7,7 @@ import client.entities.Bullet;
 import client.entities.Player;
 import client.network.NetworkManager;
 import client.rendering.*;
-import client.systems.Context;
-import client.systems.InputHandler;
+import client.systems.client.*;
 import framework.engine.Engine;
 import framework.engine.Entity;
 import framework.engine.IteratingEntitySystem;
@@ -71,12 +70,12 @@ public class LevelScene implements Scene {
     }
 
     private void setGameSystemsEnabled(boolean enabled) {
-        enableSystem(client.systems.EnemySystem.class, enabled);
-        enableSystem(client.systems.BulletSystem.class, enabled);
-        enableSystem(client.systems.MovementSystem.class, enabled);
-        enableSystem(client.systems.player.PlayerRotationSystem.class, enabled);
-        enableSystem(client.systems.DamageSystem.class, enabled);
-        enableSystem(client.systems.PhysicsSystem.class, enabled);
+        enableSystem(EnemySystem.class, enabled);
+        enableSystem(BulletSystem.class, enabled);
+        enableSystem(MovementSystem.class, enabled);
+        enableSystem(client.systems.client.player.PlayerRotationSystem.class, enabled);
+        enableSystem(DamageSystem.class, enabled);
+        enableSystem(PhysicsSystem.class, enabled);
     }
 
     private <T extends IteratingEntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {

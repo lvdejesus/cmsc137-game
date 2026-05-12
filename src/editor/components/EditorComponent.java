@@ -1,7 +1,7 @@
 package editor.components;
 
 import client.rendering.Texture;
-import client.systems.Context;
+import client.systems.client.Context;
 import framework.engine.Component;
 import framework.engine.Entity;
 

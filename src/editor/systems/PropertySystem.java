@@ -3,7 +3,7 @@ package editor.systems;
 import client.components.ClickEvent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
-import client.systems.Context;
+import client.systems.client.Context;
 import editor.components.EditorComponent;
 import editor.util.TileRegistry;
 import framework.engine.ComponentMapper;
