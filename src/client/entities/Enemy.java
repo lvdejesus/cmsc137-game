@@ -15,7 +15,7 @@ import java.util.Random;
 
 public record Enemy(Entity<Context> entity) {
     public Enemy(Engine<Context> entity) {
-        this.entity = entity.createEntity();
+        this(entity.createEntity());
 
         TextureAtlas atlas = TextureAtlas.get();
 

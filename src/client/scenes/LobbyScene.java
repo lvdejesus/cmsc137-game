@@ -33,7 +33,7 @@ public class LobbyScene implements Scene {
     private final boolean isHost;
     private final String hostIP;
 
-    private static final int NUM_PLAYERS = 1;
+    private static final int NUM_PLAYERS = 2;
 
     public LobbyScene(boolean isHost, String hostIP) {
         this.isHost = isHost;

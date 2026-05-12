@@ -1,10 +1,17 @@
 package client.network;
 
+import client.network.messages.Message;
+import client.network.messages.client.ClientRegistry;
+import client.network.messages.client.C_PlayerPosition;
+import client.network.messages.server.ServerRegistry;
+import client.network.messages.server.S_AssignId;
+import client.network.messages.server.S_PlayerCount;
+import client.network.messages.server.S_StartGame;
+import client.network.messages.server.S_PlayerPosition;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -15,29 +22,23 @@ import org.joml.Vector3f;
 public class NetworkManager {
     private static NetworkManager instance;
     private static final int TCP_PORT = 12345;
-    private static final int UDP_PORT = 12346;
-    private static final String DISCOVERY_MESSAGE = "GAME_HOST_DISCOVERY";
-
-    // Message types
-    public static final int MSG_ASSIGN_ID = 1;
-    public static final int MSG_PLAYER_COUNT = 2;
-    public static final int MSG_START_GAME = 3;
-    public static final int MSG_PLAYER_POS = 4;
+    
+    private final DiscoveryService discoveryService = new DiscoveryService();
+    private final ServerRegistry serverRegistry = ServerRegistry.getInstance();
+    private final ClientRegistry clientRegistry = ClientRegistry.getInstance();
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private final List<ClientHandler> connectedClients = new CopyOnWriteArrayList<>();
     private volatile boolean isHost = false;
     private final String localIP;
-    private volatile int playerIndex = 1; // Default for host
+    private volatile int playerIndex = 1;
     private volatile int remotePlayerCount = 1;
     private volatile boolean gameStarted = false;
 
-    // Remote player positional data (ID -> Vector3f(x, y, rotation))
     private final ConcurrentHashMap<Integer, Vector3f> remotePlayerStates = new ConcurrentHashMap<>();
 
     private Thread serverThread;
-    private Thread discoveryThread;
     private Thread clientListenerThread;
     private DataOutputStream clientOut;
 
@@ -50,29 +51,14 @@ public class NetworkManager {
         this.localIP = findLocalIP();
     }
 
-    public String getLocalIP() {
-        return localIP;
-    }
+    public String getLocalIP() { return localIP; }
+    public boolean isHost() { return isHost; }
+    public int getPlayerIndex() { return playerIndex; }
+    public int getPlayerCount() { return isHost ? connectedClients.size() + 1 : remotePlayerCount; }
+    public boolean isGameStarted() { return gameStarted; }
+    public ConcurrentHashMap<Integer, Vector3f> getRemotePlayerStates() { return remotePlayerStates; }
 
-    public boolean isHost() {
-        return isHost;
-    }
-
-    public int getPlayerIndex() {
-        return playerIndex;
-    }
-
-    public int getPlayerCount() {
-        return isHost ? connectedClients.size() + 1 : remotePlayerCount;
-    }
-
-    public boolean isGameStarted() {
-        return gameStarted;
-    }
-
-    public ConcurrentHashMap<Integer, Vector3f> getRemotePlayerStates() {
-        return remotePlayerStates;
-    }
+    public List<String> discoverHosts() { return discoveryService.discoverHosts(); }
 
     public void startHost() {
         try {
@@ -84,7 +70,7 @@ public class NetworkManager {
             this.playerIndex = 1;
             this.gameStarted = false;
             System.out.println("Host started on IP: " + localIP);
-            
+
             serverThread = new Thread(() -> {
                 while (!serverSocket.isClosed() && connectedClients.size() < 3) {
                     try {
@@ -99,7 +85,7 @@ public class NetworkManager {
                 }
             });
             serverThread.start();
-            startDiscoveryResponder();
+            discoveryService.startResponding(localIP);
         } catch (IOException e) {
             System.err.println("Failed to start host: " + e.getMessage());
             javax.swing.JOptionPane.showMessageDialog(null, 
@@ -112,9 +98,8 @@ public class NetworkManager {
     }
 
     private void broadcastPlayerCount() {
-        int count = getPlayerCount();
         for (ClientHandler client : connectedClients) {
-            client.sendMessage(MSG_PLAYER_COUNT, count, 0, 0, 0);
+            client.sendMessage(new S_PlayerCount(getPlayerCount()));
         }
     }
 
@@ -122,27 +107,21 @@ public class NetworkManager {
         if (isHost) {
             this.gameStarted = true;
             for (ClientHandler client : connectedClients) {
-                client.sendMessage(MSG_START_GAME, 0, 0, 0, 0);
+                client.sendMessage(new S_StartGame());
             }
         }
     }
 
     public void broadcastPosition(float x, float y, float rot) {
+        C_PlayerPosition msg = new C_PlayerPosition(playerIndex, x, y, rot);
         if (isHost) {
-            // Host broadcasts to all clients
             for (ClientHandler client : connectedClients) {
-                client.sendMessage(MSG_PLAYER_POS, playerIndex, x, y, rot);
+                client.sendMessage(new S_PlayerPosition(playerIndex, x, y, rot));
             }
         } else if (clientOut != null) {
-            // Client sends to host (who will then broadcast it)
             synchronized (clientOut) {
                 try {
-                    clientOut.writeInt(MSG_PLAYER_POS);
-                    clientOut.writeInt(playerIndex);
-                    clientOut.writeFloat(x);
-                    clientOut.writeFloat(y);
-                    clientOut.writeFloat(rot);
-                    clientOut.flush();
+                    clientRegistry.serializeAndSend(clientOut, 0, msg);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -161,12 +140,8 @@ public class NetworkManager {
         clientListenerThread = new Thread(() -> {
             try (DataInputStream in = new DataInputStream(clientSocket.getInputStream())) {
                 while (!clientSocket.isClosed()) {
-                    int type = in.readInt();
-                    int id = in.readInt();
-                    float x = in.readFloat();
-                    float y = in.readFloat();
-                    float rot = in.readFloat();
-                    handleMessage(type, id, x, y, rot);
+                    Message msg = serverRegistry.deserialize(in);
+                    handleServerMessage(msg);
                 }
             } catch (IOException e) {
                 System.out.println("Disconnected from host.");
@@ -182,26 +157,20 @@ public class NetworkManager {
         System.exit(0);
     }
 
-    private void handleMessage(int type, int id, float x, float y, float rot) {
-        switch (type) {
-            case MSG_ASSIGN_ID:
-                this.playerIndex = id;
-                System.out.println("Assigned Player ID: " + playerIndex);
-                break;
-            case MSG_PLAYER_COUNT:
-                this.remotePlayerCount = id; // id field is used for count here
-                System.out.println("Received player count update: " + id);
-                break;
-            case MSG_START_GAME:
-                this.gameStarted = true;
-                System.out.println("Received start game signal!");
-                break;
-            case MSG_PLAYER_POS:
-                // Update remote player state
-                if (id != this.playerIndex) {
-                    remotePlayerStates.put(id, new Vector3f(x, y, rot));
-                }
-                break;
+    private void handleServerMessage(Message msg) {
+        if (msg instanceof S_AssignId m) {
+            this.playerIndex = m.getPlayerId();
+            System.out.println("Assigned Player ID: " + playerIndex);
+        } else if (msg instanceof S_PlayerCount m) {
+            this.remotePlayerCount = m.getCount();
+            System.out.println("Received player count update: " + m.getCount());
+        } else if (msg instanceof S_StartGame) {
+            this.gameStarted = true;
+            System.out.println("Received start game signal!");
+        } else if (msg instanceof S_PlayerPosition m) {
+            if (m.getSenderId() != this.playerIndex) {
+                remotePlayerStates.put(m.getSenderId(), new Vector3f(m.getX(), m.getY(), m.getRotation()));
+            }
         }
     }
 
@@ -216,27 +185,13 @@ public class NetworkManager {
             this.id = id;
             this.out = new DataOutputStream(socket.getOutputStream());
             this.in = new DataInputStream(socket.getInputStream());
-            sendMessage(MSG_ASSIGN_ID, id, 0, 0, 0);
+            sendMessage(new S_AssignId(id));
             
             new Thread(() -> {
                 try {
                     while (!socket.isClosed()) {
-                        int type = in.readInt();
-                        int senderId = in.readInt();
-                        float x = in.readFloat();
-                        float y = in.readFloat();
-                        float rot = in.readFloat();
-                        
-                        if (type == MSG_PLAYER_POS) {
-                            // Update host's local state
-                            remotePlayerStates.put(senderId, new Vector3f(x, y, rot));
-                            // Broadcast to OTHER clients
-                            for (ClientHandler other : connectedClients) {
-                                if (other != this) {
-                                    other.sendMessage(MSG_PLAYER_POS, senderId, x, y, rot);
-                                }
-                            }
-                        }
+                        Message msg = clientRegistry.deserialize(in);
+                        handleClientMessage(msg);
                     }
                 } catch (IOException e) {
                     System.out.println("Client " + id + " disconnected.");
@@ -245,76 +200,34 @@ public class NetworkManager {
             }).start();
         }
         
+        private void handleClientMessage(Message msg) {
+            if (msg instanceof C_PlayerPosition m) {
+                remotePlayerStates.put(m.getSenderId(), new Vector3f(m.getX(), m.getY(), m.getRotation()));
+                for (ClientHandler other : connectedClients) {
+                    if (other != this) {
+                        other.sendMessage(new S_PlayerPosition(m.getSenderId(), m.getX(), m.getY(), m.getRotation()));
+                    }
+                }
+            }
+        }
+        
         private void handleDisconnect() {
             connectedClients.remove(this);
-            remotePlayerStates.remove(id); // Remove their entity state
+            remotePlayerStates.remove(id);
             broadcastPlayerCount();
             try { socket.close(); } catch (IOException ignored) {}
         }
 
-        void sendMessage(int type, int id, float x, float y, float rot) {
+        void sendMessage(Message msg) {
             synchronized (out) {
                 try {
-                    out.writeInt(type);
-                    out.writeInt(id);
-                    out.writeFloat(x);
-                    out.writeFloat(y);
-                    out.writeFloat(rot);
-                    System.out.printf("Sent: %d %d %f %f %f\n", type, id, x, y, rot);
-                    out.flush();
+                    serverRegistry.serialize(out, msg);
+                    System.out.println("Sent: " + msg.getClass().getSimpleName());
                 } catch (IOException e) {
                     handleDisconnect();
                 }
             }
         }
-    }
-
-    private void startDiscoveryResponder() {
-        discoveryThread = new Thread(() -> {
-            try (DatagramSocket socket = new DatagramSocket(UDP_PORT)) {
-                byte[] buffer = new byte[256];
-                while (!socket.isClosed()) {
-                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    socket.receive(packet);
-                    String message = new String(packet.getData(), 0, packet.getLength());
-                    if (DISCOVERY_MESSAGE.equals(message)) {
-                        byte[] response = localIP.getBytes();
-                        DatagramPacket responsePacket = new DatagramPacket(
-                            response, response.length, packet.getAddress(), packet.getPort()
-                        );
-                        socket.send(responsePacket);
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        discoveryThread.setDaemon(true);
-        discoveryThread.start();
-    }
-
-    public List<String> discoverHosts() {
-        List<String> hosts = new ArrayList<>();
-        try (DatagramSocket socket = new DatagramSocket()) {
-            socket.setBroadcast(true);
-            socket.setSoTimeout(1000);
-            byte[] message = DISCOVERY_MESSAGE.getBytes();
-            DatagramPacket packet = new DatagramPacket(
-                message, message.length, InetAddress.getByName("255.255.255.255"), UDP_PORT
-            );
-            socket.send(packet);
-            byte[] buffer = new byte[256];
-            long startTime = System.currentTimeMillis();
-            while (System.currentTimeMillis() - startTime < 1000) {
-                try {
-                    DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
-                    socket.receive(responsePacket);
-                    String hostIP = new String(responsePacket.getData(), 0, responsePacket.getLength());
-                    if (!hosts.contains(hostIP)) hosts.add(hostIP);
-                } catch (SocketTimeoutException e) { break; }
-            }
-        } catch (IOException e) { e.printStackTrace(); }
-        return hosts;
     }
 
     private String findLocalIP() {
@@ -332,6 +245,7 @@ public class NetworkManager {
     }
 
     public void stop() {
+        discoveryService.stop();
         try {
             if (serverSocket != null) serverSocket.close();
             if (clientSocket != null) clientSocket.close();
