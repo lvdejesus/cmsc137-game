@@ -4,11 +4,11 @@ import client.components.MovementComponent;
 import client.components.player.PlayerStateComponent;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class MovementSystem extends EntitySystem<Context> {
+public class MovementSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<MovementComponent> mm;
     private ComponentMapper<PlayerStateComponent> sm;
 

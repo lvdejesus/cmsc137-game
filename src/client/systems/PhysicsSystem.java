@@ -5,9 +5,9 @@ import client.components.TransformComponent;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 
-public class PhysicsSystem extends EntitySystem<Context> {
+public class PhysicsSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
     private ComponentMapper<MovementComponent> mm;
 

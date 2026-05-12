@@ -2,14 +2,14 @@ package client.systems;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import client.components.TransformComponent;
 import client.components.CollisionComponent;
 import client.components.MovementComponent;
 import client.components.bullet.BulletComponent;
 import client.rendering.Camera;
 
-public class WallCollisionSystem extends EntitySystem<Context> {
+public class WallCollisionSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> transformM;
     private ComponentMapper<CollisionComponent> collisionM;
     private ComponentMapper<MovementComponent> movementM;

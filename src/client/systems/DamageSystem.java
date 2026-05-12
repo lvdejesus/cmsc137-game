@@ -2,7 +2,7 @@ package client.systems;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import client.components.HealthComponent;
 import client.components.bullet.BulletComponent;
 import client.components.enemy.EnemyComponent;
@@ -11,9 +11,8 @@ import client.components.CollisionComponent;
 import client.components.player.PlayerTagComponent;
 import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
-import client.systems.Context;
 
-public class DamageSystem extends EntitySystem<Context> {
+public class DamageSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<HealthComponent> healthM;
     private ComponentMapper<TransformComponent> transformM;
     private ComponentMapper<CollisionComponent> collisionM;

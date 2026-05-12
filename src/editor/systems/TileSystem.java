@@ -6,9 +6,9 @@ import editor.components.EditorComponent;
 import editor.components.TileComponent;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 
-public class TileSystem extends EntitySystem<Context> {
+public class TileSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TileComponent> tim;
     private ComponentMapper<ClickEvent> cem;
 

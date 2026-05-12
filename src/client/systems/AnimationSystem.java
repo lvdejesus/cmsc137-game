@@ -5,10 +5,10 @@ import client.components.AnimationComponent;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import client.rendering.Animation;
 
-public class AnimationSystem extends EntitySystem<Context> {
+public class AnimationSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<AnimationComponent> tm;
     private ComponentMapper<RenderComponent> mm;
 

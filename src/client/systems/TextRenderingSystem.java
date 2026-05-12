@@ -8,11 +8,11 @@ import client.rendering.Texture;
 import client.rendering.Anchor;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 
 import static org.lwjgl.opengl.GL33.*;
 
-public class TextRenderingSystem extends EntitySystem<client.systems.Context> {
+public class TextRenderingSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TextComponent> tm;
     private ComponentMapper<TransformComponent> trm;
     private final Batch batch;

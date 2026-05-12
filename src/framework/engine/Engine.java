@@ -34,7 +34,7 @@ public class Engine<T> {
     private int[] entityVersions = new int[INITIAL_CAPACITY];
     private final Map<Class<? extends Component>, ComponentMapper<? extends Component>> mappers = new HashMap<>();
     private final ComponentRegistry componentRegistry = new ComponentRegistry();
-    private final ArrayList<EntitySystem<T>> systems = new ArrayList<>();
+    private final ArrayList<IteratingEntitySystem<T>> systems = new ArrayList<>();
 
     public Entity<T> createEntity() {
         int index;
@@ -107,7 +107,7 @@ public class Engine<T> {
         return componentRegistry.get(component);
     }
 
-    public void addSystem(EntitySystem<T> system) {
+    public void addSystem(IteratingEntitySystem<T> system) {
         systems.add(system);
         system.setEngine(this);
     }
@@ -139,7 +139,7 @@ public class Engine<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <U extends EntitySystem<T>> U getSystem(Class<U> type) {
+    public <U extends IteratingEntitySystem<T>> U getSystem(Class<U> type) {
         for (var system : systems) {
             if (system.getClass().equals(type)) {
                 return (U) system;

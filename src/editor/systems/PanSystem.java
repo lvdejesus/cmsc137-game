@@ -4,9 +4,9 @@ import client.systems.Context;
 import client.systems.InputHandler;
 import client.rendering.Camera;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 
-public class PanSystem extends EntitySystem<Context> {
+public class PanSystem extends IteratingEntitySystem<Context> {
     private final Camera camera;
 
     public PanSystem(Camera camera) {

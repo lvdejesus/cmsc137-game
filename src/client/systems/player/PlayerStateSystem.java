@@ -2,16 +2,15 @@
 package client.systems.player;
 import client.systems.Context;
 
-import client.components.player.PlayerTagComponent;
 import client.components.player.PlayerStateComponent;
 
 
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import framework.engine.ComponentMapper;
 
 
-public class PlayerStateSystem extends EntitySystem<Context>{
+public class PlayerStateSystem extends IteratingEntitySystem<Context> {
     
     private ComponentMapper<PlayerStateComponent> sm;
     

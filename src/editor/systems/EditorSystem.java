@@ -9,10 +9,10 @@ import editor.components.EditorComponent;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.Entity;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import org.joml.Vector2f;
 
-public class EditorSystem extends EntitySystem<Context> {
+public class EditorSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<EditorComponent> em;
     private ComponentMapper<ClickEvent> cem;
 

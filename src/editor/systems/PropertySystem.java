@@ -8,11 +8,10 @@ import editor.components.EditorComponent;
 import editor.util.TileRegistry;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
-import org.joml.Vector4f;
+import framework.engine.IteratingEntitySystem;
 import client.rendering.Font;
 
-public class PropertySystem extends EntitySystem<Context> {
+public class PropertySystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<ClickEvent> cem;
     private ComponentMapper<TextComponent> tcm;
     private ComponentMapper<TransformComponent> tfm;

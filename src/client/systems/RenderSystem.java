@@ -4,11 +4,11 @@ import client.components.RenderComponent;
 import client.components.TransformComponent;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import client.rendering.Batch;
 import client.rendering.Texture;
 
-public class RenderSystem extends EntitySystem<Context> {
+public class RenderSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<RenderComponent> rm;
     private ComponentMapper<TransformComponent> tm;
     private final Batch batch;

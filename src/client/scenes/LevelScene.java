@@ -11,6 +11,7 @@ import client.systems.Context;
 import client.systems.InputHandler;
 import framework.engine.Engine;
 import framework.engine.Entity;
+import framework.engine.IteratingEntitySystem;
 import framework.engine.Window;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -78,7 +79,7 @@ public class LevelScene implements Scene {
         enableSystem(client.systems.PhysicsSystem.class, enabled);
     }
 
-    private <T extends framework.engine.EntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
+    private <T extends IteratingEntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
         T system = engine.getSystem(type);
         if (system != null) {
             system.setEnabled(enabled);

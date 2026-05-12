@@ -1,13 +1,13 @@
 package framework.engine;
 
-public abstract class EntitySystem<T> {
+public abstract class IteratingEntitySystem<T> {
     private final Class<? extends Component>[] componentTypes;
     protected Engine<T> engine;
     private long familyMask;
     private boolean enabled = true;
 
     @SafeVarargs
-    public EntitySystem(Class<? extends Component>... types) {
+    public IteratingEntitySystem(Class<? extends Component>... types) {
         this.componentTypes = types;
     }
 

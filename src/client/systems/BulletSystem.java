@@ -2,11 +2,10 @@ package client.systems;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import client.components.bullet.BulletComponent;
-import client.systems.Context;
 
-public class BulletSystem extends EntitySystem<Context> {
+public class BulletSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<BulletComponent> bm;
     private Engine<Context> engine;
 

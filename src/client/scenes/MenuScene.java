@@ -8,14 +8,13 @@ import client.systems.*;
 import client.systems.player.PlayerRotationSystem;
 import framework.engine.Engine;
 import framework.engine.Entity;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import framework.engine.Window;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
-import java.util.List;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -150,7 +149,7 @@ public class MenuScene implements Scene {
         disableSystem(DamageSystem.class, enabled);
     }
 
-    private <T extends EntitySystem<Context>> void disableSystem(Class<T> type, boolean enabled) {
+    private <T extends IteratingEntitySystem<Context>> void disableSystem(Class<T> type, boolean enabled) {
         T system = engine.getSystem(type);
         if (system != null) {
             system.setEnabled(enabled);

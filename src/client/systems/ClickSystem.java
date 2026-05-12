@@ -6,11 +6,11 @@ import client.rendering.Camera;
 import client.rendering.CameraManager;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public class ClickSystem extends EntitySystem<Context> {
+public class ClickSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<ClickableComponent> cm;
     private final CameraManager cameraManager;
 

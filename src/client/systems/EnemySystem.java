@@ -2,7 +2,7 @@ package client.systems;
 
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import client.components.enemy.EnemyComponent;
 import client.components.TransformComponent;
 import client.components.MovementComponent;
@@ -13,7 +13,7 @@ import client.entities.Bullet;
 
 import java.util.Random;
 
-public class EnemySystem extends EntitySystem<Context> {
+public class EnemySystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
     private ComponentMapper<MovementComponent> mm;
     private ComponentMapper<HealthComponent> healthM;

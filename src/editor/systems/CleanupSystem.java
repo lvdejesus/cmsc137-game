@@ -4,9 +4,9 @@ import client.components.ClickEvent;
 import client.systems.Context;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 
-public class CleanupSystem extends EntitySystem<Context> {
+public class CleanupSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<ClickEvent> cem;
 
     public CleanupSystem() {
