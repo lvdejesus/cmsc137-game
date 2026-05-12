@@ -1,15 +1,16 @@
 package client.systems.client;
 
+import client.components.HealthComponent;
+import client.components.MovementComponent;
+import client.components.TransformComponent;
+import client.components.enemy.EnemyComponent;
+import client.components.player.PlayerNetworkComponent;
+import client.entities.Bullet;
+import client.entities.Enemy;
+import client.network.NetworkSpawnManager;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
-import client.components.enemy.EnemyComponent;
-import client.components.TransformComponent;
-import client.components.MovementComponent;
-import client.components.player.PlayerTagComponent;
-import client.components.HealthComponent;
-import client.entities.Enemy;
-import client.entities.Bullet;
 
 import java.util.Random;
 
@@ -17,15 +18,16 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
     private ComponentMapper<MovementComponent> mm;
     private ComponentMapper<HealthComponent> healthM;
-    private Engine<Context> engine;
     private final Random random = new Random();
-    private float spawnTimer = 0.0f;
-    private final float spawnInterval = 3.0f;
     private float shootTimer = 0.0f;
     private final float shootInterval = 1.0f;
 
-    public EnemySystem() {
+    private NetworkSpawnManager nsm;
+
+    public EnemySystem(NetworkSpawnManager nsm) {
         super(EnemyComponent.class);
+
+        this.nsm = nsm;
     }
 
     @Override
@@ -59,12 +61,6 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
     public void update(Context ctx) {
         super.update(ctx);
 
-        spawnTimer -= ctx.deltaTime;
-        if (spawnTimer <= 0.0f) {
-            spawnEnemy();
-            spawnTimer = spawnInterval;
-        }
-
         shootTimer -= ctx.deltaTime;
         if (shootTimer <= 0.0f) {
             shootAtPlayer();
@@ -72,44 +68,43 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
         }
     }
 
-    private void spawnEnemy() {
-        new Enemy(engine, -1);
-    }
-
     private void shootAtPlayer() {
         long[] bitsets = getBitsets();
-        int playerIndex = getComponentIndex(PlayerTagComponent.class);
+        int playerIndex = getComponentIndex(PlayerNetworkComponent.class);
         long playerMask = 1L << playerIndex;
-        int healthIndex = getComponentIndex(HealthComponent.class);
-        long healthMask = 1L << healthIndex;
         int entityMax = getEntityMax();
 
         for (int i = 0; i < entityMax; i++) {
-            if ((bitsets[i] & playerMask) == playerMask && (bitsets[i] & healthMask) == healthMask) {
-                HealthComponent playerHealth = healthM.get(i);
-                if (!playerHealth.isAlive()) {
+            if ((bitsets[i] & playerMask) != playerMask) {
+                continue;
+            }
+
+            HealthComponent playerHealth = healthM.get(i);
+            if (!playerHealth.isAlive()) {
+                continue;
+            }
+
+            TransformComponent playerTransform = tm.get(i);
+
+            for (int enemyId = 0; enemyId < entityMax; enemyId++) {
+                if ((bitsets[enemyId] & getFamilyMask()) != getFamilyMask()) {
                     continue;
                 }
 
-                TransformComponent playerTransform = tm.get(i);
-
-                for (int enemyId = 0; enemyId < entityMax; enemyId++) {
-                    if ((bitsets[enemyId] & getFamilyMask()) == getFamilyMask()) {
-                        HealthComponent enemyHealth = healthM.get(enemyId);
-                        if (!enemyHealth.isAlive()) {
-                            continue;
-                        }
-
-                        TransformComponent enemyTransform = tm.get(enemyId);
-                        float dx = playerTransform.position.x - enemyTransform.position.x;
-                        float dy = playerTransform.position.y - enemyTransform.position.y;
-                        float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
-
-                        new Bullet(engine, -1, enemyTransform.position.x, enemyTransform.position.y, angle, true);
-                    }
+                HealthComponent enemyHealth = healthM.get(enemyId);
+                if (!enemyHealth.isAlive()) {
+                    continue;
                 }
-                break;
+
+                TransformComponent enemyTransform = tm.get(enemyId);
+                float dx = playerTransform.position.x - enemyTransform.position.x;
+                float dy = playerTransform.position.y - enemyTransform.position.y;
+                float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
+
+                System.out.printf("spawned enemy bullet at %f %f with angle %f%n", enemyTransform.position.x, enemyTransform.position.y, angle);
+                nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, angle, true));
             }
+            break;
         }
     }
 }

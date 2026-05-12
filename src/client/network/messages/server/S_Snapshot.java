@@ -30,8 +30,6 @@ public class S_Snapshot implements Message {
         for (int i = 0; i < length; i++) {
             entitySnapshots.add(EntitySnapshot.deserialize(in));
         }
-
-        System.out.println("S_Snapshot{...}");
         return new S_Snapshot(entitySnapshots);
     }
 

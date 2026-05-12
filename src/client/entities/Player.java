@@ -18,9 +18,16 @@ import java.nio.ByteBuffer;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class Player extends Prefab {
+    private int playerIndex;
+    private int networkId;
     public Player(Engine<Context> engine, int playerIndex, int networkId) {
         super(engine);
 
+        this.playerIndex = playerIndex;
+        this.networkId = networkId;
+    }
+
+    public void spawn() {
         int maxHealth = 6;
         int health = 6;
         float movement_speed = 1000.0f;
@@ -44,6 +51,11 @@ public class Player extends Prefab {
         )));
         entity.addComponent(new HealthComponent(100.0f));
         entity.addComponent(new NetworkIdComponent(networkId));
+    }
+
+    @Override
+    public void spawnServer() {
+
     }
 
     public static Player deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {

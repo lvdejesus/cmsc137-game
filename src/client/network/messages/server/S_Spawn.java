@@ -5,8 +5,6 @@ import client.network.messages.Message;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class S_Spawn implements Message {
     private final int prefabId;
@@ -45,7 +43,7 @@ public class S_Spawn implements Message {
         int length = in.readInt();
         byte[] bytes = in.readNBytes(length);
 
-        System.out.println("S_Spawn{...}");
+        System.out.printf("S_Spawn{prefabId = %d, networkId = %d}%n", prefabId, networkId);
         return new S_Spawn(prefabId, networkId, bytes);
     }
 }

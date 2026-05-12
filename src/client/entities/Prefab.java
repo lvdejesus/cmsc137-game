@@ -4,7 +4,7 @@ import client.systems.client.Context;
 import framework.engine.Engine;
 import framework.engine.Entity;
 
-public class Prefab {
+public abstract class Prefab {
     protected final Entity<Context> entity;
 
     protected Prefab(Engine<Context> engine) {
@@ -14,4 +14,7 @@ public class Prefab {
     public Entity<Context> getEntity() {
         return entity;
     }
+
+    public abstract void spawn();
+    public abstract void spawnServer();
 }

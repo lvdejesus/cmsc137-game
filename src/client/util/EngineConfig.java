@@ -1,12 +1,13 @@
 package client.util;
+
 import client.components.enemy.EnemyComponent;
+import client.network.NetworkSpawnManager;
 import client.systems.client.*;
 import framework.engine.*;
 import client.systems.client.player.PlayerRotationSystem;
 import client.components.*;
 import client.components.bullet.BulletComponent;
 import client.components.player.*;
-import client.rendering.Camera;
 
 
 public class EngineConfig {
@@ -14,31 +15,30 @@ public class EngineConfig {
         engine.register(TransformComponent.class);
         engine.register(PlayerNetworkComponent.class);
         engine.register(NetworkIdComponent.class);
+        engine.register(EnemyComponent.class);
+        engine.register(BulletComponent.class);
+        engine.register(CollisionComponent.class);
+        engine.register(MovementComponent.class);
+        engine.register(PlayerStateComponent.class);
+        engine.register(HealthComponent.class);
     }
 
-    public static void registerComponents(Engine<Context> engine){
+    public static void registerComponents(Engine<Context> engine) {
         registerSyncComponents(engine);
 
-        engine.register(MovementComponent.class);
         engine.register(RenderComponent.class);
         engine.register(AnimationComponent.class);
-        engine.register(PlayerStateComponent.class);
         engine.register(TextComponent.class);
-        engine.register(HealthComponent.class);
-        engine.register(CollisionComponent.class);
 
         //tags
-        engine.register(EnemyComponent.class);
         engine.register(PlayerTagComponent.class);
-        //bullet
-        engine.register(BulletComponent.class);
     }
 
-    public static void addSystems(Engine<Context> engine, Camera camera){
+    public static void addSystems(Engine<Context> engine) {
         // Add systems
         engine.addSystem(new PhysicsSystem());
         // Wall collision
-        engine.addSystem(new WallCollisionSystem(camera));
+        engine.addSystem(new WallCollisionSystem());
 
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new RenderSystem());
@@ -47,8 +47,15 @@ public class EngineConfig {
         engine.addSystem(new PlayerRotationSystem());
         engine.addSystem(new MovementSystem());
         // Enemy systems
-        engine.addSystem(new EnemySystem());
-        engine.addSystem(new BulletSystem());
-        engine.addSystem(new DamageSystem());
+        // engine.addSystem(new EnemySystem());
+    }
+
+    public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm) {
+        engine.addSystem(new PhysicsSystem());
+        engine.addSystem(new EnemySpawnSystem(nsm));
+        engine.addSystem(new EnemySystem(nsm));
+        engine.addSystem(new BulletSystem(nsm));
+        engine.addSystem(new BulletWallCollisionSystem(nsm));
+        engine.addSystem(new DamageSystem(nsm));
     }
 }

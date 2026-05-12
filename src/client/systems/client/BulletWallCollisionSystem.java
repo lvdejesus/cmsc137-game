@@ -1,19 +1,27 @@
 package client.systems.client;
 
+import client.components.CollisionComponent;
+import client.components.MovementComponent;
+import client.components.NetworkIdComponent;
+import client.components.TransformComponent;
+import client.components.bullet.BulletComponent;
+import client.network.NetworkSpawnManager;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
-import client.components.TransformComponent;
-import client.components.CollisionComponent;
-import client.components.MovementComponent;
 
-public class WallCollisionSystem extends IteratingEntitySystem<Context> {
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class BulletWallCollisionSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> transformM;
     private ComponentMapper<CollisionComponent> collisionM;
-    private ComponentMapper<MovementComponent> movementM;
 
-    public WallCollisionSystem() {
-        super(TransformComponent.class, CollisionComponent.class);
+    private NetworkSpawnManager nsm;
+
+    public BulletWallCollisionSystem(NetworkSpawnManager nsm) {
+        super(BulletComponent.class);
+        this.nsm = nsm;
     }
 
     @Override
@@ -21,7 +29,6 @@ public class WallCollisionSystem extends IteratingEntitySystem<Context> {
         super.setEngine(engine);
         this.transformM = engine.getMapper(TransformComponent.class);
         this.collisionM = engine.getMapper(CollisionComponent.class);
-        this.movementM = engine.getMapper(MovementComponent.class);
     }
 
     @Override
@@ -29,7 +36,6 @@ public class WallCollisionSystem extends IteratingEntitySystem<Context> {
         TransformComponent transform = transformM.get(id);
         CollisionComponent collision = collisionM.get(id);
 
-        // Play area boundaries (matching map_1.png scaled to 800x600)
         float mapWidth = 800.0f;
         float mapHeight = 600.0f;
         
@@ -58,13 +64,12 @@ public class WallCollisionSystem extends IteratingEntitySystem<Context> {
         }
 
         long[] bitsets = getBitsets();
+        int bulletIndex = getComponentIndex(BulletComponent.class);
+        long bulletMask = 1L << bulletIndex;
 
-        int movementIndex = getComponentIndex(MovementComponent.class);
-        long movementMask = 1L << movementIndex;
-        if ((bitsets[id] & movementMask) == movementMask) {
-            MovementComponent movement = movementM.get(id);
-            if (hitLeft || hitRight) movement.velocity.x = 0;
-            if (hitTop || hitBottom) movement.velocity.y = 0;
+        if ((bitsets[id] & bulletMask) == bulletMask) {
+            NetworkIdComponent bulletnic = engine.getMapper(NetworkIdComponent.class).get(id);
+            nsm.despawn(id, bulletnic.networkId);
         }
     }
 }

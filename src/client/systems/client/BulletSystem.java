@@ -1,16 +1,25 @@
 package client.systems.client;
 
+import client.components.NetworkIdComponent;
+import client.network.NetworkSpawnManager;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
 import client.components.bullet.BulletComponent;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class BulletSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<BulletComponent> bm;
-    private Engine<Context> engine;
+    private ComponentMapper<NetworkIdComponent> nicm;
 
-    public BulletSystem() {
-        super(BulletComponent.class);
+    private NetworkSpawnManager nsm;
+
+    public BulletSystem(NetworkSpawnManager nsm) {
+        super(BulletComponent.class, NetworkIdComponent.class);
+
+        this.nsm = nsm;
     }
 
     @Override
@@ -18,6 +27,7 @@ public class BulletSystem extends IteratingEntitySystem<Context> {
         super.setEngine(engine);
         this.engine = engine;
         this.bm = engine.getMapper(BulletComponent.class);
+        this.nicm = engine.getMapper(NetworkIdComponent.class);
     }
 
     @Override
@@ -27,7 +37,8 @@ public class BulletSystem extends IteratingEntitySystem<Context> {
         bullet.age += ctx.deltaTime;
 
         if (bullet.age >= bullet.lifetime) {
-            engine.destroyEntity(id);
+            NetworkIdComponent nic = nicm.get(id);
+            nsm.despawn(id, nic.networkId);
         }
     }
 }

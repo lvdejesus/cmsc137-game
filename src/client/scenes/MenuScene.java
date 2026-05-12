@@ -6,10 +6,7 @@ import client.components.TransformComponent;
 import client.rendering.*;
 import client.systems.client.*;
 import client.systems.client.player.PlayerRotationSystem;
-import framework.engine.Engine;
-import framework.engine.Entity;
-import framework.engine.IteratingEntitySystem;
-import framework.engine.Window;
+import framework.engine.*;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
@@ -142,7 +139,7 @@ public class MenuScene implements Scene {
     private void setGameSystemsEnabled(boolean enabled) {
         if (engine == null) return;
         
-        disableSystem(EnemySystem.class, enabled);
+        // disableSystem(EnemySystem.class, enabled);
         disableSystem(BulletSystem.class, enabled);
         disableSystem(MovementSystem.class, enabled);
         disableSystem(PhysicsSystem.class, enabled);
@@ -150,7 +147,7 @@ public class MenuScene implements Scene {
         disableSystem(DamageSystem.class, enabled);
     }
 
-    private <T extends IteratingEntitySystem<Context>> void disableSystem(Class<T> type, boolean enabled) {
+    private <T extends EntitySystem<Context>> void disableSystem(Class<T> type, boolean enabled) {
         T system = engine.getSystem(type);
         if (system != null) {
             system.setEnabled(enabled);

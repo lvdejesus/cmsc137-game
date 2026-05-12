@@ -6,10 +6,7 @@ import client.network.NetworkManager;
 import client.rendering.Anchor;
 import client.rendering.Font;
 import client.systems.client.*;
-import framework.engine.Engine;
-import framework.engine.Entity;
-import framework.engine.IteratingEntitySystem;
-import framework.engine.Window;
+import framework.engine.*;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
@@ -74,7 +71,7 @@ public class LobbyScene implements Scene {
     private void setGameSystemsEnabled(boolean enabled) {
         if (engine == null) return;
         
-        enableSystem(EnemySystem.class, enabled);
+        // enableSystem(EnemySystem.class, enabled);
         enableSystem(BulletSystem.class, enabled);
         enableSystem(MovementSystem.class, enabled);
         enableSystem(PhysicsSystem.class, enabled);
@@ -82,7 +79,7 @@ public class LobbyScene implements Scene {
         enableSystem(DamageSystem.class, enabled);
     }
 
-    private <T extends IteratingEntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
+    private <T extends EntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
         T system = engine.getSystem(type);
         if (system != null) {
             system.setEnabled(enabled);

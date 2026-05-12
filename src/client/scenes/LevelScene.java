@@ -55,6 +55,7 @@ public class LevelScene implements Scene {
 
         int playerIndex = NetworkManager.getInstance().getPlayerIndex();
         this.player = new Player(engine, playerIndex, NetworkManager.getInstance().getNetworkId());
+        this.player.spawn();
         this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
 
         // Load background map
@@ -76,7 +77,7 @@ public class LevelScene implements Scene {
     }
 
     private void setGameSystemsEnabled(boolean enabled) {
-        enableSystem(EnemySystem.class, enabled);
+        // enableSystem(EnemySystem.class, enabled);
         enableSystem(BulletSystem.class, enabled);
         enableSystem(MovementSystem.class, enabled);
         enableSystem(client.systems.client.player.PlayerRotationSystem.class, enabled);
@@ -84,7 +85,7 @@ public class LevelScene implements Scene {
         enableSystem(PhysicsSystem.class, enabled);
     }
 
-    private <T extends IteratingEntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
+    private <T extends EntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
         T system = engine.getSystem(type);
         if (system != null) {
             system.setEnabled(enabled);
@@ -139,21 +140,25 @@ public class LevelScene implements Scene {
                 if (nm.networkId == m.getNetworkId()) continue;
                 Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
                 networkEntityMap.put(m.getNetworkId(), prefab.getEntity().getId());
-            }
-            if (msg instanceof S_Snapshot m) {
+            } else if (msg instanceof S_Despawn m) {
+                int entityId = networkEntityMap.remove(m.getNetworkId());
+                engine.destroyEntity(entityId);
+            } else if (msg instanceof S_Snapshot m) {
                 for (var entitySnapshot : m.getEntitySnapshots()) {
-                    // implicit player spawn for now
                     Integer entityId = networkEntityMap.get(entitySnapshot.getNetworkId());
                     if (entitySnapshot.getNetworkId() == nm.networkId) continue;
 
                     if (entityId == null) {
-                        throw new RuntimeException("Entity with ID not found.");
+                        continue;
                     }
 
                     for (var component : entitySnapshot.getComponents()) {
                         var cc = engine.getComponentClass(component.getComponentId());
-                        var tc = (SyncComponent) engine.getMapper(cc).get(entityId);
-                        tc.syncFromBytes(component.getData());
+                        var syncComponent = (SyncComponent) engine.getMapper(cc).get(entityId);
+                        if (syncComponent == null) {
+                            continue;
+                        }
+                        syncComponent.syncFromBytes(component.getData());
                     }
                 }
             }

@@ -55,5 +55,6 @@ public class SnapshotSystem extends IteratingEntitySystem<Context> {
         super.update(ctx);
 
         this.queue.add(new MessagePair(-1, new S_Snapshot(entityQueue.stream().toList())));
+        entityQueue.clear();
     }
 }

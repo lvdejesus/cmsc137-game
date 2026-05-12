@@ -1,11 +1,7 @@
 package client.network;
 
-import client.components.NetworkIdComponent;
 import client.components.TransformComponent;
-import client.entities.Bullet;
-import client.entities.ClientPrefabRegistry;
-import client.entities.PrefabRegistry;
-import client.entities.RemotePlayer;
+import client.entities.*;
 import client.network.messages.Message;
 import client.network.messages.client.C_PlayerPosition;
 import client.network.messages.client.C_Shoot;
@@ -18,7 +14,6 @@ import client.systems.server.SnapshotSystem;
 import client.util.EngineConfig;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import org.joml.Vector2f;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -29,7 +24,6 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameServer implements Runnable {
     private static final int TCP_PORT = 12345;
@@ -54,8 +48,6 @@ public class GameServer implements Runnable {
     private final ConcurrentLinkedQueue<EntitySnapshot> snapshotQueue = new ConcurrentLinkedQueue<>();
 
     private static final double NANO_TO_SECOND = 1_000_000_000.0;
-
-    private AtomicInteger networkId = new AtomicInteger(0);
 
     public GameServer(String localIP) {
         this.localIP = localIP;
@@ -114,33 +106,26 @@ public class GameServer implements Runnable {
         EngineConfig.registerSyncComponents(engine);
 
         Map<Integer, Integer> playerToEntityMap = new HashMap<>();
-        Map<Integer, Integer> playerToNetworkMap = new HashMap<>();
+
+        NetworkSpawnManager nsm = new NetworkSpawnManager(engine, prefabRegistry, outQueue);
 
         while (!serverSocket.isClosed() && !gameStarted) {
             try {
                 Socket socket = serverSocket.accept();
                 int playerId = lastId++;
 
-                ClientConnection client = new ClientConnection(inQueue, socket, playerId, networkId.get());
-                playerToNetworkMap.put(playerId, networkId.get());
+                NetworkSpawnManager.SpawnResult res = nsm.spawn(RemotePlayer.class, RemotePlayer.serialize(playerId));
+                int networkId = res.networkId;
+
+                ClientConnection client = new ClientConnection(inQueue, socket, playerId, networkId);
 
                 connectedClients.put(lastId, client);
                 broadcastPlayerCount();
 
-                var entity = engine.createEntity();
-                entity.addComponent(new TransformComponent(new Vector2f(200.0f, 200.0f)));
-                entity.addComponent(new NetworkIdComponent(networkId.get()));
-
-                playerToEntityMap.put(playerId, entity.getId());
+                playerToEntityMap.put(playerId, res.prefab.getEntity().getId());
 
                 checkStartGame();
                 System.out.println("Client connected: " + socket.getInetAddress() + " assigned ID: " + playerId);
-
-                int prefabId = prefabRegistry.get(RemotePlayer.class);
-                Message msg = new S_Spawn(prefabId, networkId.get(), RemotePlayer.serialize(playerId));
-                outQueue.add(new MessagePair(-1, msg));
-
-                networkId.incrementAndGet();
             } catch (IOException e) {
                 if (!serverSocket.isClosed()) e.printStackTrace();
             }
@@ -163,12 +148,13 @@ public class GameServer implements Runnable {
         handlers.put(C_Shoot.class, (id, message) -> {
             if (!(message instanceof C_Shoot pp)) return;
 
-            int prefabId = prefabRegistry.get(Bullet.class);
-            Message msg = new S_Spawn(prefabId, networkId.getAndIncrement(), Bullet.serialize(pp.getPx(), pp.getPy(), pp.getAngle(), false));
-            outQueue.add(new MessagePair(-1, msg));
+            nsm.spawn(Bullet.class, Bullet.serialize(pp.getPx(), pp.getPy(), pp.getAngle(), false));
         });
 
         engine.addSystem(new ServerNetworkInputSystem(inQueue, handlers));
+
+        EngineConfig.addServerSystems(engine, nsm);
+
         engine.addSystem(new SnapshotSystem(snapshotQueue, outQueue));
         engine.addSystem(new ServerNetworkOutputSystem(outQueue, connectedClients));
 

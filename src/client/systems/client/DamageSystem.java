@@ -1,25 +1,32 @@
 package client.systems.client;
 
+import client.components.NetworkIdComponent;
+import client.components.player.PlayerNetworkComponent;
+import client.network.NetworkSpawnManager;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.IteratingEntitySystem;
+import framework.engine.EntitySystem;
 import client.components.HealthComponent;
 import client.components.bullet.BulletComponent;
 import client.components.enemy.EnemyComponent;
 import client.components.TransformComponent;
 import client.components.CollisionComponent;
-import client.components.player.PlayerTagComponent;
 import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
 
-public class DamageSystem extends IteratingEntitySystem<Context> {
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class DamageSystem extends EntitySystem<Context> {
     private ComponentMapper<HealthComponent> healthM;
     private ComponentMapper<TransformComponent> transformM;
     private ComponentMapper<CollisionComponent> collisionM;
     private ComponentMapper<BulletComponent> bulletM;
 
-    public DamageSystem() {
-        super(HealthComponent.class);
+    private NetworkSpawnManager nsm;
+
+    public DamageSystem(NetworkSpawnManager nsm) {
+        this.nsm = nsm;
     }
 
     @Override
@@ -32,35 +39,30 @@ public class DamageSystem extends IteratingEntitySystem<Context> {
     }
 
     @Override
-    public void processEntity(int id, Context ctx) {
-        // Doesn't iterate so use update
-    }
-
-    @Override
     public void update(Context ctx) {
-        super.update(ctx);
-        
         long[] bitsets = getBitsets();
         int bulletIndex = getComponentIndex(BulletComponent.class);
         int enemyIndex = getComponentIndex(EnemyComponent.class);
-        int playerIndex = getComponentIndex(PlayerTagComponent.class);
+        int networkIndex = getComponentIndex(NetworkIdComponent.class);
+        int playerIndex = getComponentIndex(PlayerNetworkComponent.class);
 
         long bulletMask = 1L << bulletIndex;
         long enemyMask = 1L << enemyIndex;
+        long networkMask = 1L << networkIndex;
         long playerMask = 1L << playerIndex;
 
         int entityMax = getEntityMax();
         
         // Player bullets hitting enemies
         for (int bulletId = 0; bulletId < entityMax; bulletId++) {
-            if (!hasComponents(bitsets[bulletId], bulletMask) || bulletM.get(bulletId).isEnemy) {
+            if (!hasComponents(bitsets[bulletId], bulletMask | networkMask) || bulletM.get(bulletId).isEnemy) {
                 continue;
             }
 
             AABBf bulletBox = getWorldBox(bulletId);
 
             for (int enemyId = 0; enemyId < entityMax; enemyId++) {
-                if (!hasComponents(bitsets[enemyId], enemyMask)) {
+                if (!hasComponents(bitsets[enemyId], enemyMask | networkMask)) {
                     continue;
                 }
 
@@ -69,12 +71,15 @@ public class DamageSystem extends IteratingEntitySystem<Context> {
                     continue;
                 }
 
-                if (checkIntersection(bulletBox, getWorldBox(enemyId))) {
+                if (getWorldBox(enemyId).intersectsAABB(bulletBox)) {
                     enemyHealth.damage(25.0f);
-                    engine.destroyEntity(bulletId);
+
+                    NetworkIdComponent bulletnic = engine.getMapper(NetworkIdComponent.class).get(bulletId);
+                    nsm.despawn(bulletId, bulletnic.networkId);
 
                     if (!enemyHealth.isAlive()) {
-                        engine.destroyEntity(enemyId);
+                        NetworkIdComponent enemynic = engine.getMapper(NetworkIdComponent.class).get(enemyId);
+                        nsm.despawn(enemyId, enemynic.networkId);
                     }
                 }
             }
@@ -89,18 +94,18 @@ public class DamageSystem extends IteratingEntitySystem<Context> {
             AABBf bulletBox = getWorldBox(bulletId);
 
             for (int playerId = 0; playerId < entityMax; playerId++) {
-                if (!hasComponents(bitsets[playerId], playerMask)) {
-                    continue;
-                }
+                if (!hasComponents(bitsets[playerId], playerMask)) continue;
 
                 HealthComponent playerHealth = healthM.get(playerId);
-                if (!playerHealth.isAlive()) {
+                if (playerHealth == null || !playerHealth.isAlive()) {
                     continue;
                 }
 
-                if (checkIntersection(bulletBox, getWorldBox(playerId))) {
+                AABBf playerBox = getWorldBox(playerId);
+                if (playerBox.intersectsAABB(bulletBox)) {
                     playerHealth.damage(10.0f);
-                    engine.destroyEntity(bulletId);
+                    NetworkIdComponent bulletnic = engine.getMapper(NetworkIdComponent.class).get(bulletId);
+                    nsm.despawn(bulletId, bulletnic.networkId);
                 }
             }
         }

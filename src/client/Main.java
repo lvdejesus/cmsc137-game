@@ -45,7 +45,7 @@ public class Main {
         engine = new Engine<>();
         // Add systems and components
         EngineConfig.registerComponents(engine);
-        EngineConfig.addSystems(engine, camera);
+        EngineConfig.addSystems(engine);
 
         // Set initial scene
         client.scenes.SceneManager.setScene(new client.scenes.MenuScene(window), engine);

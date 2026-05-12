@@ -30,18 +30,6 @@ public abstract class IteratingEntitySystem<T> extends EntitySystem<T> {
         }
     }
 
-    protected long[] getBitsets() {
-        return engine.getBitsets();
-    }
-    
-    protected int getEntityMax() {
-        return engine.getEntityMax();
-    }
-    
-    protected int getComponentIndex(Class<? extends Component> component) {
-        return engine.getComponentIndex(component);
-    }
-
     protected long getFamilyMask() {
         return familyMask;
     }

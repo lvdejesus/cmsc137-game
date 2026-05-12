@@ -1,7 +1,5 @@
 package client.entities;
 
-import client.components.NetworkIdComponent;
-import client.network.messages.server.S_Spawn;
 import client.systems.client.Context;
 import framework.engine.Engine;
 
@@ -25,7 +23,25 @@ public class PrefabRegistry {
         try {
             PrefabDeserializer d = deserializers.get(prefabId);
             if (d == null) throw new IOException("Unknown prefab type: " + prefabId);
-            return d.deserialize(engine, networkId, ByteBuffer.wrap(bytes));
+            Prefab prefab = d.deserialize(engine, networkId, ByteBuffer.wrap(bytes));
+            prefab.spawn();
+
+            return prefab;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public Prefab spawnServer(Engine<Context> engine, int prefabId, int networkId, byte[] bytes) {
+        try {
+            PrefabDeserializer d = deserializers.get(prefabId);
+            if (d == null) throw new IOException("Unknown prefab type: " + prefabId);
+            Prefab prefab = d.deserialize(engine, networkId, ByteBuffer.wrap(bytes));
+            prefab.spawnServer();
+
+            return prefab;
         } catch (IOException e) {
             e.printStackTrace();
         }
