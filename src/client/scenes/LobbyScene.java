@@ -33,6 +33,8 @@ public class LobbyScene implements Scene {
     private boolean isHost;
     private String hostIP;
 
+    private static final int NUM_PLAYERS = 1;
+
     public LobbyScene(boolean isHost, String hostIP) {
         this.isHost = isHost;
         this.hostIP = hostIP;
@@ -109,11 +111,11 @@ public class LobbyScene implements Scene {
 
         TextComponent tc = statusTextEntity.getComponent(TextComponent.class);
         if (tc != null) {
-            tc.text = "Waiting for players (" + count + "/4)";
+            tc.text = "Waiting for players (" + count + "/" + NUM_PLAYERS + ")";
         }
 
         // Host triggers start for everyone
-        if (isHost && count >= 4 && !nm.isGameStarted()) {
+        if (isHost && count >= NUM_PLAYERS && !nm.isGameStarted()) {
             nm.startGame();
         }
 
