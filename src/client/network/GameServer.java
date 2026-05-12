@@ -2,11 +2,13 @@ package client.network;
 
 import client.components.NetworkIdComponent;
 import client.components.TransformComponent;
+import client.entities.Bullet;
 import client.entities.ClientPrefabRegistry;
 import client.entities.PrefabRegistry;
 import client.entities.RemotePlayer;
 import client.network.messages.Message;
 import client.network.messages.client.C_PlayerPosition;
+import client.network.messages.client.C_Shoot;
 import client.network.messages.client.ClientRegistry;
 import client.network.messages.server.*;
 import client.systems.client.Context;
@@ -27,6 +29,7 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameServer implements Runnable {
     private static final int TCP_PORT = 12345;
@@ -51,6 +54,8 @@ public class GameServer implements Runnable {
     private final ConcurrentLinkedQueue<EntitySnapshot> snapshotQueue = new ConcurrentLinkedQueue<>();
 
     private static final double NANO_TO_SECOND = 1_000_000_000.0;
+
+    private AtomicInteger networkId = new AtomicInteger(0);
 
     public GameServer(String localIP) {
         this.localIP = localIP;
@@ -105,8 +110,6 @@ public class GameServer implements Runnable {
         System.out.println("Server started on IP: " + localIP);
         discoveryService.startResponding(localIP);
 
-        int networkId = 0;
-
         Engine<Context> engine = new Engine<>();
         EngineConfig.registerSyncComponents(engine);
 
@@ -118,15 +121,15 @@ public class GameServer implements Runnable {
                 Socket socket = serverSocket.accept();
                 int playerId = lastId++;
 
-                ClientConnection client = new ClientConnection(inQueue, socket, playerId, networkId);
-                playerToNetworkMap.put(playerId, networkId);
+                ClientConnection client = new ClientConnection(inQueue, socket, playerId, networkId.get());
+                playerToNetworkMap.put(playerId, networkId.get());
 
                 connectedClients.put(lastId, client);
                 broadcastPlayerCount();
 
                 var entity = engine.createEntity();
                 entity.addComponent(new TransformComponent(new Vector2f(200.0f, 200.0f)));
-                entity.addComponent(new NetworkIdComponent(networkId));
+                entity.addComponent(new NetworkIdComponent(networkId.get()));
 
                 playerToEntityMap.put(playerId, entity.getId());
 
@@ -134,10 +137,10 @@ public class GameServer implements Runnable {
                 System.out.println("Client connected: " + socket.getInetAddress() + " assigned ID: " + playerId);
 
                 int prefabId = prefabRegistry.get(RemotePlayer.class);
-                Message msg = new S_Spawn(prefabId, networkId, RemotePlayer.serialize(playerId));
+                Message msg = new S_Spawn(prefabId, networkId.get(), RemotePlayer.serialize(playerId));
                 outQueue.add(new MessagePair(-1, msg));
 
-                networkId++;
+                networkId.incrementAndGet();
             } catch (IOException e) {
                 if (!serverSocket.isClosed()) e.printStackTrace();
             }
@@ -155,6 +158,14 @@ public class GameServer implements Runnable {
             tc.position.x = pp.getX();
             tc.position.y = pp.getY();
             tc.rotation = pp.getRotation();
+        });
+
+        handlers.put(C_Shoot.class, (id, message) -> {
+            if (!(message instanceof C_Shoot pp)) return;
+
+            int prefabId = prefabRegistry.get(Bullet.class);
+            Message msg = new S_Spawn(prefabId, networkId.getAndIncrement(), Bullet.serialize(pp.getPx(), pp.getPy(), pp.getAngle(), false));
+            outQueue.add(new MessagePair(-1, msg));
         });
 
         engine.addSystem(new ServerNetworkInputSystem(inQueue, handlers));

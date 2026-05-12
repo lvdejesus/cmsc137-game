@@ -104,6 +104,8 @@ public class LevelScene implements Scene {
             handlePauseMenuInput(input);
         }
 
+        NetworkManager nm = NetworkManager.getInstance();
+
         for (InputHandler.MouseEvent event : input.getEvents()) {
             if (event.type == InputHandler.MouseEventType.LEFT_CLICK && !event.consumed) {
                 event.consume();
@@ -119,13 +121,11 @@ public class LevelScene implements Scene {
                     float dy = mouseY - playerY;
                     float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
 
-                    new Bullet(engine, playerX, playerY, angle);
+                    // new Bullet(engine, playerX, playerY, angle);
+                    nm.shoot(playerX, playerY, angle);
                 }
             }
         }
-
-        // --- MULTIPLAYER SYNC ---
-        NetworkManager nm = NetworkManager.getInstance();
 
         // 1. Broadcast our position
         if (playerTransform != null) {
@@ -158,15 +158,6 @@ public class LevelScene implements Scene {
                 }
             }
         }
-        // 3. Remove disconnected players
-//        remotePlayers.keySet().removeIf(id -> {
-//            if (!nm.getRemotePlayerStates().containsKey(id)) {
-//                Entity<Context> e = remotePlayers.get(id);
-//                if (e != null) engine.destroyEntity(e.getId());
-//                return true;
-//            }
-//            return false;
-//        });
     }
 
     private void toggleMenu() {

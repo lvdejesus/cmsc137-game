@@ -84,6 +84,10 @@ public class NetworkManager {
         client.sendPosition(playerIndex, x, y, rot);
     }
 
+    public void shoot(float px, float py, float angle) {
+        client.sendBullet(playerIndex, px, py, angle);
+    }
+
     private String findLocalIP() {
         try {
             java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();

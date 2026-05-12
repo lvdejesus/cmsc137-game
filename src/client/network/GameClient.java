@@ -2,6 +2,7 @@ package client.network;
 
 import client.network.messages.Message;
 import client.network.messages.client.C_PlayerPosition;
+import client.network.messages.client.C_Shoot;
 import client.network.messages.client.ClientRegistry;
 import client.network.messages.server.ServerRegistry;
 
@@ -71,6 +72,17 @@ public class GameClient {
         synchronized (out) {
             try {
                 clientRegistry.send(out, new C_PlayerPosition(playerIndex, x, y, rot));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void sendBullet(int playerIndex, float px, float py, float angle) {
+        if (!connected || out == null) return;
+        synchronized (out) {
+            try {
+                clientRegistry.send(out, new C_Shoot(playerIndex, px, py, angle));
             } catch (IOException e) {
                 e.printStackTrace();
             }
