@@ -4,7 +4,6 @@ import framework.engine.Engine;
 import client.systems.client.Context;
 import client.components.*;
 import client.components.bullet.BulletComponent;
-import client.components.CollisionComponent;
 import client.rendering.Texture;
 import client.rendering.TextureAtlas;
 import org.joml.Vector2f;
@@ -18,19 +17,20 @@ public class Bullet extends Prefab {
     int networkId;
     float x;
     float y;
-    float vx;
-    float vy;
+    float pvx;
+    float pvy;
     float angleDegrees;
     boolean isEnemy;
 
-    public Bullet(Engine<Context> engine, int networkId, float x, float y, float vx, float vy, float angleDegrees, boolean isEnemy) {
+    public Bullet(Engine<Context> engine, int networkId, float x, float y, float pvx, float pvy, float angleDegrees,
+            boolean isEnemy) {
         super(engine);
 
         this.networkId = networkId;
         this.x = x;
         this.y = y;
-        this.vx = vx;
-        this.vy = vy;
+        this.pvx = pvx;
+        this.pvy = pvy;
         this.angleDegrees = angleDegrees;
         this.isEnemy = isEnemy;
     }
@@ -49,8 +49,12 @@ public class Bullet extends Prefab {
     public void spawnServer() {
         float angleRadians = (float) Math.toRadians(angleDegrees);
         float speed = isEnemy ? 300.0f : 700.0f;
-        float vx = this.vx + (float) Math.cos(angleRadians) * speed;
-        float vy = this.vy + (float) Math.sin(angleRadians) * speed;
+        Vector2f dir = new Vector2f((float) Math.cos(angleRadians), (float) Math.sin(angleRadians));
+        float inherited = (pvx * dir.x + pvy * dir.y);
+        float inhertedStr = 1f;
+
+        float vx = dir.x * speed + dir.x * inherited * inhertedStr;
+        float vy = dir.y * speed + dir.y * inherited * inhertedStr;
 
         entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(0.5f, 0.5f)));
         entity.addComponent(new MovementComponent(0, 0, 0, new Vector2f(vx, vy)));
@@ -61,21 +65,20 @@ public class Bullet extends Prefab {
         entity.addComponent(bulletComp);
 
         entity.addComponent(new CollisionComponent(new AABBf(
-            new Vector3f(-4.0f, -4.0f, 0.0f),
-            new Vector3f(4.0f, 4.0f, 0.1f)
-        )));
+                new Vector3f(-4.0f, -4.0f, 0.0f),
+                new Vector3f(4.0f, 4.0f, 0.1f))));
         entity.addComponent(new NetworkIdComponent(networkId));
     }
 
     public static Bullet deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
         float x = bytes.getFloat();
         float y = bytes.getFloat();
-        float vx = bytes.getFloat();
-        float vy = bytes.getFloat();
+        float pvx = bytes.getFloat();
+        float pvy = bytes.getFloat();
         float angleDegrees = bytes.getFloat();
         boolean isEnemy = bytes.get() == 1;
 
-        return new Bullet(engine, networkId, x, y, vx, vy, angleDegrees, isEnemy);
+        return new Bullet(engine, networkId, x, y, pvx, pvy, angleDegrees, isEnemy);
     }
 
     public static byte[] serialize(float x, float y, float pvx, float pvy, float angle, boolean isEnemy) {

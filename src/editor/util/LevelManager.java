@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 public class LevelManager {
-    private static final String LEVELS_DIR = "res/levels";
+    private static final String LEVELS_DIR = "res/rooms";
 
     public static void saveGrid(int[][] grid, String filename) throws IOException {
         Path dir = Path.of(LEVELS_DIR);
