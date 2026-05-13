@@ -1,5 +1,6 @@
 package editor.util;
 
+import framework.json.JsonArray;
 import framework.json.JsonPair;
 import framework.json.JsonReader;
 import framework.json.JsonValue;
@@ -12,20 +13,31 @@ import java.util.List;
 import java.util.Optional;
 
 public class TileRegistry {
+    public static enum TileTextureType {
+        regular,
+        connected,
+        animated,
+    }
+
     public static class TileDefinition {
         public String name;
         public String textureFile;
-        public int index;
         public boolean solid;
         public boolean door;
         public Texture texture;
+        public TileTextureType type;
 
-        public TileDefinition(String name, String textureFile, int index, boolean solid, boolean door) {
+        public int tileWidth;
+        public int tileHeight;
+
+        public TileDefinition(String name, String textureFile, boolean solid, boolean door, int tileWidth, int tileHeight, TileTextureType type) {
             this.name = name;
             this.textureFile = textureFile;
-            this.index = index;
             this.solid = solid;
             this.door = door;
+            this.tileWidth = tileWidth;
+            this.tileHeight = tileHeight;
+            this.type = type;
         }
     }
 
@@ -42,28 +54,48 @@ public class TileRegistry {
                     JsonValue value = pair.get().value();
 
                     String textureFile = null;
-                    int index = 0;
                     boolean solid = false;
                     boolean door = false;
+                    int[] dims = new int[2];
+                    TileTextureType type = TileTextureType.regular;
 
                     Optional<JsonPair> tilePair;
                     while (true) {
                         tilePair = value.getPair();
                         if (tilePair.isEmpty()) break;
+                        System.out.println(tilePair.get().key());
 
                         String key = tilePair.get().key();
                         switch (key) {
                             case "texture":
                                 textureFile = tilePair.get().value().getString();
                                 break;
-                            case "index":
-                                index = tilePair.get().value().getInt();
+                            case "size":
+                                JsonArray arr = tilePair.get().value().getArray();
+                                int count = 0;
+
+                                while (count < 2) {
+                                    Optional<JsonValue> item = arr.getItem();
+                                    if (item.isPresent()) {
+                                        dims[count++] = item.get().getInt();
+                                    } else {
+                                        break;
+                                    }
+                                }
+
+                                while (arr.getItem().isPresent()) ;
+                                System.out.println("width: " + dims[0] + ", height: " + dims[1]);
                                 break;
                             case "solid":
                                 solid = tilePair.get().value().getInt() == 1;
                                 break;
                             case "door":
                                 door = tilePair.get().value().getInt() == 1;
+                                break;
+                            case "connecting":
+                                if(tilePair.get().value().getInt() == 1) {
+                                    type = TileTextureType.connected;
+                                }
                                 break;
                         }
                     }
@@ -72,7 +104,7 @@ public class TileRegistry {
                         throw new RuntimeException("Texture missing!");
                     }
 
-                    tiles.add(new TileDefinition(name, textureFile, index, solid, door));
+                    tiles.add(new TileDefinition(name, textureFile, solid, door, dims[0], dims[1], type));
                 } else {
                     break;
                 }
@@ -87,32 +119,6 @@ public class TileRegistry {
 
     public static TileDefinition getTile(int index) {
         return tiles.get(index);
-    }
-
-    public static void setSolid(int index, boolean solid) {
-        tiles.get(index).solid = solid;
-    }
-
-    public static void saveTiles() throws IOException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\n");
-        for (int i = 0; i < tiles.size(); i++) {
-            TileDefinition tile = tiles.get(i);
-            sb.append("    \"").append(tile.name).append("\": {\n");
-            sb.append("        \"texture\": \"").append(tile.textureFile).append("\",\n");
-            sb.append("        \"index\": ").append(tile.index).append(",\n");
-            sb.append("        \"solid\": ").append(tile.solid ? 1 : 0).append(",\n");
-            sb.append("        \"door\": ").append(tile.door ? 1 : 0).append("\n");
-            sb.append("    }");
-            if (i < tiles.size() - 1) sb.append(",");
-            sb.append("\n");
-        }
-        sb.append("}\n");
-        
-        java.nio.file.Files.writeString(
-            java.nio.file.Path.of("./res/textures/tiles/tiles.json"),
-            sb.toString()
-        );
     }
 
     public static int getTileCount() {

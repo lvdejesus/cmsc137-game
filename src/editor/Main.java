@@ -1,10 +1,7 @@
 package editor;
 
 import client.systems.client.*;
-import editor.components.EditorComponent;
-import editor.components.TileComponent;
-import editor.components.ButtonComponent;
-import editor.components.BooleanComponent;
+import editor.components.*;
 import editor.systems.CleanupSystem;
 import editor.systems.EditorSystem;
 import editor.systems.TileSystem;
@@ -30,6 +27,8 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33.*;
@@ -66,55 +65,80 @@ public class Main {
         float tileStartY = 200;
 
         int g = 0;
-        for (String region : TextureAtlas.get().listRegions()) {
-            if (!region.startsWith("tiles/")) continue;
-            System.out.println("Found tile " + region);
+        for (TileRegistry.TileDefinition tile : TileRegistry.tiles) {
+            String regionKey = "tiles/" + tile.textureFile;
+            Texture t = TextureAtlas.get().getRegion(regionKey);
 
-            Texture t = TextureAtlas.get().getRegion(region);
-            int xCount = t.width / TILE_SIZE;
-            int yCount = t.height / TILE_SIZE;
-            for (int i = 0; i < yCount; i++) {
-                for (int j = 0; j < xCount; j++) {
-                    float x = (g % COLS) * (TILE_SIZE * GAP + SCALE);
-                    float y = tileStartY + (float) (g / COLS) * (TILE_SIZE * GAP + SCALE);
+            int xCount = t.width / (TILE_SIZE * tile.tileWidth);
+            int yCount = t.height / (TILE_SIZE * tile.tileHeight);
 
-                    Entity<Context> entity = engine.createEntity();
-                    TransformComponent transformComponent = new TransformComponent(new Vector2f(x, y),
-                        new Vector2f(SCALE, SCALE), Anchor.TOP_LEFT);
+            float x = (g % COLS) * (TILE_SIZE * GAP + SCALE);
+            float y = tileStartY + (float) (g / COLS) * (TILE_SIZE * GAP + SCALE);
 
-                    float du = (t.u2 - t.u1) / xCount;
-                    float dv = (t.v2 - t.v1) / yCount;
+            Entity<Context> entity = engine.createEntity();
+            TransformComponent transformComponent = new TransformComponent(new Vector2f(x, y),
+                new Vector2f(SCALE, SCALE), Anchor.TOP_LEFT);
 
-                    float u1 = t.u1 + du * j;
-                    float u2 = t.u1 + du * (j + 1);
-                    float v1 = t.v1 + dv * i;
-                    float v2 = t.v1 + dv * (i + 1);
+            List<Texture> textures = List.of();
 
-                    Texture tex = new Texture(u1, v1, u2, v2, 16, 16);
-                    RenderComponent renderComponent = new RenderComponent(tex, 0);
-                    renderComponent.layer = "ui";
+            if (tile.type == TileRegistry.TileTextureType.regular) {
+                int i = 0;
+                int j = 0;
 
-                    editor.tiles.add(tex);
+                float du = (t.u2 - t.u1) / xCount;
+                float dv = (t.v2 - t.v1) / yCount;
 
-                    AABBf boundingBox = new AABBf();
-                    boundingBox.minX = transformComponent.position.x;
-                    boundingBox.minY = transformComponent.position.y;
-                    boundingBox.minZ = Float.NEGATIVE_INFINITY;
-                    boundingBox.maxX = transformComponent.position.x + renderComponent.texture.width * transformComponent.scale.x;
-                    boundingBox.maxY = transformComponent.position.y + renderComponent.texture.width * transformComponent.scale.y;
-                    boundingBox.maxZ = Float.POSITIVE_INFINITY;
+                float u1 = t.u1 + du * j;
+                float u2 = t.u1 + du * (j + 1);
+                float v1 = t.v1 + dv * i;
+                float v2 = t.v1 + dv * (i + 1);
 
-                    ClickableComponent clickableComponent = new ClickableComponent(boundingBox);
-                    TileComponent tileComponent = new TileComponent(g, false);
+                Texture tex = new Texture(u1, v1, u2, v2, 16 * tile.tileWidth, 16 * tile.tileHeight);
 
-                    entity.addComponent(renderComponent);
-                    entity.addComponent(transformComponent);
-                    entity.addComponent(clickableComponent);
-                    entity.addComponent(tileComponent);
+                textures = new ArrayList<>(List.of(new Texture[]{tex}));
+                editor.tiles.add(new EditorComponent.TileTexture(TileRegistry.TileTextureType.regular, textures));
+            } else if (tile.type == TileRegistry.TileTextureType.connected) {
+                textures = new ArrayList<>();
 
-                    g++;
+                for (int i = 0; i < yCount; i++) {
+                    for (int j = 0; j < xCount; j++) {
+                        float du = (t.u2 - t.u1) / xCount;
+                        float dv = (t.v2 - t.v1) / yCount;
+
+                        float u1 = t.u1 + du * j;
+                        float u2 = t.u1 + du * (j + 1);
+                        float v1 = t.v1 + dv * (yCount - i - 1);
+                        float v2 = t.v1 + dv * (yCount - i);
+
+                        Texture tex = new Texture(u1, v1, u2, v2, 16 * tile.tileWidth, 16 * tile.tileHeight);
+                        textures.add(tex);
+                    }
                 }
+                editor.tiles.add(new EditorComponent.TileTexture(TileRegistry.TileTextureType.connected, textures));
+            } else {
+                throw new RuntimeException("Invalid texture type.");
             }
+
+            RenderComponent renderComponent = new RenderComponent(textures.get(0), 0);
+            renderComponent.layer = "ui";
+
+            AABBf boundingBox = new AABBf();
+            boundingBox.minX = transformComponent.position.x;
+            boundingBox.minY = transformComponent.position.y;
+            boundingBox.minZ = Float.NEGATIVE_INFINITY;
+            boundingBox.maxX = transformComponent.position.x + renderComponent.texture.width * transformComponent.scale.x;
+            boundingBox.maxY = transformComponent.position.y + renderComponent.texture.width * transformComponent.scale.y;
+            boundingBox.maxZ = Float.POSITIVE_INFINITY;
+
+            ClickableComponent clickableComponent = new ClickableComponent(boundingBox);
+            TileComponent tileComponent = new TileComponent(g, false);
+
+            entity.addComponent(renderComponent);
+            entity.addComponent(transformComponent);
+            entity.addComponent(clickableComponent);
+            entity.addComponent(tileComponent);
+
+            g++;
         }
     }
 
@@ -194,6 +218,7 @@ public class Main {
         engine.register(TextComponent.class);
         engine.register(ButtonComponent.class);
         engine.register(BooleanComponent.class);
+        engine.register(EditorTileComponent.class);
 
         // Load tile definitions
         try {
@@ -243,50 +268,15 @@ public class Main {
 
         Entity<Context> textEntity = engine.createEntity();
         TransformComponent textTransform = new TransformComponent(new Vector2f(12, 12), new Vector2f(1, 1), Anchor.TOP_LEFT);
-        TextComponent textComponent = new TextComponent(font, "Tiles", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        TextComponent textComponent = new TextComponent(font, "Tiles", new Vector4f(0.9f, 0.9f, 0.9f, 1.0f));
         textComponent.layer = "ui";
         textEntity.addComponent(textTransform);
         textEntity.addComponent(textComponent);
 
-        // Solid toggle button
-        Entity<Context> solidEntity = engine.createEntity();
-        TransformComponent solidTransform = new TransformComponent(new Vector2f(12, 52), new Vector2f(1, 1), Anchor.TOP_LEFT);
-        TextComponent solidText = new TextComponent(font, "Solid: OFF", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
-        solidText.layer = "ui";
-        AABBf solidBox = new AABBf();
-        solidBox.minX = 12;
-        solidBox.minY = 52;
-        solidBox.minZ = Float.NEGATIVE_INFINITY;
-        solidBox.maxX = 112;
-        solidBox.maxY = 82;
-        solidBox.maxZ = Float.POSITIVE_INFINITY;
-        solidEntity.addComponent(solidTransform);
-        solidEntity.addComponent(solidText);
-        solidEntity.addComponent(new ClickableComponent(solidBox));
-        solidEntity.addComponent(new ButtonComponent("toggle_solid"));
-        solidEntity.addComponent(new BooleanComponent(false));
-
-        // Save button
-        Entity<Context> saveEntity = engine.createEntity();
-        TransformComponent saveTransform = new TransformComponent(new Vector2f(12, 92), new Vector2f(1, 1), Anchor.TOP_LEFT);
-        TextComponent saveText = new TextComponent(font, "SAVE", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
-        saveText.layer = "ui";
-        AABBf saveBox = new AABBf();
-        saveBox.minX = 12;
-        saveBox.minY = 92;
-        saveBox.minZ = Float.NEGATIVE_INFINITY;
-        saveBox.maxX = 72;
-        saveBox.maxY = 122;
-        saveBox.maxZ = Float.POSITIVE_INFINITY;
-        saveEntity.addComponent(saveTransform);
-        saveEntity.addComponent(saveText);
-        saveEntity.addComponent(new ClickableComponent(saveBox));
-        saveEntity.addComponent(new ButtonComponent("save_tiles"));
-
         // Save Grid button
         Entity<Context> saveGridEntity = engine.createEntity();
         TransformComponent saveGridTransform = new TransformComponent(new Vector2f(12, 122), new Vector2f(1, 1), Anchor.TOP_LEFT);
-        TextComponent saveGridText = new TextComponent(font, "Save Grid", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        TextComponent saveGridText = new TextComponent(font, "Save Grid", new Vector4f(0.9f, 0.9f, 0.9f, 1.0f));
         saveGridText.layer = "ui";
         AABBf saveGridBox = new AABBf();
         saveGridBox.minX = 12;
@@ -303,7 +293,7 @@ public class Main {
         // Load Grid button
         Entity<Context> loadGridEntity = engine.createEntity();
         TransformComponent loadGridTransform = new TransformComponent(new Vector2f(12, 162), new Vector2f(1, 1), Anchor.TOP_LEFT);
-        TextComponent loadGridText = new TextComponent(font, "Load Grid", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        TextComponent loadGridText = new TextComponent(font, "Load Grid", new Vector4f(0.9f, 0.9f, 0.9f, 1.0f));
         loadGridText.layer = "ui";
         AABBf loadGridBox = new AABBf();
         loadGridBox.minX = 12;
