@@ -53,15 +53,8 @@ public class WallCollisionSystem extends IteratingEntitySystem<Context> {
         if (hitTop) transform.position.y = minY;
         else if (hitBottom) transform.position.y = maxY;
 
-        if (!hitLeft && !hitRight && !hitTop && !hitBottom) {
-            return;
-        }
-
-        long[] bitsets = getBitsets();
-
-        int movementIndex = getComponentIndex(MovementComponent.class);
-        long movementMask = 1L << movementIndex;
-        if ((bitsets[id] & movementMask) == movementMask) {
+        if (!hitLeft && !hitRight && !hitTop && !hitBottom) return;
+        if (movementM.get(id) != null) {
             MovementComponent movement = movementM.get(id);
             if (hitLeft || hitRight) movement.velocity.x = 0;
             if (hitTop || hitBottom) movement.velocity.y = 0;

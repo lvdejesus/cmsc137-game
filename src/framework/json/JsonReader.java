@@ -110,6 +110,56 @@ public class JsonReader implements AutoCloseable {
         return Integer.parseInt(sb.toString());
     }
 
+    public Optional<JsonValue> getArrayItem() throws IOException {
+        if (pendingValue) {
+            skipValue();
+            pendingValue = false;
+        }
+
+        skipWhitespace();
+        int lookahead = peekChar();
+
+        if (lookahead == ',') {
+            stream.read();
+            skipWhitespace();
+            lookahead = peekChar();
+        }
+
+        if (lookahead == ']') {
+            stream.read();
+            pendingValue = false;
+            return Optional.empty();
+        }
+
+        pendingValue = true;
+        return Optional.of(new JsonValue(this));
+    }
+
+    protected JsonArray consumeArray() throws IOException {
+        if (!pendingValue) {
+            throw new IOException("value already consumed!");
+        }
+        skipWhitespace();
+        if (peekChar() != '[') {
+            throw new IOException("called getArray() on a value that isn't an array!");
+        }
+        return new JsonArray(this);
+    }
+
+    protected Optional<JsonValue> consumeNestedArrayItem() throws IOException {
+        if (pendingValue) {
+            skipWhitespace();
+            int c = peekChar();
+            if (c == '[') {
+                stream.read();
+                pendingValue = false;
+            } else {
+                throw new IOException("called getItem() on a value that isn't an array!");
+            }
+        }
+        return getArrayItem();
+    }
+
     private void skipValue() throws IOException {
         skipWhitespace();
         int c = peekChar();

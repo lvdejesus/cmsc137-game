@@ -37,6 +37,10 @@ public class EditorSystem extends IteratingEntitySystem<Context> {
             int xTile = (int) Math.floor((ce.x) / 64.0f);
             int yTile = (int) Math.floor((ce.y) / 64.0f);
 
+            if (xTile < 0 || xTile >= EditorComponent.GRID_WIDTH || yTile < 0 || yTile >= EditorComponent.GRID_HEIGHT) {
+                return;
+            }
+
             Entity<Context> tileEntity = ec.getEntity(xTile, yTile);
             if (tileEntity != null) {
                 RenderComponent rc = tileEntity.getComponent(RenderComponent.class);
@@ -51,7 +55,7 @@ public class EditorSystem extends IteratingEntitySystem<Context> {
                 tileEntity.addComponent(rc);
                 tileEntity.addComponent(tc);
 
-                ec.setEntity(xTile, yTile, tileEntity);
+                ec.setEntity(xTile, yTile, tileEntity, ec.currentTile);
             }
         }
 

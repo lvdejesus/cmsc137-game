@@ -12,6 +12,7 @@ import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
 
+import java.util.Iterator;
 import java.util.Random;
 
 public class EnemySystem extends IteratingEntitySystem<Context> {
@@ -69,32 +70,17 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
     }
 
     private void shootAtPlayer() {
-        long[] bitsets = getBitsets();
-        int playerIndex = getComponentIndex(PlayerNetworkComponent.class);
-        long playerMask = 1L << playerIndex;
-        int entityMax = getEntityMax();
-
-        for (int i = 0; i < entityMax; i++) {
-            if ((bitsets[i] & playerMask) != playerMask) {
-                continue;
-            }
-
+        Iterable<Integer> playerIterator = engine.getFamily(PlayerNetworkComponent.class, HealthComponent.class)::iterator;
+        for (int i : playerIterator) {
             HealthComponent playerHealth = healthM.get(i);
-            if (!playerHealth.isAlive()) {
-                continue;
-            }
+            if (!playerHealth.isAlive()) continue;
 
             TransformComponent playerTransform = tm.get(i);
 
-            for (int enemyId = 0; enemyId < entityMax; enemyId++) {
-                if ((bitsets[enemyId] & getFamilyMask()) != getFamilyMask()) {
-                    continue;
-                }
-
+            Iterable<Integer> enemyIterator = engine.getFamily(EnemyComponent.class, HealthComponent.class)::iterator;
+            for (int enemyId : enemyIterator) {
                 HealthComponent enemyHealth = healthM.get(enemyId);
-                if (!enemyHealth.isAlive()) {
-                    continue;
-                }
+                if (!enemyHealth.isAlive()) continue;
 
                 TransformComponent enemyTransform = tm.get(enemyId);
                 float dx = playerTransform.position.x - enemyTransform.position.x;
@@ -103,6 +89,7 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
 
                 nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, 0.0f, 0.0f, angle, true));
             }
+
             break;
         }
     }

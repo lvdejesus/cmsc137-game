@@ -21,4 +21,8 @@ public class JsonValue {
     public int getInt() throws IOException {
         return core.consumeIntValue();
     }
+
+    public JsonArray getArray() throws IOException {
+        return core.consumeArray();
+    }
 }

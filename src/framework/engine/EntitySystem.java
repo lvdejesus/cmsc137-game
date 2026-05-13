@@ -18,16 +18,4 @@ public abstract class EntitySystem<T> {
     public void setEngine(Engine<T> engine) {
         this.engine = engine;
     }
-
-    protected long[] getBitsets() {
-        return engine.getBitsets();
-    }
-
-    protected int getEntityMax() {
-        return engine.getEntityMax();
-    }
-
-    protected int getComponentIndex(Class<? extends Component> component) {
-        return engine.getComponentIndex(component);
-    }
 }

@@ -63,7 +63,7 @@ public class Main {
     }
 
     private void createTiles() {
-        float tileStartY = 140;
+        float tileStartY = 200;
 
         int g = 0;
         for (String region : TextureAtlas.get().listRegions()) {
@@ -282,6 +282,40 @@ public class Main {
         saveEntity.addComponent(saveText);
         saveEntity.addComponent(new ClickableComponent(saveBox));
         saveEntity.addComponent(new ButtonComponent("save_tiles"));
+
+        // Save Grid button
+        Entity<Context> saveGridEntity = engine.createEntity();
+        TransformComponent saveGridTransform = new TransformComponent(new Vector2f(12, 122), new Vector2f(1, 1), Anchor.TOP_LEFT);
+        TextComponent saveGridText = new TextComponent(font, "Save Grid", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        saveGridText.layer = "ui";
+        AABBf saveGridBox = new AABBf();
+        saveGridBox.minX = 12;
+        saveGridBox.minY = 122;
+        saveGridBox.minZ = Float.NEGATIVE_INFINITY;
+        saveGridBox.maxX = 112;
+        saveGridBox.maxY = 152;
+        saveGridBox.maxZ = Float.POSITIVE_INFINITY;
+        saveGridEntity.addComponent(saveGridTransform);
+        saveGridEntity.addComponent(saveGridText);
+        saveGridEntity.addComponent(new ClickableComponent(saveGridBox));
+        saveGridEntity.addComponent(new ButtonComponent("save_grid"));
+
+        // Load Grid button
+        Entity<Context> loadGridEntity = engine.createEntity();
+        TransformComponent loadGridTransform = new TransformComponent(new Vector2f(12, 162), new Vector2f(1, 1), Anchor.TOP_LEFT);
+        TextComponent loadGridText = new TextComponent(font, "Load Grid", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        loadGridText.layer = "ui";
+        AABBf loadGridBox = new AABBf();
+        loadGridBox.minX = 12;
+        loadGridBox.minY = 162;
+        loadGridBox.minZ = Float.NEGATIVE_INFINITY;
+        loadGridBox.maxX = 112;
+        loadGridBox.maxY = 192;
+        loadGridBox.maxZ = Float.POSITIVE_INFINITY;
+        loadGridEntity.addComponent(loadGridTransform);
+        loadGridEntity.addComponent(loadGridText);
+        loadGridEntity.addComponent(new ClickableComponent(loadGridBox));
+        loadGridEntity.addComponent(new ButtonComponent("load_grid"));
 
         engine.addSystem(new ClickSystem(cameraManager));
         engine.addSystem(new RenderSystem(editorCamera, "default"));

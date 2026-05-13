@@ -22,8 +22,8 @@ public abstract class IteratingEntitySystem<T> extends EntitySystem<T> {
     }
 
     public void update(T ctx) {
-        long[] bitsets = engine.getBitsets();
         for (int i = 0; i < engine.getEntityMax(); i++) {
+            long[] bitsets = engine.getBitsets();
             if ((bitsets[i] & familyMask) == familyMask) {
                 processEntity(i, ctx);
             }

@@ -83,19 +83,12 @@ public class PropertySystem extends IteratingEntitySystem<Context> {
         
         boolean solid = TileRegistry.getTile(tileIndex).solid;
         
-        // Find and update the solid text entity
-        long[] bitsets = getBitsets();
-        int entityMax = getEntityMax();
-        int textIndex = getComponentIndex(TextComponent.class);
-        long textMask = 1L << textIndex;
-        
-        for (int i = 0; i < entityMax; i++) {
-            if ((bitsets[i] & textMask) == textMask) {
-                TextComponent tc = tcm.get(i);
-                if (tc.text != null && tc.text.startsWith("Solid:")) {
-                    tc.text = solid ? "Solid: ON" : "Solid: OFF";
-                    break;
-                }
+        Iterable<Integer> textIterator = engine.getFamily(TextComponent.class)::iterator;
+        for (int i : textIterator) {
+            TextComponent tc = tcm.get(i);
+            if (tc.text != null && tc.text.startsWith("Solid:")) {
+                tc.text = solid ? "Solid: ON" : "Solid: OFF";
+                break;
             }
         }
     }

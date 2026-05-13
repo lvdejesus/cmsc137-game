@@ -5,6 +5,7 @@ import client.components.MovementComponent;
 import client.components.NetworkIdComponent;
 import client.components.TransformComponent;
 import client.components.bullet.BulletComponent;
+import client.entities.Bullet;
 import client.network.NetworkSpawnManager;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -63,11 +64,8 @@ public class BulletWallCollisionSystem extends IteratingEntitySystem<Context> {
             return;
         }
 
-        long[] bitsets = getBitsets();
-        int bulletIndex = getComponentIndex(BulletComponent.class);
-        long bulletMask = 1L << bulletIndex;
-
-        if ((bitsets[id] & bulletMask) == bulletMask) {
+        ComponentMapper<BulletComponent> bm = engine.getMapper(BulletComponent.class);
+        if (bm.get(id)!= null) {
             NetworkIdComponent bulletnic = engine.getMapper(NetworkIdComponent.class).get(id);
             nsm.despawn(id, bulletnic.networkId);
         }

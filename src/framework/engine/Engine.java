@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 class ComponentRegistry {
     private int componentCount = 0;
@@ -156,5 +158,19 @@ public class Engine<T> {
 
     public Class<? extends Component> getComponentClass(int componentId) {
         return componentRegistry.index(componentId);
+    }
+
+
+    @SafeVarargs
+    public final Stream<Integer> getFamily(Class<? extends Component>... types) {
+        long familyMask = 0;
+        for (Class<? extends Component> type : types) {
+            familyMask |= 1L << getComponentIndex(type);
+        }
+
+        final long finalMask = familyMask;
+        return IntStream.range(0, getEntityMax())
+            .filter(i -> (getBitsets()[i] & finalMask) == finalMask)
+            .boxed();
     }
 }

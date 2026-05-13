@@ -17,13 +17,15 @@ public class TileRegistry {
         public String textureFile;
         public int index;
         public boolean solid;
+        public boolean door;
         public Texture texture;
 
-        public TileDefinition(String name, String textureFile, int index, boolean solid) {
+        public TileDefinition(String name, String textureFile, int index, boolean solid, boolean door) {
             this.name = name;
             this.textureFile = textureFile;
             this.index = index;
             this.solid = solid;
+            this.door = door;
         }
     }
 
@@ -39,9 +41,10 @@ public class TileRegistry {
                     String name = pair.get().key();
                     JsonValue value = pair.get().value();
 
-                    String textureFile = "grass.png";
+                    String textureFile = null;
                     int index = 0;
                     boolean solid = false;
+                    boolean door = false;
 
                     Optional<JsonPair> tilePair;
                     while (true) {
@@ -59,10 +62,17 @@ public class TileRegistry {
                             case "solid":
                                 solid = tilePair.get().value().getInt() == 1;
                                 break;
+                            case "door":
+                                door = tilePair.get().value().getInt() == 1;
+                                break;
                         }
                     }
 
-                    tiles.add(new TileDefinition(name, textureFile, index, solid));
+                    if (textureFile == null) {
+                        throw new RuntimeException("Texture missing!");
+                    }
+
+                    tiles.add(new TileDefinition(name, textureFile, index, solid, door));
                 } else {
                     break;
                 }
@@ -91,7 +101,8 @@ public class TileRegistry {
             sb.append("    \"").append(tile.name).append("\": {\n");
             sb.append("        \"texture\": \"").append(tile.textureFile).append("\",\n");
             sb.append("        \"index\": ").append(tile.index).append(",\n");
-            sb.append("        \"solid\": ").append(tile.solid ? 1 : 0).append("\n");
+            sb.append("        \"solid\": ").append(tile.solid ? 1 : 0).append(",\n");
+            sb.append("        \"door\": ").append(tile.door ? 1 : 0).append("\n");
             sb.append("    }");
             if (i < tiles.size() - 1) sb.append(",");
             sb.append("\n");
