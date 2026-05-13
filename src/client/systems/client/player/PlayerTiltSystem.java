@@ -56,14 +56,24 @@ public class PlayerTiltSystem extends IteratingEntitySystem<Context> {
         } else if (y != 0) {
             nextState = PlayerStateComponent.State.MOVING;
         }
+        else{
+            if(state.current != PlayerStateComponent.State.IDLE){
+                nextState = PlayerStateComponent.State.IDLE;
+            }   
+        }
 
 
+        // For playing animation to return to idle
+        boolean returnFromRight = (state.current == PlayerStateComponent.State.TILTR || state.current == PlayerStateComponent.State.HARDTILTR);
+        boolean returnFromLeft = (state.current == PlayerStateComponent.State.TILTL || state.current == PlayerStateComponent.State.HARDTILTL);
+        int currentFrame = ac.currentFrameIndex;
+        
         if (state.current != nextState) {
             state.set(nextState);
             if (state.current != PlayerStateComponent.State.HARDTILTL && state.current != PlayerStateComponent.State.HARDTILTR) {
                 ac.offset = ctx.currentTime; // Used to track how long we've been in the current animation state
+                int releaseFrame = ac.currentFrameIndex; // Frame of animation before changing state
             }
-        }
 
         switch (nextState) {
             case TILTR:
@@ -74,7 +84,7 @@ public class PlayerTiltSystem extends IteratingEntitySystem<Context> {
                 break;
             case TILTL:
                 ac.startFrame = max;
-                ac.endFrame = max - 3;
+                ac.endFrame = max - 1;
                 ac.loop = false;
                 ac.reverse = true;
                 break;
@@ -85,24 +95,46 @@ public class PlayerTiltSystem extends IteratingEntitySystem<Context> {
                 ac.reverse = false;
                 break;
             case HARDTILTL:
-                ac.startFrame = max - 3;
-                ac.endFrame = max - 4;
+                ac.startFrame = max - 1;
+                ac.endFrame = max - 2;
                 ac.loop = false;
                 ac.reverse = true;
                 break;
-            default:
+            case IDLE:
+                if (returnFromRight){
+                    ac.startFrame = currentFrame;
+                    ac.endFrame = 1;
+                    ac.loop = false;
+                    ac.reverse = true;
+                }
+                else if (returnFromLeft) {
+                    ac.startFrame = currentFrame;
+                    ac.endFrame = max;
+                    ac.loop = false;
+                    ac.reverse = false;
+                }
+                // playes after returning from hard tilt, so just snap back to idle
+                else {
+                    ac.startFrame = 0;
+                    ac.endFrame = 0;
+                    ac.loop = false;
+                    ac.reverse = false;
+                }
+                break;
+            }
+        }
+        // snap back to idle
+        if (state.current == PlayerStateComponent.State.IDLE && !ac.loop) {
+            if (
+                (!ac.reverse && ac.currentFrameIndex >= ac.endFrame) ||
+                (ac.reverse && ac.currentFrameIndex <= ac.endFrame)
+            ) {
                 ac.startFrame = 0;
                 ac.endFrame = 0;
-                ac.loop = true;
-                break;
+                ac.loop = true; // Lock into a looping idle state
+                ac.reverse = false;
+            }
         }
 
-
-        if (x != 0 || y != 0) {
-
-            // Change State to moving
-        } else {
-            state.set(PlayerStateComponent.State.IDLE);
-        }
     }
 }

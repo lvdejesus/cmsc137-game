@@ -5,6 +5,7 @@ import client.components.RenderComponent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
 import client.components.player.MovementInputComponent;
+import client.components.MovementComponent;
 import client.components.player.PlayerStateComponent;
 import client.entities.*;
 import client.network.NetworkManager;
@@ -37,6 +38,7 @@ public class LevelScene extends Scene {
     private TransformComponent playerTransform;
     private MovementInputComponent playerMovementInput;
     private PlayerStateComponent playerState;
+    private MovementComponent playerMovement;
 
     private boolean isPaused = false;
     private Font pauseFont;
@@ -63,6 +65,7 @@ public class LevelScene extends Scene {
         this.player.spawn();
 
         this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
+        this.playerMovement = player.getEntity().getComponent(MovementComponent.class);
         this.playerMovementInput = player.getEntity().getComponent(MovementInputComponent.class);
         this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
 
@@ -119,11 +122,14 @@ public class LevelScene extends Scene {
             if (event.type == InputHandler.MouseEventType.LEFT_CLICK && !event.consumed) {
                 event.consume();
 
-                if (playerTransform != null) {
+                if (playerTransform != null ) {
                     Vector2f d = camera.toWorldPosition(event.position).sub(playerTransform.position);
                     float angle = (float) Math.toDegrees(Math.atan2(d.y, d.x));
-
-                    nm.shoot(playerTransform.position.x, playerTransform.position.y, angle);
+                    
+                    // Get player's current velocity for velocity inheritance
+                    float pvx = playerMovement.velocity.x;
+                    float pvy = playerMovement.velocity.y;
+                    nm.shoot(playerTransform.position.x, playerTransform.position.y, angle, pvx, pvy);
                 }
             }
         }
