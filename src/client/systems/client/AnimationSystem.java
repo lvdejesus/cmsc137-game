@@ -33,13 +33,17 @@ public class AnimationSystem extends IteratingEntitySystem<Context> {
         int finalOffset;
         Animation animation = ac.animation;
         
+        //Update current frame index
+        
         if (animation.frameDuration == null || animation.frames.length <= 1) {
             rc.texture = animation.frames[0];
+            ac.currentFrameIndex = 0;
+            return;
         }
 
         int start = ac.startFrame;
         int end = ac.endFrame >= 0 ? ac.endFrame : animation.frames.length - 1;
-        int totalFrames = Math.abs(end - start + 1);
+        int totalFrames = Math.abs(end - start)+1;
 
 
             float time = ctx.currentTime - ac.offset;
@@ -56,7 +60,7 @@ public class AnimationSystem extends IteratingEntitySystem<Context> {
 
             
             finalOffset = (ac.reverse) ? (start - frameOffset) : (start + frameOffset);
-
+            ac.currentFrameIndex = finalOffset;
             rc.texture = animation.frames[Math.min(finalOffset, animation.frames.length - 1)];
         }
 }

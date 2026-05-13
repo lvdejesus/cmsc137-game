@@ -10,6 +10,7 @@ public class AnimationComponent implements Component {
     public int endFrame = -1;
     public boolean loop = true;
     public boolean reverse = false;
+    public int currentFrameIndex = 0;
 
     public AnimationComponent(Animation animation, float offset, boolean loop) {
         this.animation = animation;
