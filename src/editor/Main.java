@@ -39,14 +39,15 @@ public class Main {
     private Camera uiCamera;
     private Camera editorCamera;
     private final int WIDTH = 800, HEIGHT = 600;
+    private final int SIDEBAR_WIDTH = 200;
     private Engine<Context> engine;
-    
+
     private Font font;
 
     private EditorComponent editor;
 
     private static final int TILE_SIZE = 16;
-    private static final int COLS  = 3;
+    private static final int COLS = 3;
     private static final float SCALE = 4.0f;
     private static final float GAP = 4.0f;
 
@@ -59,9 +60,12 @@ public class Main {
     }
 
     private void createTiles() {
+        float tileStartY = 140;
+
         int g = 0;
         for (String region : TextureAtlas.get().listRegions()) {
-            if (!region.startsWith("tiles")) continue;
+            if (!region.startsWith("tiles/")) continue;
+            System.out.println("Found tile " + region);
 
             Texture t = TextureAtlas.get().getRegion(region);
             int xCount = t.width / TILE_SIZE;
@@ -69,7 +73,7 @@ public class Main {
             for (int i = 0; i < yCount; i++) {
                 for (int j = 0; j < xCount; j++) {
                     float x = (g % COLS) * (TILE_SIZE * GAP + SCALE);
-                    float y = (float) (g / COLS) * (TILE_SIZE * GAP + SCALE);
+                    float y = tileStartY + (float) (g / COLS) * (TILE_SIZE * GAP + SCALE);
 
                     Entity<Context> entity = engine.createEntity();
                     TransformComponent transformComponent = new TransformComponent(new Vector2f(x, y),
@@ -83,8 +87,9 @@ public class Main {
                     float v1 = t.v1 + dv * i;
                     float v2 = t.v1 + dv * (i + 1);
 
-                    Texture tex =  new Texture(u1, v1, u2, v2, 16, 16);
+                    Texture tex = new Texture(u1, v1, u2, v2, 16, 16);
                     RenderComponent renderComponent = new RenderComponent(tex, 0);
+                    renderComponent.layer = "ui";
 
                     editor.tiles.add(tex);
 
@@ -149,28 +154,29 @@ public class Main {
             throw new RuntimeException("Failed to load font", e);
         }
 
-        // Create cameras - UI on left (0-200), Editor on right (200-800)
-        // UI camera: 200px screen space, 1:1 with world (world = 200xHEIGHT)
-        // Editor camera: fixed world size (1280x960)
-        
+        // Create cameras - Editor on left (0-600), Sidebar on right (600-800)
+        // Editor camera: 600x600 viewport, 600x600 world (square, 1:1 pixel)
+        // Sidebar camera: 200px screen space, 1:1 with world
+
         cameraManager = new CameraManager();
-        uiCamera = new Camera("ui");
-        uiCamera.setViewport(0, 0, 200, HEIGHT);
-        uiCamera.setWorldSize(200, HEIGHT);  // 1:1 scale
-        
+
         editorCamera = new Camera("editor");
-        editorCamera.setViewport(200, 0, WIDTH - 200, HEIGHT);
-        editorCamera.setWorldSize(1280, 960);  // Fixed world size
-        
-        cameraManager.addCamera("ui", uiCamera);
+        editorCamera.setViewport(0, 0, WIDTH - SIDEBAR_WIDTH, HEIGHT);
+        editorCamera.setWorldSize(WIDTH - SIDEBAR_WIDTH, HEIGHT);
+
+        uiCamera = new Camera("ui");
+        uiCamera.setViewport(WIDTH - SIDEBAR_WIDTH, 0, SIDEBAR_WIDTH, HEIGHT);
+        uiCamera.setWorldSize(SIDEBAR_WIDTH, HEIGHT);
+
         cameraManager.addCamera("editor", editorCamera);
+        cameraManager.addCamera("ui", uiCamera);
 
         glfwSetFramebufferSizeCallback(window, (window, width, height) -> {
-            uiCamera.setViewport(0, 0, 200, height);
-            uiCamera.setWorldSize(200, height);  // UI keeps 1:1 scale
-            float editorWidth = Math.max(0, width - 200);
-            editorCamera.setViewport(200, 0, editorWidth, height);
-            // Editor world size stays fixed at 1280x960
+            float newEditorWidth = Math.max(0, width - SIDEBAR_WIDTH);
+            editorCamera.setViewport(0, 0, newEditorWidth, height);
+            editorCamera.setWorldSize(newEditorWidth, height);
+            uiCamera.setViewport(width - SIDEBAR_WIDTH, 0, SIDEBAR_WIDTH, height);
+            uiCamera.setWorldSize(SIDEBAR_WIDTH, height);
             glViewport(0, 0, width, height);
         });
 
@@ -192,7 +198,7 @@ public class Main {
         }
 
         // Create tiled grid background for editor area
-        Texture gridTex = TextureAtlas.get().getRegion("tiles/grid.png");
+        Texture gridTex = TextureAtlas.get().getRegion("grid.png");
         int gridCols = 20;
         int gridRows = 15;
         float gridScale = 4.0f;
@@ -202,7 +208,7 @@ public class Main {
             for (int col = 0; col < gridCols; col++) {
                 Entity<Context> gridEntity = engine.createEntity();
                 TransformComponent gridTC = new TransformComponent(
-                    new Vector2f(200 + col * gridSize, 200 + row * gridSize),
+                    new Vector2f(col * gridSize, row * gridSize),
                     new Vector2f(gridScale, gridScale), Anchor.TOP_LEFT);
                 RenderComponent gridRC = new RenderComponent(gridTex, 0);
                 gridEntity.addComponent(gridTC);
@@ -212,64 +218,75 @@ public class Main {
 
         // Editor click area - entire grid region (needs RenderComponent for ClickSystem)
         AABBf editorBox = new AABBf();
-        editorBox.minX = 200;
-        editorBox.minY = 200;
+        editorBox.minX = 0;
+        editorBox.minY = 0;
         editorBox.minZ = Float.NEGATIVE_INFINITY;
-        editorBox.maxX = 200 + gridCols * gridSize;
-        editorBox.maxY = 200 + gridRows * gridSize;
+        editorBox.maxX = gridCols * gridSize;
+        editorBox.maxY = gridRows * gridSize;
         editorBox.maxZ = Float.POSITIVE_INFINITY;
 
         editor = new EditorComponent();
 
         // Click area for placing tiles in editor
         Entity<Context> entity = engine.createEntity();
-        TransformComponent editorTC = new TransformComponent(new Vector2f(200, 200), new Vector2f(1, 1), Anchor.TOP_LEFT);
+        TransformComponent editorTC = new TransformComponent(new Vector2f(0, 0), new Vector2f(1, 1), Anchor.TOP_LEFT);
         entity.addComponent(editorTC);
         entity.addComponent(new ClickableComponent(editorBox, -1.0f)); // z=-1 so grid shows above it
         entity.addComponent(editor);
 
         createTiles();
-        
+
         Entity<Context> textEntity = engine.createEntity();
         TransformComponent textTransform = new TransformComponent(new Vector2f(12, 12), new Vector2f(1, 1), Anchor.TOP_LEFT);
         TextComponent textComponent = new TextComponent(font, "Tiles", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        textComponent.layer = "ui";
         textEntity.addComponent(textTransform);
         textEntity.addComponent(textComponent);
 
-        // Solid toggle button - moved to right side to avoid overlap
+        // Solid toggle button
         Entity<Context> solidEntity = engine.createEntity();
-        TransformComponent solidTransform = new TransformComponent(new Vector2f(300, 12), new Vector2f(1, 1), Anchor.TOP_LEFT);
+        TransformComponent solidTransform = new TransformComponent(new Vector2f(12, 52), new Vector2f(1, 1), Anchor.TOP_LEFT);
         TextComponent solidText = new TextComponent(font, "Solid: OFF", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        solidText.layer = "ui";
         AABBf solidBox = new AABBf();
-        solidBox.minX = 300; solidBox.minY = 12; solidBox.minZ = Float.NEGATIVE_INFINITY;
-        solidBox.maxX = 400; solidBox.maxY = 42; solidBox.maxZ = Float.POSITIVE_INFINITY;
+        solidBox.minX = 12;
+        solidBox.minY = 52;
+        solidBox.minZ = Float.NEGATIVE_INFINITY;
+        solidBox.maxX = 112;
+        solidBox.maxY = 82;
+        solidBox.maxZ = Float.POSITIVE_INFINITY;
         solidEntity.addComponent(solidTransform);
         solidEntity.addComponent(solidText);
         solidEntity.addComponent(new ClickableComponent(solidBox));
 
         // Save button
         Entity<Context> saveEntity = engine.createEntity();
-        TransformComponent saveTransform = new TransformComponent(new Vector2f(300, 52), new Vector2f(1, 1), Anchor.TOP_LEFT);
+        TransformComponent saveTransform = new TransformComponent(new Vector2f(12, 92), new Vector2f(1, 1), Anchor.TOP_LEFT);
         TextComponent saveText = new TextComponent(font, "SAVE", new Vector4f(0.1f, 0.1f, 0.1f, 1.0f));
+        saveText.layer = "ui";
         AABBf saveBox = new AABBf();
-        saveBox.minX = 300; saveBox.minY = 52; saveBox.minZ = Float.NEGATIVE_INFINITY;
-        saveBox.maxX = 360; saveBox.maxY = 82; saveBox.maxZ = Float.POSITIVE_INFINITY;
+        saveBox.minX = 12;
+        saveBox.minY = 92;
+        saveBox.minZ = Float.NEGATIVE_INFINITY;
+        saveBox.maxX = 72;
+        saveBox.maxY = 122;
+        saveBox.maxZ = Float.POSITIVE_INFINITY;
         saveEntity.addComponent(saveTransform);
         saveEntity.addComponent(saveText);
         saveEntity.addComponent(new ClickableComponent(saveBox));
 
         engine.addSystem(new ClickSystem(cameraManager));
-        engine.addSystem(new RenderSystem(cameraManager.getCamera("editor"), "default"));
+        engine.addSystem(new RenderSystem(editorCamera, "default"));
+        engine.addSystem(new RenderSystem(uiCamera, "ui"));
         engine.addSystem(new TileSystem(editor));
         engine.addSystem(new EditorSystem());
         engine.addSystem(new PropertySystem(editor, font));
         engine.addSystem(new PanSystem(editorCamera));
+        engine.addSystem(new TextRenderingSystem(uiCamera, "ui"));
         engine.addSystem(new CleanupSystem());
-        engine.addSystem(new TextRenderingSystem(editorCamera));
     }
 
     private void loop() {
-        float[] matrixBuffer = new float[16];
         double lastTime = glfwGetTime();
 
         Context ctx = new Context();
@@ -284,14 +301,7 @@ public class Main {
             glClearColor(203.0f / 255, 219.0f / 255, 252.0f / 255, 255.0f / 255);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glViewport((int)editorCamera.viewportX, (int)editorCamera.viewportY,
-                       (int)editorCamera.viewportWidth, (int)editorCamera.viewportHeight);
-
             glUseProgram(shaderProgram);
-            int pvLoc = glGetUniformLocation(shaderProgram, "u_ProjectionView");
-            editorCamera.getProjectionViewMatrix().get(matrixBuffer);
-            glUniformMatrix4fv(pvLoc, false, matrixBuffer);
-
             TextureAtlas.get().bind();
 
             InputHandler.getInstance().tick();

@@ -10,6 +10,8 @@ import client.rendering.Batch;
 import client.rendering.Texture;
 import framework.rendering.ShaderProgram;
 
+import static org.lwjgl.opengl.GL11.*;
+
 public class RenderSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<RenderComponent> rm;
     private ComponentMapper<TransformComponent> tm;
@@ -40,6 +42,8 @@ public class RenderSystem extends IteratingEntitySystem<Context> {
 
         int shaderProgram = ShaderProgram.getShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
 
+        glViewport((int)camera.viewportX, (int)camera.viewportY,
+                   (int)camera.viewportWidth, (int)camera.viewportHeight);
         camera.bind(shaderProgram);
         batch.flush();
     }
