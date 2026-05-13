@@ -37,7 +37,7 @@ public class EngineConfig {
         engine.register(PlayerTagComponent.class);
     }
 
-    public static void addSystems(Engine<Context> engine, Camera camera) {
+    public static void addSystems(Engine<Context> engine, Camera camera, Camera fixedCamera) {
         // Add systems
         engine.addSystem(new PhysicsSystem());
         // Wall collision
@@ -52,8 +52,9 @@ public class EngineConfig {
         // Enemy systems
         // engine.addSystem(new EnemySystem());
         engine.addSystem(new CameraSystem(camera));
-        engine.addSystem(new RenderSystem());
-        engine.addSystem(new TextRenderingSystem());
+        engine.addSystem(new RenderSystem(camera, "default"));
+        engine.addSystem(new TextRenderingSystem(camera, "default"));
+        engine.addSystem(new TextRenderingSystem(fixedCamera, "fixed"));
     }
 
     public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm) {

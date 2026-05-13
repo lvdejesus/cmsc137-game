@@ -259,13 +259,13 @@ public class Main {
         saveEntity.addComponent(new ClickableComponent(saveBox));
 
         engine.addSystem(new ClickSystem(cameraManager));
-        engine.addSystem(new RenderSystem());
+        engine.addSystem(new RenderSystem(cameraManager.getCamera("editor"), "default"));
         engine.addSystem(new TileSystem(editor));
         engine.addSystem(new EditorSystem());
         engine.addSystem(new PropertySystem(editor, font));
         engine.addSystem(new PanSystem(editorCamera));
         engine.addSystem(new CleanupSystem());
-        engine.addSystem(new TextRenderingSystem());
+        engine.addSystem(new TextRenderingSystem(editorCamera));
     }
 
     private void loop() {
@@ -284,8 +284,7 @@ public class Main {
             glClearColor(203.0f / 255, 219.0f / 255, 252.0f / 255, 255.0f / 255);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            // Set viewport for editor camera
-            glViewport((int)editorCamera.viewportX, (int)editorCamera.viewportY, 
+            glViewport((int)editorCamera.viewportX, (int)editorCamera.viewportY,
                        (int)editorCamera.viewportWidth, (int)editorCamera.viewportHeight);
 
             glUseProgram(shaderProgram);

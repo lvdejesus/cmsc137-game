@@ -87,6 +87,7 @@ public class Batch {
     public void flush() {
         if (spriteCount == 0)
             return;
+
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferSubData(GL_ARRAY_BUFFER, 0, vertexArray);
 

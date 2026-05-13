@@ -18,6 +18,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Main {
     private int shaderProgram;
     private Camera camera;
+    private Camera fixedCamera;
     private Engine<Context> engine;
     private Window window;
     private static final int currentScene = -1;
@@ -36,8 +37,13 @@ public class Main {
         // Initialize Camera
         this.camera = new Camera();
         camera.setSize((int) window.getWidth(), (int) window.getHeight());
+
+        this.fixedCamera = new Camera();
+        fixedCamera.setSize((int) window.getWidth(), (int) window.getHeight());
+
         glfwSetFramebufferSizeCallback(window.getHandle(), (handle, width, height) -> {
             camera.setSize(width, height);
+            fixedCamera.setSize(width, height);
             glViewport(0, 0, width, height);
         });
 
@@ -45,7 +51,7 @@ public class Main {
         engine = new Engine<>();
         // Add systems and components
         EngineConfig.registerComponents(engine);
-        EngineConfig.addSystems(engine, camera);
+        EngineConfig.addSystems(engine, camera, fixedCamera);
 
         // Set initial scene
         client.scenes.SceneManager.setCamera(camera);
@@ -74,7 +80,6 @@ public class Main {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(shaderProgram);
-            camera.bind(shaderProgram);
 
             TextureAtlas.get().bind();
 

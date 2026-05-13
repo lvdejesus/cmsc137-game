@@ -2,13 +2,11 @@ package client.systems.client;
 
 import client.components.TextComponent;
 import client.components.TransformComponent;
-import client.rendering.Batch;
-import client.rendering.Font;
-import client.rendering.Texture;
-import client.rendering.Anchor;
+import client.rendering.*;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
+import framework.rendering.ShaderProgram;
 
 import static org.lwjgl.opengl.GL33.*;
 
@@ -16,10 +14,20 @@ public class TextRenderingSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TextComponent> tm;
     private ComponentMapper<TransformComponent> trm;
     private final Batch batch;
+    private final Camera camera;
+    private final String layer;
 
-    public TextRenderingSystem() {
+    public TextRenderingSystem(Camera camera, String layer) {
         super(TextComponent.class, TransformComponent.class);
+
+        this.camera = camera;
+        this.layer = layer;
+
         batch = new Batch();
+    }
+
+    public TextRenderingSystem(Camera camera) {
+        this(camera, "default");
     }
 
     @Override
@@ -39,7 +47,7 @@ public class TextRenderingSystem extends IteratingEntitySystem<Context> {
             return;
         }
 
-        glBindTexture(GL_TEXTURE_2D, textComp.font.getTextureID());
+        if (textComp.layer != layer) return;
 
         float length = 0;
         for (char c : textComp.text.toCharArray()) {
@@ -80,6 +88,11 @@ public class TextRenderingSystem extends IteratingEntitySystem<Context> {
             x += glyph.xAdvance() * transform.scale.x * textComp.scale;
         }
 
+        glBindTexture(GL_TEXTURE_2D, textComp.font.getTextureID());
+
+        int shaderProgram = ShaderProgram.getShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
+
+        camera.bind(shaderProgram);
         batch.flush();
     }
 }

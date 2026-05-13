@@ -10,14 +10,19 @@ public class TextComponent implements Component {
     public Vector4f color;
     public float scale;
     public float z;
+    public String layer;
 
-    
-    public TextComponent(Font font, String text, Vector4f color, float scale, float z) {
+    public TextComponent(Font font, String text, Vector4f color, float scale, float z, String layer) {
         this.font = font;
         this.text = text;
         this.color = color;
         this.scale = scale;
         this.z = z;
+        this.layer = layer;
+    }
+
+    public TextComponent(Font font, String text, Vector4f color, float scale, float z) {
+        this(font, text, color,  scale, z, "default");
     }
 
     public TextComponent(Font font, String text, Vector4f color, float scale) {

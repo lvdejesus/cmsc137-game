@@ -5,14 +5,20 @@ import client.rendering.Texture;
 import org.joml.Vector4f;
 
 public class RenderComponent implements Component {
+    public String layer;
     public Texture texture;
     public float z;
     public Vector4f tint;
 
-    public RenderComponent(Texture texture, float z, Vector4f tint) {
+    public RenderComponent(Texture texture, float z, Vector4f tint, String layer) {
         this.texture = texture;
         this.z = z;
         this.tint = tint;
+        this.layer = layer;
+    }
+
+    public RenderComponent(Texture texture, float z, Vector4f tint) {
+        this(texture, z, tint, "default");
     }
 
     public RenderComponent(Texture texture, float z) {

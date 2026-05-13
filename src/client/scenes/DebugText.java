@@ -36,7 +36,8 @@ public class DebugText {
             initialText, 
             new Vector4f(1, 1, 1, 1), 
             1.0f, 
-            0.5f
+            0.5f,
+            "fixed"
         );
         
         this.entity.addComponent(this.textComponent);

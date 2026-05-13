@@ -2,19 +2,27 @@ package client.systems.client;
 
 import client.components.RenderComponent;
 import client.components.TransformComponent;
+import client.rendering.Camera;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
 import client.rendering.Batch;
 import client.rendering.Texture;
+import framework.rendering.ShaderProgram;
 
 public class RenderSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<RenderComponent> rm;
     private ComponentMapper<TransformComponent> tm;
     private final Batch batch;
+    private final Camera camera;
+    private final String layer;
 
-    public RenderSystem() {
+    public RenderSystem(Camera camera, String layer) {
         super(RenderComponent.class, TransformComponent.class);
+
+        this.camera = camera;
+        this.layer = layer;
+
         batch = new Batch();
     }
 
@@ -29,12 +37,20 @@ public class RenderSystem extends IteratingEntitySystem<Context> {
     @Override
     public void update(Context ctx) {
         super.update(ctx);
+
+        int shaderProgram = ShaderProgram.getShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
+
+        camera.bind(shaderProgram);
         batch.flush();
     }
 
     @Override
     public void processEntity(int id, Context ctx) {
         RenderComponent rc = rm.get(id);
+        if (!rc.layer.equals(layer)) {
+            return;
+        }
+
         TransformComponent tc = tm.get(id);
 
         Texture tex = rc.texture;
