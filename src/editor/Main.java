@@ -23,6 +23,7 @@ import client.rendering.Font;
 import client.components.TextComponent;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +31,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static editor.util.TileRegistry.loadTileTextures;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -46,7 +48,7 @@ public class Main {
 
     private Font font;
 
-    private EditorComponent editor;
+    private TileGridComponent editor;
 
     private static final int TILE_SIZE = 16;
     private static final int COLS = 3;
@@ -63,14 +65,10 @@ public class Main {
 
     private void createTiles() {
         float tileStartY = 200;
-
         int g = 0;
-        for (TileRegistry.TileDefinition tile : TileRegistry.tiles) {
-            String regionKey = "tiles/" + tile.textureFile;
-            Texture t = TextureAtlas.get().getRegion(regionKey);
 
-            int xCount = t.width / (TILE_SIZE * tile.tileWidth);
-            int yCount = t.height / (TILE_SIZE * tile.tileHeight);
+        for (TileRegistry.TileDefinition tile : TileRegistry.tiles) {
+            var textures = editor.tiles.get(g).textures;
 
             float x = (g % COLS) * (TILE_SIZE * GAP + SCALE);
             float y = tileStartY + (float) (g / COLS) * (TILE_SIZE * GAP + SCALE);
@@ -78,46 +76,6 @@ public class Main {
             Entity<Context> entity = engine.createEntity();
             TransformComponent transformComponent = new TransformComponent(new Vector2f(x, y),
                 new Vector2f(SCALE, SCALE), Anchor.TOP_LEFT);
-
-            List<Texture> textures = List.of();
-
-            if (tile.type == TileRegistry.TileTextureType.regular) {
-                int i = 0;
-                int j = 0;
-
-                float du = (t.u2 - t.u1) / xCount;
-                float dv = (t.v2 - t.v1) / yCount;
-
-                float u1 = t.u1 + du * j;
-                float u2 = t.u1 + du * (j + 1);
-                float v1 = t.v1 + dv * i;
-                float v2 = t.v1 + dv * (i + 1);
-
-                Texture tex = new Texture(u1, v1, u2, v2, 16 * tile.tileWidth, 16 * tile.tileHeight);
-
-                textures = new ArrayList<>(List.of(new Texture[]{tex}));
-                editor.tiles.add(new EditorComponent.TileTexture(TileRegistry.TileTextureType.regular, textures));
-            } else if (tile.type == TileRegistry.TileTextureType.connected) {
-                textures = new ArrayList<>();
-
-                for (int i = 0; i < yCount; i++) {
-                    for (int j = 0; j < xCount; j++) {
-                        float du = (t.u2 - t.u1) / xCount;
-                        float dv = (t.v2 - t.v1) / yCount;
-
-                        float u1 = t.u1 + du * j;
-                        float u2 = t.u1 + du * (j + 1);
-                        float v1 = t.v1 + dv * (yCount - i - 1);
-                        float v2 = t.v1 + dv * (yCount - i);
-
-                        Texture tex = new Texture(u1, v1, u2, v2, 16 * tile.tileWidth, 16 * tile.tileHeight);
-                        textures.add(tex);
-                    }
-                }
-                editor.tiles.add(new EditorComponent.TileTexture(TileRegistry.TileTextureType.connected, textures));
-            } else {
-                throw new RuntimeException("Invalid texture type.");
-            }
 
             RenderComponent renderComponent = new RenderComponent(textures.get(0), 0);
             renderComponent.layer = "ui";
@@ -131,7 +89,7 @@ public class Main {
             boundingBox.maxZ = Float.POSITIVE_INFINITY;
 
             ClickableComponent clickableComponent = new ClickableComponent(boundingBox);
-            TileComponent tileComponent = new TileComponent(g, false);
+            SidebarTileComponent tileComponent = new SidebarTileComponent(g, false);
 
             entity.addComponent(renderComponent);
             entity.addComponent(transformComponent);
@@ -212,13 +170,13 @@ public class Main {
         engine.register(TransformComponent.class);
         engine.register(RenderComponent.class);
         engine.register(ClickableComponent.class);
-        engine.register(EditorComponent.class);
-        engine.register(TileComponent.class);
+        engine.register(TileGridComponent.class);
+        engine.register(SidebarTileComponent.class);
         engine.register(ClickEvent.class);
         engine.register(TextComponent.class);
         engine.register(ButtonComponent.class);
         engine.register(BooleanComponent.class);
-        engine.register(EditorTileComponent.class);
+        engine.register(TileComponent.class);
 
         // Load tile definitions
         try {
@@ -255,7 +213,7 @@ public class Main {
         editorBox.maxY = gridRows * gridSize;
         editorBox.maxZ = Float.POSITIVE_INFINITY;
 
-        editor = new EditorComponent();
+        editor = new TileGridComponent();
 
         // Click area for placing tiles in editor
         Entity<Context> entity = engine.createEntity();
@@ -264,6 +222,7 @@ public class Main {
         entity.addComponent(new ClickableComponent(editorBox, -1.0f)); // z=-1 so grid shows above it
         entity.addComponent(editor);
 
+        editor.tiles = loadTileTextures();
         createTiles();
 
         Entity<Context> textEntity = engine.createEntity();

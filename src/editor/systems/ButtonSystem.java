@@ -3,18 +3,20 @@ package editor.systems;
 import client.components.ClickEvent;
 import client.systems.client.Context;
 import editor.components.ButtonComponent;
-import editor.components.EditorComponent;
+import editor.components.TileGridComponent;
 import editor.util.LevelManager;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
 
+import static client.entities.Tile.placeTile;
+
 public class ButtonSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<ButtonComponent> bcm;
     private ComponentMapper<ClickEvent> cem;
-    private final EditorComponent editor;
+    private final TileGridComponent editor;
 
-    public ButtonSystem(EditorComponent editor) {
+    public ButtonSystem(TileGridComponent editor) {
         super(ButtonComponent.class, ClickEvent.class);
         this.editor = editor;
     }
@@ -62,7 +64,7 @@ public class ButtonSystem extends IteratingEntitySystem<Context> {
                             continue;
                         }
 
-                        EditorSystem.placeTile(engine, editor, x, y, tileIndex);
+                        placeTile(engine, editor, x, y, tileIndex);
                     }
                 }
                 editor.currentTile = null;

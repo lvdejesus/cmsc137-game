@@ -1,6 +1,5 @@
 package client.scenes;
 
-import client.components.AnimationComponent;
 import client.components.RenderComponent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
@@ -13,6 +12,9 @@ import client.network.messages.Message;
 import client.network.messages.server.*;
 import client.rendering.*;
 import client.systems.client.*;
+import editor.components.TileGridComponent;
+import editor.util.LevelManager;
+import editor.util.TileRegistry;
 import framework.engine.*;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -25,9 +27,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static client.entities.Tile.placeTile;
 import static org.lwjgl.glfw.GLFW.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -68,6 +70,28 @@ public class LevelScene extends Scene {
         this.playerMovement = player.getEntity().getComponent(MovementComponent.class);
         this.playerMovementInput = player.getEntity().getComponent(MovementInputComponent.class);
         this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
+
+        try {
+            TileRegistry.loadTiles();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        TileGridComponent tgc = new TileGridComponent();
+        tgc.tiles = TileRegistry.loadTileTextures();
+
+        int[][] grid = LevelManager.loadGrid("room1.json");
+
+        for (int y = 0; y < grid.length; y++) {
+            for (int x = 0; x < grid[y].length; x++) {
+                int tileIndex = grid[y][x] - 1;
+                if (tileIndex < 0 || tileIndex >= tgc.tiles.size()) {
+                    continue;
+                }
+
+                placeTile(engine, tgc, x, y, tileIndex);
+            }
+        }
 
         // Load background map
 //        Entity<Context> mapBg = engine.createEntity();

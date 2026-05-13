@@ -1,5 +1,6 @@
 package editor.util;
 
+import editor.components.TileGridComponent;
 import framework.json.JsonArray;
 import framework.json.JsonPair;
 import framework.json.JsonReader;
@@ -115,6 +116,60 @@ public class TileRegistry {
             Texture tex = TextureAtlas.get().getRegion("tiles/" + tile.textureFile);
             tile.texture = tex;
         }
+    }
+
+    public static List<TileGridComponent.TileTexture> loadTileTextures() {
+        ArrayList<TileGridComponent.TileTexture> tileTextures = new ArrayList<>();
+
+        for (TileRegistry.TileDefinition tile : TileRegistry.tiles) {
+            String regionKey = "tiles/" + tile.textureFile;
+            Texture t = TextureAtlas.get().getRegion(regionKey);
+
+            int xCount = t.width / (TILE_SIZE * tile.tileWidth);
+            int yCount = t.height / (TILE_SIZE * tile.tileHeight);
+
+            List<Texture> textures;
+
+            if (tile.type == TileRegistry.TileTextureType.regular) {
+                int i = 0;
+                int j = 0;
+
+                float du = (t.u2 - t.u1) / xCount;
+                float dv = (t.v2 - t.v1) / yCount;
+
+                float u1 = t.u1 + du * j;
+                float u2 = t.u1 + du * (j + 1);
+                float v1 = t.v1 + dv * i;
+                float v2 = t.v1 + dv * (i + 1);
+
+                Texture tex = new Texture(u1, v1, u2, v2, 16 * tile.tileWidth, 16 * tile.tileHeight);
+
+                textures = new ArrayList<>(List.of(new Texture[]{tex}));
+                tileTextures.add(new TileGridComponent.TileTexture(TileRegistry.TileTextureType.regular, textures));
+            } else if (tile.type == TileRegistry.TileTextureType.connected) {
+                textures = new ArrayList<>();
+
+                for (int i = 0; i < yCount; i++) {
+                    for (int j = 0; j < xCount; j++) {
+                        float du = (t.u2 - t.u1) / xCount;
+                        float dv = (t.v2 - t.v1) / yCount;
+
+                        float u1 = t.u1 + du * j;
+                        float u2 = t.u1 + du * (j + 1);
+                        float v1 = t.v1 + dv * (yCount - i - 1);
+                        float v2 = t.v1 + dv * (yCount - i);
+
+                        Texture tex = new Texture(u1, v1, u2, v2, 16 * tile.tileWidth, 16 * tile.tileHeight);
+                        textures.add(tex);
+                    }
+                }
+                tileTextures.add(new TileGridComponent.TileTexture(TileRegistry.TileTextureType.connected, textures));
+            } else {
+                throw new RuntimeException("Invalid texture type.");
+            }
+
+        }
+        return tileTextures;
     }
 
     public static TileDefinition getTile(int index) {
