@@ -92,8 +92,8 @@ public class NetworkManager {
         client.sendPosition(x, y, rot, previous, current, mx, my);
     }
 
-    public void shoot(float px, float py, float angle) {
-        client.sendBullet(playerIndex, px, py, angle);
+    public void shoot(float px, float py, float angle, float pvx, float pvy) {
+        client.sendBullet(playerIndex, px, py, angle, pvx, pvy);
     }
 
     public void stop() {

@@ -44,7 +44,7 @@ public class Bullet extends Prefab {
     @Override
     public void spawnServer() {
         float angleRadians = (float) Math.toRadians(angleDegrees);
-        float speed = isEnemy ? 300.0f : 400.0f;
+        float speed = isEnemy ? 300.0f : 700.0f;
         float vx = (float) Math.cos(angleRadians) * speed;
         float vy = (float) Math.sin(angleRadians) * speed;
 

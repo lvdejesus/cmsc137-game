@@ -79,11 +79,11 @@ public class GameClient {
         }
     }
 
-    public void sendBullet(int playerIndex, float px, float py, float angle) {
+    public void sendBullet(int playerIndex, float px, float py, float angle, float pvx, float pvy) {
         if (!connected || out == null) return;
         synchronized (out) {
             try {
-                clientRegistry.send(out, new C_Shoot(playerIndex, px, py, angle));
+                clientRegistry.send(out, new C_Shoot(playerIndex, px, py, angle, pvx, pvy));
             } catch (IOException e) {
                 e.printStackTrace();
             }
