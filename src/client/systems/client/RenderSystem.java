@@ -40,7 +40,7 @@ public class RenderSystem extends IteratingEntitySystem<Context> {
     public void update(Context ctx) {
         super.update(ctx);
 
-        int shaderProgram = ShaderProgram.getShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
+        int shaderProgram = ShaderProgram.getShaderProgram("res/shaders/default.vert", "res/shaders/default.frag");
 
         glViewport((int)camera.viewportX, (int)camera.viewportY,
                    (int)camera.viewportWidth, (int)camera.viewportHeight);

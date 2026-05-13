@@ -31,7 +31,7 @@ public class Main {
         this.window.init();
 
         // Initialize Render
-        shaderProgram = ShaderProgram.getShaderProgram("res/shaders/shader.vert", "res/shaders/shader.frag");
+        shaderProgram = ShaderProgram.getShaderProgram("res/shaders/default.vert", "res/shaders/default.frag");
         TextureAtlas.get();
 
         // Initialize Camera
