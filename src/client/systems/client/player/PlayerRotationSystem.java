@@ -2,6 +2,7 @@ package client.systems.client.player;
 
 import client.components.TransformComponent;
 import client.components.player.PlayerTagComponent;
+import client.rendering.Camera;
 import client.systems.client.Context;
 import client.systems.client.InputHandler;
 import framework.engine.ComponentMapper;
@@ -11,9 +12,12 @@ import org.joml.Vector2f;
 
 public class PlayerRotationSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
+    private Camera camera;
 
-    public PlayerRotationSystem() {
+    public PlayerRotationSystem(Camera camera) {
         super(TransformComponent.class, PlayerTagComponent.class);
+
+        this.camera = camera;
     }
 
     @Override
@@ -25,7 +29,7 @@ public class PlayerRotationSystem extends IteratingEntitySystem<Context> {
     @Override
     public void processEntity(int id, Context ctx) {
         TransformComponent tc = tm.get(id);
-        Vector2f cursorPosition = InputHandler.getInstance().cursorPosition;
+        Vector2f cursorPosition = camera.toWorldPosition(InputHandler.getInstance().cursorPosition);
         float dx = cursorPosition.x - tc.position.x;
         float dy = cursorPosition.y - tc.position.y;
         float angle = (float) Math.toDegrees(Math.atan2(dy, dx)) + 90.0f;

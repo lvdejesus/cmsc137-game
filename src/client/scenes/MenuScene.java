@@ -21,7 +21,7 @@ import client.network.NetworkManager;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
-public class MenuScene implements Scene {
+public class MenuScene extends Scene {
     private Engine<Context> engine;
     private final Window window;
     private Font menuFont;

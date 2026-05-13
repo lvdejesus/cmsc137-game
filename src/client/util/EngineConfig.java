@@ -2,6 +2,7 @@ package client.util;
 
 import client.components.enemy.EnemyComponent;
 import client.network.NetworkSpawnManager;
+import client.rendering.Camera;
 import client.systems.client.*;
 import client.systems.client.player.PlayerTiltSystem;
 import framework.engine.*;
@@ -36,22 +37,23 @@ public class EngineConfig {
         engine.register(PlayerTagComponent.class);
     }
 
-    public static void addSystems(Engine<Context> engine) {
+    public static void addSystems(Engine<Context> engine, Camera camera) {
         // Add systems
         engine.addSystem(new PhysicsSystem());
         // Wall collision
-        engine.addSystem(new WallCollisionSystem());
+        // engine.addSystem(new WallCollisionSystem());
 
         engine.addSystem(new AnimationSystem());
-        engine.addSystem(new RenderSystem());
-        engine.addSystem(new TextRenderingSystem());
         // Player Specific systems
-        engine.addSystem(new PlayerRotationSystem());
+        engine.addSystem(new PlayerRotationSystem(camera));
         engine.addSystem(new MovementInputSystem());
         engine.addSystem(new MovementSystem());
         engine.addSystem(new PlayerTiltSystem());
         // Enemy systems
         // engine.addSystem(new EnemySystem());
+        engine.addSystem(new CameraSystem(camera));
+        engine.addSystem(new RenderSystem());
+        engine.addSystem(new TextRenderingSystem());
     }
 
     public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm) {
@@ -59,7 +61,7 @@ public class EngineConfig {
         engine.addSystem(new EnemySpawnSystem(nsm));
         engine.addSystem(new EnemySystem(nsm));
         engine.addSystem(new BulletSystem(nsm));
-        engine.addSystem(new BulletWallCollisionSystem(nsm));
+        // engine.addSystem(new BulletWallCollisionSystem(nsm));
         engine.addSystem(new DamageSystem(nsm));
     }
 }

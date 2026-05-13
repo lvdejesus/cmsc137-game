@@ -1,6 +1,7 @@
 package client.systems.client;
 
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.DoubleBuffer;

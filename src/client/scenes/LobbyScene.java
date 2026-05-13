@@ -20,7 +20,7 @@ import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class LobbyScene implements Scene {
+public class LobbyScene extends Scene {
     private Engine<Context> engine;
     private Font font;
     private Entity<Context> statusTextEntity;

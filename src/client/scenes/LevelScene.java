@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class LevelScene implements Scene {
+public class LevelScene extends Scene {
     private Engine<Context> engine;
     private Player player;
 
@@ -120,18 +120,10 @@ public class LevelScene implements Scene {
                 event.consume();
 
                 if (playerTransform != null) {
-                    float playerX = playerTransform.position.x;
-                    float playerY = playerTransform.position.y;
+                    Vector2f d = camera.toWorldPosition(event.position).sub(playerTransform.position);
+                    float angle = (float) Math.toDegrees(Math.atan2(d.y, d.x));
 
-                    float mouseX = event.position.x;
-                    float mouseY = event.position.y;
-
-                    float dx = mouseX - playerX;
-                    float dy = mouseY - playerY;
-                    float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
-
-                    // new Bullet(engine, playerX, playerY, angle);
-                    nm.shoot(playerX, playerY, angle);
+                    nm.shoot(playerTransform.position.x, playerTransform.position.y, angle);
                 }
             }
         }

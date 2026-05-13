@@ -14,7 +14,7 @@ public class ClickSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<ClickableComponent> cm;
     private final CameraManager cameraManager;
 
-    private Vector3f worldMouse;
+    private Vector2f worldMouse;
     private float maxZ;
     private int winnerId;
 
@@ -53,7 +53,7 @@ public class ClickSystem extends IteratingEntitySystem<Context> {
             Camera camera = cameraManager.getCameraByScreenPoint(event.position.x, event.position.y);
             if (camera == null) continue;
 
-            worldMouse = unproject(event.position, camera);
+            worldMouse = camera.toWorldPosition(event.position);
             maxZ = Float.NEGATIVE_INFINITY;
             winnerId = -1;
 
@@ -64,22 +64,5 @@ public class ClickSystem extends IteratingEntitySystem<Context> {
                 event.consume();
             }
         }
-    }
-
-    private Vector3f unproject(Vector2f position, Camera camera) {
-        // Adjust position relative to camera viewport
-        float adjustedX = position.x - camera.viewportX;
-        float adjustedY = camera.viewportHeight - (position.y - camera.viewportY);
-        
-        int[] viewport = {0, 0, (int)camera.viewportWidth, (int)camera.viewportHeight};
-        Vector3f worldSpace = new Vector3f();
-
-        return camera.getProjectionViewMatrix().unproject(
-            adjustedX,
-            adjustedY,
-            0.0f,
-            viewport,
-            worldSpace
-        );
     }
 }

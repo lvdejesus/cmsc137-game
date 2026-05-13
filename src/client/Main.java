@@ -45,9 +45,10 @@ public class Main {
         engine = new Engine<>();
         // Add systems and components
         EngineConfig.registerComponents(engine);
-        EngineConfig.addSystems(engine);
+        EngineConfig.addSystems(engine, camera);
 
         // Set initial scene
+        client.scenes.SceneManager.setCamera(camera);
         client.scenes.SceneManager.setScene(new client.scenes.MenuScene(window), engine);
 
         loop();
@@ -73,9 +74,7 @@ public class Main {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(shaderProgram);
-            int pvLoc = glGetUniformLocation(shaderProgram, "u_ProjectionView");
-            camera.getProjectionViewMatrix().get(matrixBuffer);
-            glUniformMatrix4fv(pvLoc, false, matrixBuffer);
+            camera.bind(shaderProgram);
 
             TextureAtlas.get().bind();
 

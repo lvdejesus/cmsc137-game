@@ -20,6 +20,7 @@ import framework.engine.Engine;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -42,7 +43,7 @@ public class GameServer implements Runnable {
     private ServerSocket serverSocket;
     private volatile boolean gameStarted = false;
 
-    private static final int NUM_PLAYERS = 2;
+    private static final int NUM_PLAYERS = 1;
     private String localIP;
 
     private final ConcurrentLinkedQueue<MessagePair> inQueue = new ConcurrentLinkedQueue<>();
