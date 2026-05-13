@@ -3,10 +3,13 @@ package editor;
 import client.systems.client.*;
 import editor.components.EditorComponent;
 import editor.components.TileComponent;
+import editor.components.ButtonComponent;
+import editor.components.BooleanComponent;
 import editor.systems.CleanupSystem;
 import editor.systems.EditorSystem;
 import editor.systems.TileSystem;
-import editor.systems.PropertySystem;
+import editor.systems.ButtonSystem;
+import editor.systems.StringCheckboxSystem;
 import editor.systems.PanSystem;
 import editor.util.TileRegistry;
 import framework.rendering.ShaderProgram;
@@ -189,6 +192,8 @@ public class Main {
         engine.register(TileComponent.class);
         engine.register(ClickEvent.class);
         engine.register(TextComponent.class);
+        engine.register(ButtonComponent.class);
+        engine.register(BooleanComponent.class);
 
         // Load tile definitions
         try {
@@ -258,6 +263,8 @@ public class Main {
         solidEntity.addComponent(solidTransform);
         solidEntity.addComponent(solidText);
         solidEntity.addComponent(new ClickableComponent(solidBox));
+        solidEntity.addComponent(new ButtonComponent("toggle_solid"));
+        solidEntity.addComponent(new BooleanComponent(false));
 
         // Save button
         Entity<Context> saveEntity = engine.createEntity();
@@ -274,13 +281,15 @@ public class Main {
         saveEntity.addComponent(saveTransform);
         saveEntity.addComponent(saveText);
         saveEntity.addComponent(new ClickableComponent(saveBox));
+        saveEntity.addComponent(new ButtonComponent("save_tiles"));
 
         engine.addSystem(new ClickSystem(cameraManager));
         engine.addSystem(new RenderSystem(editorCamera, "default"));
         engine.addSystem(new RenderSystem(uiCamera, "ui"));
         engine.addSystem(new TileSystem(editor));
         engine.addSystem(new EditorSystem());
-        engine.addSystem(new PropertySystem(editor, font));
+        engine.addSystem(new ButtonSystem(editor));
+        engine.addSystem(new StringCheckboxSystem(editor));
         engine.addSystem(new PanSystem(editorCamera));
         engine.addSystem(new TextRenderingSystem(uiCamera, "ui"));
         engine.addSystem(new CleanupSystem());
