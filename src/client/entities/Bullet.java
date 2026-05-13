@@ -18,15 +18,19 @@ public class Bullet extends Prefab {
     int networkId;
     float x;
     float y;
+    float vx;
+    float vy;
     float angleDegrees;
     boolean isEnemy;
 
-    public Bullet(Engine<Context> engine, int networkId, float x, float y, float angleDegrees, boolean isEnemy) {
+    public Bullet(Engine<Context> engine, int networkId, float x, float y, float vx, float vy, float angleDegrees, boolean isEnemy) {
         super(engine);
 
         this.networkId = networkId;
         this.x = x;
         this.y = y;
+        this.vx = vx;
+        this.vy = vy;
         this.angleDegrees = angleDegrees;
         this.isEnemy = isEnemy;
     }
@@ -45,8 +49,8 @@ public class Bullet extends Prefab {
     public void spawnServer() {
         float angleRadians = (float) Math.toRadians(angleDegrees);
         float speed = isEnemy ? 300.0f : 700.0f;
-        float vx = (float) Math.cos(angleRadians) * speed;
-        float vy = (float) Math.sin(angleRadians) * speed;
+        float vx = this.vx + (float) Math.cos(angleRadians) * speed;
+        float vy = this.vy + (float) Math.sin(angleRadians) * speed;
 
         entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(0.5f, 0.5f)));
         entity.addComponent(new MovementComponent(0, 0, 0, new Vector2f(vx, vy)));
@@ -66,17 +70,21 @@ public class Bullet extends Prefab {
     public static Bullet deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
         float x = bytes.getFloat();
         float y = bytes.getFloat();
+        float vx = bytes.getFloat();
+        float vy = bytes.getFloat();
         float angleDegrees = bytes.getFloat();
         boolean isEnemy = bytes.get() == 1;
 
-        return new Bullet(engine, networkId, x, y, angleDegrees, isEnemy);
+        return new Bullet(engine, networkId, x, y, vx, vy, angleDegrees, isEnemy);
     }
 
-    public static byte[] serialize(float x, float y, float angle, boolean isEnemy) {
-        ByteBuffer bytes = ByteBuffer.allocate(13);
+    public static byte[] serialize(float x, float y, float pvx, float pvy, float angle, boolean isEnemy) {
+        ByteBuffer bytes = ByteBuffer.allocate(21);
 
         bytes.putFloat(x);
         bytes.putFloat(y);
+        bytes.putFloat(pvx);
+        bytes.putFloat(pvy);
         bytes.putFloat(angle);
         bytes.put((byte) (isEnemy ? 1 : 0));
 

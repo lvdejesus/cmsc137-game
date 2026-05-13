@@ -164,7 +164,7 @@ public class GameServer implements Runnable {
         handlers.put(C_Shoot.class, (id, message) -> {
             if (!(message instanceof C_Shoot pp)) return;
 
-            nsm.spawn(Bullet.class, Bullet.serialize(pp.getPx(), pp.getPy(), pp.getAngle(), false));
+            nsm.spawn(Bullet.class, Bullet.serialize(pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), pp.getAngle(), false));
         });
 
         engine.addSystem(new ServerNetworkInputSystem(inQueue, handlers));
