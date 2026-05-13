@@ -127,8 +127,8 @@ public class LevelScene extends Scene {
                     float angle = (float) Math.toDegrees(Math.atan2(d.y, d.x));
                     
                     // Get player's current velocity for velocity inheritance
-                    float pvx = playerMovement.velocity.x;
-                    float pvy = playerMovement.velocity.y;
+                    float pvx = playerMovementInput.x * playerMovement.speed;
+                    float pvy = playerMovementInput.y * playerMovement.speed;
                     nm.shoot(playerTransform.position.x, playerTransform.position.y, angle, pvx, pvy);
                 }
             }

@@ -4,7 +4,6 @@ import framework.engine.Engine;
 import client.systems.client.Context;
 import client.components.*;
 import client.components.bullet.BulletComponent;
-import client.components.CollisionComponent;
 import client.rendering.Texture;
 import client.rendering.TextureAtlas;
 import org.joml.Vector2f;
@@ -18,10 +17,12 @@ public class Bullet extends Prefab {
     int networkId;
     float x;
     float y;
+    float pvx;
+    float pvy;
     float angleDegrees;
     boolean isEnemy;
 
-    public Bullet(Engine<Context> engine, int networkId, float x, float y, float angleDegrees, boolean isEnemy) {
+    public Bullet(Engine<Context> engine, int networkId, float x, float y, float angleDegrees, boolean isEnemy, float pvx, float pvy) {
         super(engine);
 
         this.networkId = networkId;
@@ -29,6 +30,8 @@ public class Bullet extends Prefab {
         this.y = y;
         this.angleDegrees = angleDegrees;
         this.isEnemy = isEnemy;
+        this.pvx = pvx;
+        this.pvy = pvy;
     }
 
     @Override
@@ -45,8 +48,13 @@ public class Bullet extends Prefab {
     public void spawnServer() {
         float angleRadians = (float) Math.toRadians(angleDegrees);
         float speed = isEnemy ? 300.0f : 700.0f;
-        float vx = (float) Math.cos(angleRadians) * speed;
-        float vy = (float) Math.sin(angleRadians) * speed;
+        Vector2f dir = new Vector2f((float) Math.cos(angleRadians), (float) Math.sin(angleRadians));
+        float inherited = (pvx*dir.x + pvy*dir.y);
+        float inhertedStr = 1f;
+
+        float vx = dir.x * speed + dir.x * inherited * inhertedStr;
+        float vy = dir.y * speed + dir.y * inherited * inhertedStr;
+
 
         entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(0.5f, 0.5f)));
         entity.addComponent(new MovementComponent(0, 0, 0, new Vector2f(vx, vy)));
@@ -68,12 +76,14 @@ public class Bullet extends Prefab {
         float y = bytes.getFloat();
         float angleDegrees = bytes.getFloat();
         boolean isEnemy = bytes.get() == 1;
+        float pvx = bytes.getFloat();
+        float pvy = bytes.getFloat();
 
-        return new Bullet(engine, networkId, x, y, angleDegrees, isEnemy);
+        return new Bullet(engine, networkId, x, y, angleDegrees, isEnemy, pvx, pvy);
     }
 
     public static byte[] serialize(float x, float y, float angle, boolean isEnemy) {
-        ByteBuffer bytes = ByteBuffer.allocate(13);
+        ByteBuffer bytes = ByteBuffer.allocate(21);
 
         bytes.putFloat(x);
         bytes.putFloat(y);
