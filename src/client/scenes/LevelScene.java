@@ -70,9 +70,9 @@ public class LevelScene extends Scene {
         this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
 
         // Load background map
-        Entity<Context> mapBg = engine.createEntity();
-        mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f / 1339.0f, 600.0f / 1175.0f), Anchor.CENTER));
-        mapBg.addComponent(new RenderComponent(TextureAtlas.get().getRegion("map_1.png"), -0.5f));
+//        Entity<Context> mapBg = engine.createEntity();
+//        mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f / 1339.0f, 600.0f / 1175.0f), Anchor.CENTER));
+//        mapBg.addComponent(new RenderComponent(TextureAtlas.get().getRegion("map_1.png"), -0.5f));
 
         // Load Font for pause menu
         try {
@@ -122,10 +122,10 @@ public class LevelScene extends Scene {
             if (event.type == InputHandler.MouseEventType.LEFT_CLICK && !event.consumed) {
                 event.consume();
 
-                if (playerTransform != null ) {
+                if (playerTransform != null) {
                     Vector2f d = camera.toWorldPosition(event.position).sub(playerTransform.position);
                     float angle = (float) Math.toDegrees(Math.atan2(d.y, d.x));
-                    
+
                     // Get player's current velocity for velocity inheritance
                     float pvx = playerMovementInput.x * playerMovement.speed;
                     float pvy = playerMovementInput.y * playerMovement.speed;
