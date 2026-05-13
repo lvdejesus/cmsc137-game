@@ -26,6 +26,9 @@ public class EngineConfig {
         engine.register(CollisionComponent.class);
         engine.register(MovementComponent.class);
         engine.register(HealthComponent.class);
+        engine.register(TileGridComponent.class);
+        engine.register(TileComponent.class);
+        engine.register(WallComponent.class);
     }
 
     public static void registerComponents(Engine<Context> engine) {
@@ -34,8 +37,6 @@ public class EngineConfig {
         engine.register(RenderComponent.class);
         engine.register(AnimationComponent.class);
         engine.register(TextComponent.class);
-        engine.register(TileGridComponent.class);
-        engine.register(TileComponent.class);
 
         //tags
         engine.register(PlayerTagComponent.class);

@@ -16,7 +16,7 @@ public class Tile {
         0, 12, 1, 13, 4, 8, 5, 9, 3, 15, 2, 14, 7, 11, 6, 10
     };
 
-    public static void placeTile(Engine<Context> engine, TileGridComponent ec, int xTile, int yTile, int tileIndex) {
+    public static Entity<Context> placeTile(Engine<Context> engine, TileGridComponent ec, int xTile, int yTile, int tileIndex) {
         Entity<Context> tileEntity = engine.createEntity();
 
         TransformComponent tc = new TransformComponent(new Vector2f(xTile * 64.0f, yTile * 64.0f),
@@ -46,6 +46,8 @@ public class Tile {
         updateTile(ec, xTile + 1, yTile);
         updateTile(ec, xTile, yTile + 1);
         updateTile(ec, xTile - 1, yTile);
+
+        return tileEntity;
     }
 
     public static int getConnectionIndex(TileGridComponent ec, int xTile, int yTile) {

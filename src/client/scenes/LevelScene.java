@@ -1,10 +1,7 @@
 package client.scenes;
 
-import client.components.RenderComponent;
-import client.components.TextComponent;
-import client.components.TransformComponent;
+import client.components.*;
 import client.components.player.MovementInputComponent;
-import client.components.MovementComponent;
 import client.components.player.PlayerStateComponent;
 import client.entities.*;
 import client.network.NetworkManager;
@@ -18,6 +15,7 @@ import editor.util.TileRegistry;
 import framework.engine.*;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
+import org.joml.primitives.AABBf;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
@@ -89,7 +87,9 @@ public class LevelScene extends Scene {
                     continue;
                 }
 
-                placeTile(engine, tgc, x, y, tileIndex);
+                Entity<Context> entity = placeTile(engine, tgc, x, y, tileIndex);
+                entity.addComponent(new CollisionComponent(new AABBf((float) x, (float) y, 0.0f, x + 48.0f, y + 48.0f, 0.1f)));
+                entity.addComponent(new WallComponent());
             }
         }
 
