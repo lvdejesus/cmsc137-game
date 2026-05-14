@@ -142,27 +142,6 @@ public class LevelScene extends Scene {
 
         NetworkManager nm = NetworkManager.getInstance();
 
-        for (InputHandler.MouseEvent event : input.getEvents()) {
-            if (event.type == InputHandler.MouseEventType.LEFT_CLICK && !event.consumed) {
-                event.consume();
-
-                if (playerTransform != null) {
-                    Vector2f d = camera.toWorldPosition(event.position).sub(playerTransform.position);
-                    float angle = (float) Math.toDegrees(Math.atan2(d.y, d.x));
-
-                    // Get player's current velocity for velocity inheritance
-                    float pvx = playerMovementInput.x * playerMovement.speed;
-                    float pvy = playerMovementInput.y * playerMovement.speed;
-                    nm.shoot(playerTransform.position.x, playerTransform.position.y, angle, pvx, pvy);
-                }
-            }
-        }
-
-        // 1. Broadcast our position
-        if (playerTransform != null && playerState != null && playerMovementInput != null) {
-            nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovementInput.x, playerMovementInput.y);
-        }
-
         Message msg;
         while ((msg = nm.inQueue.poll()) != null) {
             if (msg instanceof S_Spawn m) {
@@ -192,6 +171,27 @@ public class LevelScene extends Scene {
                     }
                 }
             }
+        }
+
+        for (InputHandler.MouseEvent event : input.getEvents()) {
+            if (event.type == InputHandler.MouseEventType.LEFT_CLICK && !event.consumed) {
+                event.consume();
+
+                if (playerTransform != null) {
+                    Vector2f d = camera.toWorldPosition(event.position).sub(playerTransform.position);
+                    float angle = (float) Math.toDegrees(Math.atan2(d.y, d.x));
+
+                    // Get player's current velocity for velocity inheritance
+                    float pvx = playerMovementInput.x * playerMovement.speed;
+                    float pvy = playerMovementInput.y * playerMovement.speed;
+                    nm.shoot(playerTransform.position.x, playerTransform.position.y, angle, pvx, pvy);
+                }
+            }
+        }
+
+        // 1. Broadcast our position
+        if (playerTransform != null && playerState != null && playerMovementInput != null) {
+            nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovementInput.x, playerMovementInput.y);
         }
     }
 
