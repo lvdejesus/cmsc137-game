@@ -56,12 +56,7 @@ public class Enemy extends Prefab {
         )));
         this.entity.addComponent(new HealthComponent(50.0f)); // Enemy health
         this.entity.addComponent(new NetworkIdComponent(networkId));
-    }
-
-    @Override
-    public void spawnServerInternal() {
-        var ndc = new NetworkDuplicateComponent(TransformComponent.class);
-        entity.addComponent(ndc);
+        this.entity.addComponent(new NetworkDuplicateComponent(TransformComponent.class, HealthComponent.class));
     }
 
     public static Enemy deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {

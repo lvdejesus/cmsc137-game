@@ -39,7 +39,7 @@ public class RemotePlayer extends Prefab {
     public void spawnCommon() {
         var tc = new TransformComponent(new Vector2f(400.0f, 300.0f), new Vector2f(2.0f, 2.0f));
         entity.addComponent(tc);
-        entity.addComponent(new HealthComponent(100.0f));
+        entity.addComponent(new HealthComponent(5.0f));
         entity.addComponent(new CollisionComponent(new AABBf(
             new Vector3f(-16.0f, -16.0f, 0.0f),
             new Vector3f(16.0f, 16.0f, 0.1f)
@@ -48,12 +48,7 @@ public class RemotePlayer extends Prefab {
         entity.addComponent(new PlayerStateComponent());
         entity.addComponent(new MovementInputComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
-    }
-
-    @Override
-    public void spawnServerInternal() {
-        var ndc = new NetworkDuplicateComponent(TransformComponent.class, PlayerStateComponent.class, MovementInputComponent.class);
-        entity.addComponent(ndc);
+        entity.addComponent(new NetworkDuplicateComponent(TransformComponent.class, PlayerStateComponent.class, MovementInputComponent.class, HealthComponent.class));
     }
 
     public static RemotePlayer deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {

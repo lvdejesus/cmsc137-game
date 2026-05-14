@@ -74,7 +74,7 @@ public class DamageSystem extends EntitySystem<Context> {
 
                 AABBf playerBox = getWorldBox(playerId);
                 if (playerBox.intersectsAABB(bulletBox)) {
-                    playerHealth.damage(10.0f);
+                    playerHealth.damage(1.0f);
                     NetworkIdComponent bulletnic = engine.getMapper(NetworkIdComponent.class).get(bulletId);
                     nsm.despawn(bulletId, bulletnic.networkId);
                 }

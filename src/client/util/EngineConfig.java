@@ -21,13 +21,14 @@ public class EngineConfig {
         engine.register(TransformComponent.class);
         engine.register(MovementInputComponent.class);
         engine.register(PlayerStateComponent.class);
+        engine.register(HealthComponent.class);
+
         engine.register(PlayerNetworkComponent.class);
         engine.register(NetworkIdComponent.class);
         engine.register(EnemyComponent.class);
         engine.register(BulletComponent.class);
         engine.register(CollisionComponent.class);
         engine.register(MovementComponent.class);
-        engine.register(HealthComponent.class);
         engine.register(TileGridComponent.class);
         engine.register(TileComponent.class);
         engine.register(WallComponent.class);

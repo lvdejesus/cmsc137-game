@@ -1,8 +1,10 @@
 package client.systems.server;
 
+import client.components.HealthComponent;
 import client.components.NetworkDuplicateComponent;
 import client.components.NetworkIdComponent;
 import client.components.TransformComponent;
+import client.components.player.PlayerNetworkComponent;
 import client.network.MessagePair;
 import client.network.messages.server.ComponentSnapshot;
 import client.network.messages.server.EntitySnapshot;
@@ -63,6 +65,7 @@ public class SnapshotSystem extends IteratingEntitySystem<Context> {
             if (!(component instanceof SyncComponent sc)) continue;
             var existingComponent = entry.getValue();
             if (sc.isEqual(existingComponent)) continue;
+
             if (existingComponent == null) {
                 ndc.components.put(entry.getKey(), sc.clone());
             } else {

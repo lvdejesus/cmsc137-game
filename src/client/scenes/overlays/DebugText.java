@@ -26,7 +26,7 @@ public class DebugText {
         this.entity = engine.createEntity();
         
         this.entity.addComponent(new TransformComponent(
-            new Vector2f(20, 20), 
+            new Vector2f(20, 20),
             new Vector2f(1, 1), 
             Anchor.TOP_LEFT
         ));
@@ -36,7 +36,7 @@ public class DebugText {
             initialText, 
             new Vector4f(1, 1, 1, 1), 
             1.0f, 
-            1.5f,
+            1.0f,
             "fixed"
         );
         

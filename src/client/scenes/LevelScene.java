@@ -108,8 +108,7 @@ public class LevelScene extends Scene {
 
     @Override
     public void update() {
-        
-        this.debugText.setText("State: " + player.getState());
+        this.debugText.setText("State: " + player.getHealth());
         this.healthBar.updateHealth(player.getHealth());
         // Toggle menu with Esc
         InputHandler input = InputHandler.getInstance();
@@ -132,7 +131,11 @@ public class LevelScene extends Scene {
         while ((msg = nm.inQueue.poll()) != null) {
             if (msg instanceof S_Spawn m) {
                 // if self, skip
-                if (nm.networkId == m.getNetworkId()) continue;
+                if (nm.networkId == m.getNetworkId()) {
+                    networkEntityMap.put(m.getNetworkId(), player.getEntity().getId());
+                    continue;
+                }
+
                 Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
                 networkEntityMap.put(m.getNetworkId(), prefab.getEntity().getId());
             } else if (msg instanceof S_Despawn m) {
@@ -141,18 +144,18 @@ public class LevelScene extends Scene {
             } else if (msg instanceof S_Snapshot m) {
                 for (var entitySnapshot : m.getEntitySnapshots()) {
                     Integer entityId = networkEntityMap.get(entitySnapshot.getNetworkId());
-                    if (entitySnapshot.getNetworkId() == nm.networkId) continue;
-
                     if (entityId == null) {
                         continue;
                     }
 
+                    var keySet = engine.getMapper(NetworkDuplicateComponent.class).get(entityId).components.keySet();
                     for (var component : entitySnapshot.getComponents()) {
                         var cc = engine.getComponentClass(component.getComponentId());
+                        if (!keySet.contains(cc)) continue;
+
                         var syncComponent = (SyncComponent) engine.getMapper(cc).get(entityId);
-                        if (syncComponent == null) {
-                            continue;
-                        }
+                        if (syncComponent == null) continue;
+
                         syncComponent.fromBytes(component.getData());
                     }
                 }

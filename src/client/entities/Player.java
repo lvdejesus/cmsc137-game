@@ -53,6 +53,7 @@ public class Player extends Prefab {
         entity.addComponent(new HealthComponent(5.0f));
         entity.addComponent(new MovementInputComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
+        entity.addComponent(new NetworkDuplicateComponent(HealthComponent.class));
     }
 
     public static Player deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
