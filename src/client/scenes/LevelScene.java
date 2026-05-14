@@ -67,30 +67,6 @@ public class LevelScene extends Scene {
         this.playerMovement = player.getEntity().getComponent(MovementComponent.class);
         this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
 
-        try {
-            TileRegistry.loadTiles();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        TileGridComponent tgc = new TileGridComponent();
-        tgc.tiles = TileRegistry.loadTileTextures();
-
-        int[][] grid = LevelManager.loadGrid("room1.json");
-
-        for (int y = 0; y < grid.length; y++) {
-            for (int x = 0; x < grid[y].length; x++) {
-                int tileIndex = grid[y][x] - 1;
-                if (tileIndex < 0 || tileIndex >= tgc.tiles.size()) {
-                    continue;
-                }
-
-                Entity<Context> entity = placeTile(engine, tgc, x, y, tileIndex);
-                entity.addComponent(new CollisionComponent(new AABBf((float) x, (float) y, 0.0f, x + 48.0f, y + 48.0f, 0.1f)));
-                entity.addComponent(new WallComponent());
-            }
-        }
-
         // Load background map
 //        Entity<Context> mapBg = engine.createEntity();
 //        mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f / 1339.0f, 600.0f / 1175.0f), Anchor.CENTER));

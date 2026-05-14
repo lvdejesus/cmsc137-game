@@ -1,6 +1,8 @@
 package client.network;
 
+import client.components.CollisionComponent;
 import client.components.TransformComponent;
+import client.components.WallComponent;
 import client.components.player.MovementInputComponent;
 import client.components.player.PlayerStateComponent;
 import client.entities.*;
@@ -14,8 +16,13 @@ import client.systems.server.ServerNetworkInputSystem;
 import client.systems.server.ServerNetworkOutputSystem;
 import client.systems.server.SnapshotSystem;
 import client.util.EngineConfig;
+import editor.components.TileGridComponent;
+import editor.util.LevelManager;
+import editor.util.TileRegistry;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
+import framework.engine.Entity;
+import org.joml.primitives.AABBf;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -27,6 +34,8 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static client.entities.Tile.placeTile;
 
 public class GameServer implements Runnable {
     private static final int TCP_PORT = 12345;
@@ -179,6 +188,24 @@ public class GameServer implements Runnable {
 
         double lastTime = System.nanoTime() / NANO_TO_SECOND;
         Context ctx = new Context();
+
+        try {
+            TileRegistry.loadTiles();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        int[][] grid = LevelManager.loadGrid("room1.json");
+        for (int y = 0; y < grid.length; y++) {
+            for (int x = 0; x < grid[y].length; x++) {
+                int tileIndex = grid[y][x] - 1;
+                if (tileIndex < 0) {
+                    continue;
+                }
+
+                nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, tileIndex));
+            }
+        }
 
         while (true) {
             double currentTime = System.nanoTime() / NANO_TO_SECOND;

@@ -6,5 +6,6 @@ public class ClientPrefabRegistry extends PrefabRegistry {
         register(RemotePlayer.class, RemotePlayer::deserialize);
         register(Bullet.class, Bullet::deserialize);
         register(Enemy.class, Enemy::deserialize);
+        register(TilePrefab.class, TilePrefab::deserialize);
     }
 }

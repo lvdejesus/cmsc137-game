@@ -6,8 +6,10 @@ import framework.engine.Entity;
 
 public abstract class Prefab {
     protected final Entity<Context> entity;
+    protected final Engine<Context> engine;
 
     protected Prefab(Engine<Context> engine) {
+        this.engine = engine;
         this.entity = engine.createEntity();
     }
 
