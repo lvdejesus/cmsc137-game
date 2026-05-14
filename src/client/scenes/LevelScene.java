@@ -108,7 +108,7 @@ public class LevelScene extends Scene {
 
     @Override
     public void update() {
-        this.debugText.setText("State: " + player.getHealth());
+        this.debugText.setText("State: " + player.getState());
         this.healthBar.updateHealth(player.getHealth());
         // Toggle menu with Esc
         InputHandler input = InputHandler.getInstance();
