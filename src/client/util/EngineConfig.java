@@ -58,6 +58,8 @@ public class EngineConfig {
         // engine.addSystem(new EnemySystem());
         engine.addSystem(new CameraSystem(camera));
         engine.addSystem(new RenderSystem(camera, "default"));
+        engine.addSystem(new RenderSystem(fixedCamera, "fixed"));
+
         engine.addSystem(new TextRenderingSystem(camera, "default"));
         engine.addSystem(new TextRenderingSystem(fixedCamera, "fixed"));
     }

@@ -31,7 +31,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import client.scenes.overlays.Menu;
+import client.scenes.overlays.*;
 
 public class LevelScene extends Scene {
     private Engine<Context> engine;
@@ -50,6 +50,8 @@ public class LevelScene extends Scene {
     //Debug text
     private DebugText debugText;
 
+    // Health bar
+    private HealthBar healthBar;
     @Override
     public void init(Engine<Context> engine) {
         this.engine = engine;
@@ -103,6 +105,9 @@ public class LevelScene extends Scene {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        healthBar = new HealthBar(engine);
+        healthBar.updateHealth(player.getHealth()); // Set initial health
+        healthBar.createHealthBar();
 
         // Initialize debug text
         debugText = DebugText.create(engine, "State: idle");
@@ -127,9 +132,11 @@ public class LevelScene extends Scene {
 
     @Override
     public void update() {
-        InputHandler input = InputHandler.getInstance();
+        
         this.debugText.setText("State: " + player.getState());
+        this.healthBar.updateHealth(player.getHealth());
         // Toggle menu with Esc
+        InputHandler input = InputHandler.getInstance();
         if (input.keyDown(GLFW_KEY_ESCAPE)) {
             menu.toggleMenu();
         }
