@@ -13,7 +13,7 @@ import client.components.*;
 import client.components.bullet.BulletComponent;
 import client.components.player.*;
 import client.systems.client.BulletWallTileCollisionSystem;
-import client.systems.client.PlayerWallTileCollisionSystem;
+import client.systems.client.WallTileCollisionSystem;
 
 
 public class EngineConfig {
@@ -53,7 +53,7 @@ public class EngineConfig {
         engine.addSystem(new MovementInputSystem());
         engine.addSystem(new MovementSystem());
 
-        engine.addSystem(new PlayerWallTileCollisionSystem());
+        engine.addSystem(new WallTileCollisionSystem());
 
         engine.addSystem(new PlayerTiltSystem());
         engine.addSystem(new CameraSystem(camera));

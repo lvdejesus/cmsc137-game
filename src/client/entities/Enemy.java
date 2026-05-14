@@ -54,7 +54,7 @@ public class Enemy extends Prefab {
             new Vector3f(-12.0f, -12.0f, 0.0f),
             new Vector3f(12.0f, 12.0f, 0.1f)
         )));
-        this.entity.addComponent(new HealthComponent(50.0f)); // Enemy health
+        this.entity.addComponent(new HealthComponent(2.0f)); // Enemy health
         this.entity.addComponent(new NetworkIdComponent(networkId));
         this.entity.addComponent(new NetworkDuplicateComponent(TransformComponent.class, HealthComponent.class));
     }

@@ -4,7 +4,8 @@ import client.components.CollisionComponent;
 import client.components.MovementComponent;
 import client.components.WallComponent;
 import client.components.TransformComponent;
-import client.components.player.PlayerTagComponent;
+import client.components.enemy.EnemyComponent;
+import client.components.player.PlayerStateComponent;
 import client.util.SpatialHashGrid;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -15,10 +16,13 @@ import org.joml.primitives.AABBf;
 import java.util.Set;
 import java.util.HashSet;
 
-public class PlayerWallTileCollisionSystem extends IteratingEntitySystem<Context> {
+public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> transformM;
     private ComponentMapper<CollisionComponent> collisionM;
     private ComponentMapper<MovementComponent> movementM;
+
+    private ComponentMapper<PlayerStateComponent> stateM;
+    private ComponentMapper<EnemyComponent> enemyM;
 
     private final SpatialHashGrid wallGrid = new SpatialHashGrid(64);
     private final Set<Integer> potentialColliders = new HashSet<>();
@@ -26,8 +30,8 @@ public class PlayerWallTileCollisionSystem extends IteratingEntitySystem<Context
     private final AABBf scratchBox = new AABBf(0.0f, 0.0f, Float.NEGATIVE_INFINITY, 0.0f, 0.0f, Float.POSITIVE_INFINITY);
     private final AABBf wallBox = new AABBf(0.0f, 0.0f, Float.NEGATIVE_INFINITY, 0.0f, 0.0f, Float.POSITIVE_INFINITY);
 
-    public PlayerWallTileCollisionSystem() {
-        super(TransformComponent.class, CollisionComponent.class, MovementComponent.class, PlayerTagComponent.class);
+    public WallTileCollisionSystem() {
+        super(TransformComponent.class, CollisionComponent.class, MovementComponent.class);
     }
 
     @Override
@@ -37,6 +41,9 @@ public class PlayerWallTileCollisionSystem extends IteratingEntitySystem<Context
         transformM = engine.getMapper(TransformComponent.class);
         collisionM = engine.getMapper(CollisionComponent.class);
         movementM = engine.getMapper(MovementComponent.class);
+
+        stateM = engine.getMapper(PlayerStateComponent.class);
+        enemyM = engine.getMapper(EnemyComponent.class);
     }
 
     @Override
@@ -53,9 +60,13 @@ public class PlayerWallTileCollisionSystem extends IteratingEntitySystem<Context
 
     @Override
     protected void processEntity(int entityId, Context ctx) {
+        // player or enemies
+        if (stateM.get(entityId) == null && enemyM.get(entityId) == null) return;
+
         var pos = transformM.get(entityId).position;
         var vel = movementM.get(entityId).velocity;
         var localBox = collisionM.get(entityId).boundingBox;
+
         float dt = ctx.deltaTime;
 
         pos.x += vel.x * dt;
