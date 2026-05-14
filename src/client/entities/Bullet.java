@@ -37,17 +37,15 @@ public class Bullet extends Prefab {
     }
 
     @Override
-    public void spawn() {
+    public void spawnClientInternal() {
         TextureAtlas atlas = TextureAtlas.get();
         String textureName = isEnemy ? "bullets/enemy_bullets.png" : "bullets/friend_bullets.png";
         Texture bulletTexture = atlas.getRegion(textureName);
         entity.addComponent(new RenderComponent(bulletTexture));
-
-        spawnServer();
     }
 
     @Override
-    public void spawnServer() {
+    public void spawnCommon() {
         /*
         bullet should go to (px, py) from (x, y) with an initial speed of `speed`.
          */

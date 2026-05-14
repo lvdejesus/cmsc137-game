@@ -1,5 +1,6 @@
 package client.components.player;
 
+import client.components.TransformComponent;
 import framework.engine.SyncComponent;
 
 import java.nio.ByteBuffer;
@@ -43,5 +44,27 @@ public class PlayerStateComponent implements SyncComponent {
         buf.putInt(current.ordinal());
 
         return buf.array();
+    }
+
+    @Override
+    public boolean isEqual(SyncComponent other) {
+        if (!(other instanceof PlayerStateComponent c)) return false;
+
+        return c.previous == previous && c.current == current;
+    }
+
+    @Override
+    public void copyFrom(SyncComponent other) {
+        if (!(other instanceof PlayerStateComponent c)) return;
+
+        this.previous = c.previous;
+        this.current = c.current;
+    }
+
+    @Override
+    public SyncComponent clone() {
+        var psc = new PlayerStateComponent();
+        psc.copyFrom(this);
+        return psc;
     }
 }

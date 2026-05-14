@@ -1,6 +1,9 @@
 package client.components.player;
 
+import client.components.MovementComponent;
+import client.components.TransformComponent;
 import framework.engine.SyncComponent;
+import org.joml.Vector2f;
 
 import java.nio.ByteBuffer;
 
@@ -33,5 +36,25 @@ public class MovementInputComponent implements SyncComponent {
         buf.putFloat(y);
 
         return buf.array();
+    }
+
+    @Override
+    public boolean isEqual(SyncComponent other) {
+        if (!(other instanceof MovementInputComponent c)) return false;
+
+        return c.x == x && c.y == y;
+    }
+
+    @Override
+    public void copyFrom(SyncComponent other) {
+        if (!(other instanceof MovementInputComponent c)) return;
+
+        this.x = c.x;
+        this.y = c.y;
+    }
+
+    @Override
+    public SyncComponent clone() {
+        return new MovementInputComponent(x, y);
     }
 }

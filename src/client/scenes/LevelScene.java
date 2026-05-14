@@ -61,7 +61,7 @@ public class LevelScene extends Scene {
 
         int playerIndex = NetworkManager.getInstance().getPlayerIndex();
         this.player = new Player(engine, playerIndex, NetworkManager.getInstance().getNetworkId());
-        this.player.spawn();
+        this.player.spawnClient();
 
         this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
         this.playerMovement = player.getEntity().getComponent(MovementComponent.class);

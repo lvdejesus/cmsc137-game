@@ -47,4 +47,24 @@ public class TransformComponent implements SyncComponent {
 
         return buf.array();
     }
+
+    @Override
+    public boolean isEqual(SyncComponent other) {
+        if (!(other instanceof TransformComponent tc)) return false;
+
+        return tc.rotation == rotation && tc.position.equals(position);
+    }
+
+    @Override
+    public void copyFrom(SyncComponent other) {
+        if (!(other instanceof TransformComponent tc)) return;
+
+        this.position.set(tc.position);
+        this.rotation = tc.rotation;
+    }
+
+    @Override
+    public SyncComponent clone() {
+        return new TransformComponent(new Vector2f(position.x, position.y), scale, anchor);
+    }
 }

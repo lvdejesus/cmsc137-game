@@ -29,6 +29,7 @@ public class EngineConfig {
         engine.register(TileGridComponent.class);
         engine.register(TileComponent.class);
         engine.register(WallComponent.class);
+        engine.register(NetworkDuplicateComponent.class);
     }
 
     public static void registerComponents(Engine<Context> engine) {

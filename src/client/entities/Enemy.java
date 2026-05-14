@@ -1,5 +1,7 @@
 package client.entities;
 
+import client.components.player.MovementInputComponent;
+import client.components.player.PlayerStateComponent;
 import framework.engine.Engine;
 import client.systems.client.Context;
 import client.components.*;
@@ -32,7 +34,7 @@ public class Enemy extends Prefab {
     }
 
     @Override
-    public void spawn() {
+    public void spawnClientInternal() {
         TextureAtlas atlas = TextureAtlas.get();
         Texture enemyTexture;
         double currentTime = glfwGetTime();
@@ -40,12 +42,11 @@ public class Enemy extends Prefab {
         String spritePath = "enemy.png";
         this.entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 8, 0.1f), (float) currentTime, true));
         this.entity.addComponent(new RenderComponent());
-
-        spawnServer();
     }
 
+
     @Override
-    public void spawnServer() {
+    public void spawnCommon() {
         this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(1.5f, 1.5f)));
         this.entity.addComponent(new MovementComponent(50.0f, 20.0f, 10.0f, new Vector2f(0.0f, 0.0f)));
         this.entity.addComponent(new EnemyComponent());
@@ -55,6 +56,12 @@ public class Enemy extends Prefab {
         )));
         this.entity.addComponent(new HealthComponent(50.0f)); // Enemy health
         this.entity.addComponent(new NetworkIdComponent(networkId));
+    }
+
+    @Override
+    public void spawnServerInternal() {
+        var ndc = new NetworkDuplicateComponent(TransformComponent.class);
+        entity.addComponent(ndc);
     }
 
     public static Enemy deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {

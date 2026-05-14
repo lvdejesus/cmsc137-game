@@ -24,7 +24,7 @@ public class PrefabRegistry {
             PrefabDeserializer d = deserializers.get(prefabId);
             if (d == null) throw new IOException("Unknown prefab type: " + prefabId);
             Prefab prefab = d.deserialize(engine, networkId, ByteBuffer.wrap(bytes));
-            prefab.spawn();
+            prefab.spawnClient();
 
             return prefab;
         } catch (IOException e) {

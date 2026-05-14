@@ -15,6 +15,22 @@ public abstract class Prefab {
         return entity;
     }
 
-    public abstract void spawn();
-    public abstract void spawnServer();
+    public void spawnCommon() {
+    }
+
+    public final void spawnClient() {
+        spawnCommon();
+        spawnClientInternal();
+    }
+
+    public void spawnClientInternal() {
+    }
+
+    public final void spawnServer() {
+        spawnCommon();
+        spawnServerInternal();
+    }
+
+    public void spawnServerInternal() {
+    }
 }

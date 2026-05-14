@@ -28,7 +28,7 @@ public class Player extends Prefab {
         this.networkId = networkId;
     }
 
-    public void spawn() {
+    public void spawnClientInternal() {
         int maxHealth = 6;
         int health = 6;
         float movement_speed = 700.0f;
@@ -53,11 +53,6 @@ public class Player extends Prefab {
         entity.addComponent(new HealthComponent(100.0f));
         entity.addComponent(new MovementInputComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
-    }
-
-    @Override
-    public void spawnServer() {
-
     }
 
     public static Player deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
