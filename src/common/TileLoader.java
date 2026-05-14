@@ -1,6 +1,5 @@
-package editor.util;
+package common;
 
-import common.TileDefinition;
 import editor.components.TileGridComponent;
 import framework.json.JsonArray;
 import framework.json.JsonPair;
@@ -14,11 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class TileRegistry {
+public class TileLoader {
     private static final int TILE_SIZE = 16;
-    public static List<TileDefinition> tiles = new ArrayList<>();
 
-    public static void loadTiles() throws IOException {
+    public static List<TileDefinition> loadTiles() throws IOException {
+        List<TileDefinition> tiles = new ArrayList<>();
         try (JsonReader reader = new JsonReader("./res/textures/tiles/tiles.json")) {
             Optional<JsonPair> pair;
             while (true) {
@@ -80,12 +79,14 @@ public class TileRegistry {
                 tiles.add(new TileDefinition(name, textureFile, solid, door, dims[0], dims[1], type));
             }
         }
+
+        return tiles;
     }
 
-    public static List<TileGridComponent.TileTexture> loadTileTextures() {
+    public static List<TileGridComponent.TileTexture> loadTileTextures(List<TileDefinition> tiles) {
         ArrayList<TileGridComponent.TileTexture> tileTextures = new ArrayList<>();
 
-        for (TileDefinition tile : TileRegistry.tiles) {
+        for (TileDefinition tile : tiles) {
             String regionKey = "tiles/" + tile.textureFile;
             Texture t = TextureAtlas.get().getRegion(regionKey);
 
@@ -134,13 +135,5 @@ public class TileRegistry {
 
         }
         return tileTextures;
-    }
-
-    public static TileDefinition getTile(int index) {
-        return tiles.get(index);
-    }
-
-    public static int getTileCount() {
-        return tiles.size();
     }
 }

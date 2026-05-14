@@ -6,7 +6,7 @@ import client.components.WallComponent;
 import client.rendering.Anchor;
 import client.systems.client.Context;
 import editor.components.TileGridComponent;
-import editor.util.TileRegistry;
+import common.TileLoader;
 import framework.engine.Engine;
 import framework.engine.Entity;
 import org.joml.Vector2f;
@@ -42,12 +42,16 @@ public class TilePrefab extends Prefab{
         if (tgcs.isEmpty()) {
             Entity<Context> e = engine.createEntity();
             tgc = new TileGridComponent();
+            try {
+                tgc.tiles = TileLoader.loadTileTextures(TileLoader.loadTiles());
+            } catch (IOException err) {
+                throw new RuntimeException(err);
+            }
             e.addComponent(tgc);
         } else {
             tgc = engine.getMapper(TileGridComponent.class).get(tgcs.getFirst());
         }
 
-        tgc.tiles = TileRegistry.loadTileTextures();
         placeTile(entity, tgc, x, y, tileIndex);
     }
 

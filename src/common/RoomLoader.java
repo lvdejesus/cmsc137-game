@@ -1,4 +1,4 @@
-package editor.util;
+package common;
 
 import framework.json.JsonArray;
 import framework.json.JsonPair;
@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public class LevelManager {
+public class RoomLoader {
     private static final String LEVELS_DIR = "res/rooms";
 
     public static void saveGrid(int[][] grid, String filename) throws IOException {

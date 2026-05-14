@@ -1,8 +1,6 @@
 package client.network;
 
-import client.components.CollisionComponent;
 import client.components.TransformComponent;
-import client.components.WallComponent;
 import client.components.player.MovementInputComponent;
 import client.components.player.PlayerStateComponent;
 import client.entities.*;
@@ -16,18 +14,14 @@ import client.systems.server.ServerNetworkInputSystem;
 import client.systems.server.ServerNetworkOutputSystem;
 import client.systems.server.SnapshotSystem;
 import client.util.EngineConfig;
-import editor.components.TileGridComponent;
-import editor.util.LevelManager;
-import editor.util.TileRegistry;
+import common.RoomLoader;
+import common.TileLoader;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
-import framework.engine.Entity;
-import org.joml.primitives.AABBf;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -190,12 +184,12 @@ public class GameServer implements Runnable {
         Context ctx = new Context();
 
         try {
-            TileRegistry.loadTiles();
+            TileLoader.loadTiles();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        int[][] grid = LevelManager.loadGrid("room1.json");
+        int[][] grid = RoomLoader.loadGrid("room1.json");
         for (int y = 0; y < grid.length; y++) {
             for (int x = 0; x < grid[y].length; x++) {
                 int tileIndex = grid[y][x] - 1;

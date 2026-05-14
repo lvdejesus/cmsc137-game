@@ -1,7 +1,6 @@
 package client.scenes;
 
 import client.components.*;
-import client.components.player.MovementInputComponent;
 import client.components.player.PlayerStateComponent;
 import client.entities.*;
 import client.network.NetworkManager;
@@ -9,21 +8,14 @@ import client.network.messages.Message;
 import client.network.messages.server.*;
 import client.rendering.*;
 import client.systems.client.*;
-import editor.components.TileGridComponent;
-import editor.util.LevelManager;
-import editor.util.TileRegistry;
 import framework.engine.*;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
-import org.joml.primitives.AABBf;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 import static client.entities.Tile.placeTile;
 import static org.lwjgl.glfw.GLFW.*;

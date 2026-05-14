@@ -7,9 +7,8 @@ import editor.systems.CleanupSystem;
 import editor.systems.EditorSystem;
 import editor.systems.TileSystem;
 import editor.systems.ButtonSystem;
-import editor.systems.StringCheckboxSystem;
 import editor.systems.PanSystem;
-import editor.util.TileRegistry;
+import common.TileLoader;
 import framework.rendering.ShaderProgram;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -28,8 +27,9 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
-import static editor.util.TileRegistry.loadTileTextures;
+import static common.TileLoader.loadTileTextures;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -61,12 +61,12 @@ public class Main {
         glfwTerminate();
     }
 
-    private void createTiles() {
+    private void createTiles(List<TileGridComponent.TileTexture> tileTextures) {
         float tileStartY = 200;
         int g = 0;
 
-        for (TileDefinition tile : TileRegistry.tiles) {
-            var textures = editor.tiles.get(g).textures;
+        for (TileGridComponent.TileTexture tile : tileTextures) {
+            var textures = tile.textures;
 
             float x = (g % COLS) * (TILE_SIZE * GAP + SCALE);
             float y = tileStartY + (float) (g / COLS) * (TILE_SIZE * GAP + SCALE);
@@ -176,11 +176,13 @@ public class Main {
         engine.register(BooleanComponent.class);
         engine.register(TileComponent.class);
 
+        List<TileDefinition> tiles;
         // Load tile definitions
         try {
-            TileRegistry.loadTiles();
+            tiles = TileLoader.loadTiles();
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         // Create tiled grid background for editor area
@@ -220,8 +222,8 @@ public class Main {
         entity.addComponent(new ClickableComponent(editorBox, -1.0f)); // z=-1 so grid shows above it
         entity.addComponent(editor);
 
-        editor.tiles = loadTileTextures();
-        createTiles();
+        editor.tiles = loadTileTextures(tiles);
+        createTiles(editor.tiles);
 
         Entity<Context> textEntity = engine.createEntity();
         TransformComponent textTransform = new TransformComponent(new Vector2f(12, 12), new Vector2f(1, 1), Anchor.TOP_LEFT);
@@ -270,7 +272,6 @@ public class Main {
         engine.addSystem(new TileSystem(editor));
         engine.addSystem(new EditorSystem());
         engine.addSystem(new ButtonSystem(editor));
-        engine.addSystem(new StringCheckboxSystem(editor));
         engine.addSystem(new PanSystem(editorCamera));
         engine.addSystem(new TextRenderingSystem(uiCamera, "ui"));
         engine.addSystem(new CleanupSystem());
