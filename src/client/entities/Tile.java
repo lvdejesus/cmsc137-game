@@ -17,9 +17,6 @@ public class Tile {
     };
 
     public static void placeTile(Entity<Context> tileEntity, TileGridComponent ec, int xTile, int yTile, int tileIndex) {
-        TransformComponent tc = new TransformComponent(new Vector2f(xTile * 64.0f, yTile * 64.0f),
-            new Vector2f(4.0f, 4.0f), Anchor.TOP_LEFT);
-
         RenderComponent rc;
 
         var tile = ec.tiles.get(tileIndex);
@@ -35,7 +32,6 @@ public class Tile {
         TileComponent etc = new TileComponent(tileIndex);
 
         tileEntity.addComponent(rc);
-        tileEntity.addComponent(tc);
         tileEntity.addComponent(etc);
 
         ec.setEntity(xTile, yTile, tileEntity, tileIndex);
@@ -49,7 +45,12 @@ public class Tile {
     public static Entity<Context> placeTile(Engine<Context> engine, TileGridComponent ec, int xTile, int yTile, int tileIndex) {
         Entity<Context> tileEntity = engine.createEntity();
 
+        TransformComponent tc = new TransformComponent(new Vector2f(xTile * 64.0f, yTile * 64.0f),
+            new Vector2f(4.0f, 4.0f), Anchor.TOP_LEFT);
+
         placeTile(tileEntity, ec, xTile, yTile, tileIndex);
+
+        tileEntity.addComponent(tc);
 
         return tileEntity;
     }

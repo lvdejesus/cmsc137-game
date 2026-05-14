@@ -12,6 +12,8 @@ import client.systems.client.player.PlayerRotationSystem;
 import client.components.*;
 import client.components.bullet.BulletComponent;
 import client.components.player.*;
+import client.systems.client.BulletWallTileCollisionSystem;
+import client.systems.client.PlayerWallTileCollisionSystem;
 
 
 public class EngineConfig {
@@ -44,19 +46,15 @@ public class EngineConfig {
     }
 
     public static void addSystems(Engine<Context> engine, Camera camera, Camera fixedCamera) {
-        // Add systems
         engine.addSystem(new PhysicsSystem());
-        // Wall collision
-        // engine.addSystem(new WallCollisionSystem());
-
         engine.addSystem(new AnimationSystem());
-        // Player Specific systems
         engine.addSystem(new PlayerRotationSystem(camera));
         engine.addSystem(new MovementInputSystem());
         engine.addSystem(new MovementSystem());
+
+        engine.addSystem(new PlayerWallTileCollisionSystem());
+
         engine.addSystem(new PlayerTiltSystem());
-        // Enemy systems
-        // engine.addSystem(new EnemySystem());
         engine.addSystem(new CameraSystem(camera));
         engine.addSystem(new RenderSystem(camera, "default"));
         engine.addSystem(new TextRenderingSystem(camera, "default"));
@@ -68,7 +66,7 @@ public class EngineConfig {
         engine.addSystem(new EnemySpawnSystem(nsm));
         engine.addSystem(new EnemySystem(nsm));
         engine.addSystem(new BulletSystem(nsm));
-        // engine.addSystem(new BulletWallCollisionSystem(nsm));
+        engine.addSystem(new BulletWallTileCollisionSystem(nsm));
         engine.addSystem(new DamageSystem(nsm));
     }
 }

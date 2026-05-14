@@ -1,12 +1,15 @@
 package client.entities;
 
 import client.components.CollisionComponent;
+import client.components.TransformComponent;
 import client.components.WallComponent;
+import client.rendering.Anchor;
 import client.systems.client.Context;
 import editor.components.TileGridComponent;
 import editor.util.TileRegistry;
 import framework.engine.Engine;
 import framework.engine.Entity;
+import org.joml.Vector2f;
 import org.joml.primitives.AABBf;
 
 import java.io.IOException;
@@ -50,8 +53,10 @@ public class TilePrefab extends Prefab{
 
     @Override
     public void spawnCommon() {
-        entity.addComponent(new CollisionComponent(new AABBf((float) x, (float) y, 0.0f, x + 48.0f, y + 48.0f, 0.1f)));
+        entity.addComponent(new CollisionComponent(new AABBf(0.0f, 0.0f, 0.0f, 48.0f, 48.0f, 0.1f)));
         entity.addComponent(new WallComponent());
+        entity.addComponent(new TransformComponent(new Vector2f(x * 64.0f, y * 64.0f),
+            new Vector2f(4.0f, 4.0f), Anchor.TOP_LEFT));
     }
 
     public static TilePrefab deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
