@@ -18,6 +18,7 @@ public class ShaderProgram {
         Integer program = programs.get(pair);
         if (program == null) {
             program = loadShaderProgram(vertPath, fragPath);
+            programs.put(pair, program);
         }
         return program;
     }

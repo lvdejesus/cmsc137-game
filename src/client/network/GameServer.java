@@ -164,7 +164,10 @@ public class GameServer implements Runnable {
         handlers.put(C_Shoot.class, (id, message) -> {
             if (!(message instanceof C_Shoot pp)) return;
 
-            nsm.spawn(Bullet.class, Bullet.serialize(pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), pp.getAngle(), false));
+            int entityId = playerToEntityMap.get(id);
+            TransformComponent tc = tm.get(entityId);
+
+            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), false));
         });
 
         engine.addSystem(new ServerNetworkInputSystem(inQueue, handlers));
@@ -215,7 +218,7 @@ public class GameServer implements Runnable {
         }
 
         private void handleDisconnect() {
-            connectedClients.remove(this);
+            connectedClients.remove(this.playerId);
             broadcastPlayerCount();
             try {
                 socket.close();

@@ -36,9 +36,8 @@ public class LevelScene extends Scene {
     private Player player;
 
     private TransformComponent playerTransform;
-    private MovementInputComponent playerMovementInput;
-    private PlayerStateComponent playerState;
     private MovementComponent playerMovement;
+    private PlayerStateComponent playerState;
 
     private boolean isPaused = false;
     private Font pauseFont;
@@ -66,7 +65,6 @@ public class LevelScene extends Scene {
 
         this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
         this.playerMovement = player.getEntity().getComponent(MovementComponent.class);
-        this.playerMovementInput = player.getEntity().getComponent(MovementInputComponent.class);
         this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
 
         try {
@@ -108,7 +106,6 @@ public class LevelScene extends Scene {
 
         // Initialize debug text
         debugText = DebugText.create(engine, "State: idle");
-
     }
 
     private void setGameSystemsEnabled(boolean enabled) {
@@ -178,20 +175,19 @@ public class LevelScene extends Scene {
                 event.consume();
 
                 if (playerTransform != null) {
-                    Vector2f d = camera.toWorldPosition(event.position).sub(playerTransform.position);
-                    float angle = (float) Math.toDegrees(Math.atan2(d.y, d.x));
+                    Vector2f d = camera.toWorldPosition(event.position);
 
                     // Get player's current velocity for velocity inheritance
-                    float pvx = playerMovementInput.x * playerMovement.speed;
-                    float pvy = playerMovementInput.y * playerMovement.speed;
-                    nm.shoot(playerTransform.position.x, playerTransform.position.y, angle, pvx, pvy);
+                    float pvx = playerMovement.velocity.x;
+                    float pvy = playerMovement.velocity.y;
+                    nm.shoot(d.x, d.y, pvx, pvy);
                 }
             }
         }
 
         // 1. Broadcast our position
-        if (playerTransform != null && playerState != null && playerMovementInput != null) {
-            nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovementInput.x, playerMovementInput.y);
+        if (playerTransform != null && playerState != null && playerMovement != null) {
+            nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovement.velocity.x, playerMovement.velocity.y);
         }
     }
 

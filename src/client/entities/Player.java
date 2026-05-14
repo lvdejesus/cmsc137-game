@@ -31,7 +31,7 @@ public class Player extends Prefab {
     public void spawn() {
         int maxHealth = 6;
         int health = 6;
-        float movement_speed = 1000.0f;
+        float movement_speed = 700.0f;
         float friction = 200.0f;
         float acceleration = 500.0f;
         double currentTime = glfwGetTime();

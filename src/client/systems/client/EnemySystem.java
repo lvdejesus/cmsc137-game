@@ -83,11 +83,8 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
                 if (!enemyHealth.isAlive()) continue;
 
                 TransformComponent enemyTransform = tm.get(enemyId);
-                float dx = playerTransform.position.x - enemyTransform.position.x;
-                float dy = playerTransform.position.y - enemyTransform.position.y;
-                float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
 
-                nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, 0.0f, 0.0f, angle, true));
+                nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, playerTransform.position.x, playerTransform.position.y, 0.0f, 0.0f, true));
             }
 
             break;
