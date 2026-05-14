@@ -37,6 +37,7 @@ public class LevelScene extends Scene {
     private Engine<Context> engine;
     private Player player;
     private Menu menu;
+    private UpgradeOverlay upgrade;
     private TransformComponent playerTransform;
     private MovementInputComponent playerMovementInput;
     private PlayerStateComponent playerState;
@@ -105,6 +106,8 @@ public class LevelScene extends Scene {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        upgrade = new UpgradeOverlay(engine);
         healthBar = new HealthBar(engine);
         healthBar.updateHealth(player.getHealth()); // Set initial health
         healthBar.createHealthBar();
@@ -144,6 +147,11 @@ public class LevelScene extends Scene {
         if (menu.isVisible()) {
             menu.handlePauseMenuInput(input);
         }
+
+        if (input.key(GLFW_KEY_V)){
+            upgrade.splay();
+        }
+        upgrade.handleInput(input);
 
         NetworkManager nm = NetworkManager.getInstance();
 

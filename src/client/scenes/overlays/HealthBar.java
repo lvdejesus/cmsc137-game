@@ -1,9 +1,7 @@
 package client.scenes.overlays;
 
 import client.components.RenderComponent;
-import client.components.TextComponent;
 import client.components.TransformComponent;
-import client.entities.*;
 import client.rendering.*;
 import client.systems.client.*;
 import framework.engine.*;
@@ -27,7 +25,6 @@ public class HealthBar {
     }
 
     public void createHealthBar(){
-        float segmentOffset = 34.0f;
         // Load textures in
         Texture bgTex = TextureAtlas.get().getRegion("healthbar/healthbar_empty.png");
         Texture gemTex = TextureAtlas.get().getRegion("healthbar/healthgem.png");
