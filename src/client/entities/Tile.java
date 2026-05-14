@@ -4,9 +4,9 @@ import client.components.RenderComponent;
 import client.components.TransformComponent;
 import client.rendering.Anchor;
 import client.systems.client.Context;
+import common.TileDefinition;
 import editor.components.TileGridComponent;
 import editor.components.TileComponent;
-import editor.util.TileRegistry;
 import framework.engine.Engine;
 import framework.engine.Entity;
 import org.joml.Vector2f;
@@ -20,9 +20,9 @@ public class Tile {
         RenderComponent rc;
 
         var tile = ec.tiles.get(tileIndex);
-        if (tile.type == TileRegistry.TileTextureType.regular) {
+        if (tile.type == TileDefinition.TileTextureType.regular) {
             rc = new RenderComponent(tile.textures.get(remap[0]), 0.0f);
-        } else if (tile.type == TileRegistry.TileTextureType.connected) {
+        } else if (tile.type == TileDefinition.TileTextureType.connected) {
             int idx = getConnectionIndex(ec, xTile, yTile);
             rc = new RenderComponent(tile.textures.get(remap[idx]), 0.0f);
         } else {
@@ -69,7 +69,7 @@ public class Tile {
 
         TileComponent etc = tileEntity2.getComponent(TileComponent.class);
         TileGridComponent.TileTexture tile = ec.tiles.get(etc.tile);
-        if (tile.type != TileRegistry.TileTextureType.connected) return;
+        if (tile.type != TileDefinition.TileTextureType.connected) return;
 
         int idx2 = getConnectionIndex(ec, xTile, yTile);
         RenderComponent rc2 = tileEntity2.getComponent(RenderComponent.class);

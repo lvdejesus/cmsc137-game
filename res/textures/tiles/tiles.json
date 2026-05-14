@@ -16,5 +16,17 @@
         "size": [1, 1],
         "solid": 1,
         "door": 1
+    },
+    "door-top": {
+        "texture": "door-top.png",
+        "size": [1, 1],
+        "solid": 1,
+        "door": 1
+    },
+    "door-bottom": {
+        "texture": "door-bottom.png",
+        "size": [1, 1],
+        "solid": 1,
+        "door": 1
     }
 }

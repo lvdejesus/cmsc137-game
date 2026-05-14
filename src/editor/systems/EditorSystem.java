@@ -3,9 +3,9 @@ package editor.systems;
 import client.components.ClickEvent;
 import client.components.RenderComponent;
 import client.systems.client.Context;
+import common.TileDefinition;
 import editor.components.TileGridComponent;
 import editor.components.TileComponent;
-import editor.util.TileRegistry;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.Entity;
@@ -45,9 +45,9 @@ public class EditorSystem extends IteratingEntitySystem<Context> {
                 etc.tile = ec.currentTile;
 
                 var tile = ec.tiles.get(ec.currentTile);
-                if (tile.type == TileRegistry.TileTextureType.regular) {
+                if (tile.type == TileDefinition.TileTextureType.regular) {
                     rc.texture = tile.textures.get(0);
-                } else if (tile.type == TileRegistry.TileTextureType.connected) {
+                } else if (tile.type == TileDefinition.TileTextureType.connected) {
                     int idx = getConnectionIndex(ec, xTile, yTile);
                     rc.texture = tile.textures.get(remap[idx]);
                 }

@@ -1,6 +1,7 @@
 package editor;
 
 import client.systems.client.*;
+import common.TileDefinition;
 import editor.components.*;
 import editor.systems.CleanupSystem;
 import editor.systems.EditorSystem;
@@ -23,13 +24,10 @@ import client.rendering.Font;
 import client.components.TextComponent;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 import static editor.util.TileRegistry.loadTileTextures;
 import static org.lwjgl.glfw.GLFW.*;
@@ -67,7 +65,7 @@ public class Main {
         float tileStartY = 200;
         int g = 0;
 
-        for (TileRegistry.TileDefinition tile : TileRegistry.tiles) {
+        for (TileDefinition tile : TileRegistry.tiles) {
             var textures = editor.tiles.get(g).textures;
 
             float x = (g % COLS) * (TILE_SIZE * GAP + SCALE);

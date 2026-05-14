@@ -2,7 +2,7 @@ package editor.components;
 
 import client.rendering.Texture;
 import client.systems.client.Context;
-import editor.util.TileRegistry;
+import common.TileDefinition;
 import framework.engine.Component;
 import framework.engine.Entity;
 
@@ -16,10 +16,10 @@ public class TileGridComponent implements Component {
     public static final int GRID_HEIGHT = 15;
 
     public static class TileTexture {
-        public TileRegistry.TileTextureType type;
+        public TileDefinition.TileTextureType type;
         public List<Texture> textures;
 
-        public TileTexture(TileRegistry.TileTextureType type, List<Texture> textures) {
+        public TileTexture(TileDefinition.TileTextureType type, List<Texture> textures) {
             this.type = type;
             this.textures = textures;
         }
