@@ -49,7 +49,7 @@ public class Player extends Prefab {
             new Vector3f(-16.0f, -16.0f, 0.0f),
             new Vector3f(16.0f, 16.0f, 0.1f)
         )));
-        entity.addComponent(new HealthComponent(6.0f));
+        entity.addComponent(new HealthComponent(5.0f));
         entity.addComponent(new MovementInputComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
     }

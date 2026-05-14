@@ -3,8 +3,8 @@ package client.components;
 import framework.engine.Component;
 
 public class HealthComponent implements Component {
-    public float maxHealth = 6;
-    public float currentHealth = 6;
+    public float maxHealth = 5;
+    public float currentHealth = 5;
     
     public HealthComponent() {
     }

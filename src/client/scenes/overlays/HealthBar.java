@@ -64,7 +64,7 @@ public class HealthBar {
         Texture segTex = TextureAtlas.get().getRegion("healthbar/healthSegment.png");
         
         float offset = 50.0f; // distance between segments
-        Vector2f segPos = new Vector2f(20.0f + 85 + index * offset, 20.0f + 75);
+        Vector2f segPos = new Vector2f(20.0f + 130 + index * offset, 20.0f + 75);
         Vector2f scale = new Vector2f(3.0f, 3.0f);
         
         Entity<Context> entity = engine.createEntity();
@@ -89,8 +89,8 @@ public class HealthBar {
     public void updateHealth(float newHealth) {
         if (currentHealth == newHealth) return; 
         
-        if (newHealth < 0 || newHealth > 6) {
-            throw new IllegalArgumentException("Health must be between 0 and 6");
+        if (newHealth < 0 || newHealth > 5) {
+            throw new IllegalArgumentException("Health must be between 0 and 5  ");
         }
         currentHealth = newHealth;
         
