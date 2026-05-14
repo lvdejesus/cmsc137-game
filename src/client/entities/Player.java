@@ -31,7 +31,7 @@ public class Player extends Prefab {
     public void spawnClientInternal() {
         int maxHealth = 6;
         int health = 6;
-        float movement_speed = 700.0f;
+        float movement_speed = 1000.0f;
         float friction = 200.0f;
         float acceleration = 500.0f;
         double currentTime = glfwGetTime();
@@ -50,7 +50,7 @@ public class Player extends Prefab {
             new Vector3f(-16.0f, -16.0f, 0.0f),
             new Vector3f(16.0f, 16.0f, 0.1f)
         )));
-        entity.addComponent(new HealthComponent(100.0f));
+        entity.addComponent(new HealthComponent(5.0f));
         entity.addComponent(new MovementInputComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
     }
@@ -69,5 +69,10 @@ public class Player extends Prefab {
     public String getState() {
         PlayerStateComponent stateComponent = entity.getComponent(PlayerStateComponent.class);
         return stateComponent != null ? stateComponent.get() : "unknown";
+    }
+
+    public float getHealth() {
+        HealthComponent healthComponent = entity.getComponent(HealthComponent.class);
+        return healthComponent.getHealth();
     }
 }

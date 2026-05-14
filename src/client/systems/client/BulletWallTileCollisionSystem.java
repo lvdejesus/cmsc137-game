@@ -47,7 +47,6 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
 
         for (int wallId : walls) {
             syncWorldBox(wallId, wallWorldBox);
-            System.out.println(wallWorldBox);
             wallGrid.addEntity(wallId, wallWorldBox);
         }
 

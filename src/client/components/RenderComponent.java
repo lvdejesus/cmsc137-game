@@ -10,6 +10,11 @@ public class RenderComponent implements Component {
     public float z;
     public Vector4f tint;
 
+    // For upgrades
+    public boolean isFlipping = false;
+    public boolean facingBack = true;
+    public Texture backTex;
+
     public RenderComponent(Texture texture, float z, Vector4f tint, String layer) {
         this.texture = texture;
         this.z = z;

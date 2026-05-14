@@ -21,10 +21,10 @@ public class Tile {
 
         var tile = ec.tiles.get(tileIndex);
         if (tile.type == TileRegistry.TileTextureType.regular) {
-            rc = new RenderComponent(tile.textures.get(remap[0]), 1);
+            rc = new RenderComponent(tile.textures.get(remap[0]), 0.0f);
         } else if (tile.type == TileRegistry.TileTextureType.connected) {
             int idx = getConnectionIndex(ec, xTile, yTile);
-            rc = new RenderComponent(tile.textures.get(remap[idx]), 1);
+            rc = new RenderComponent(tile.textures.get(remap[idx]), 0.0f);
         } else {
             throw new RuntimeException("Invalid TileTextureType");
         }

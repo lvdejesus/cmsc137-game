@@ -47,7 +47,7 @@ public class Camera {
         this.viewportHeight = 600;
         this.worldWidth = 800;
         this.worldHeight = 600;
-        this.projectionMatrix = new Matrix4f().ortho(0, worldWidth, worldHeight, 0, -1, 1);
+        this.projectionMatrix = new Matrix4f().ortho(0, worldWidth, worldHeight, 0, -10, 10);
         this.viewMatrix = new Matrix4f();
     }
 

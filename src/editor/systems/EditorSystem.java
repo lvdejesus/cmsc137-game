@@ -46,7 +46,7 @@ public class EditorSystem extends IteratingEntitySystem<Context> {
 
                 var tile = ec.tiles.get(ec.currentTile);
                 if (tile.type == TileRegistry.TileTextureType.regular) {
-                    rc.texture = tile.textures.getFirst();
+                    rc.texture = tile.textures.get(0);
                 } else if (tile.type == TileRegistry.TileTextureType.connected) {
                     int idx = getConnectionIndex(ec, xTile, yTile);
                     rc.texture = tile.textures.get(remap[idx]);

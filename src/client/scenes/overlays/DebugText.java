@@ -1,4 +1,4 @@
-package client.scenes;
+package client.scenes.overlays;
 
 import client.components.TextComponent;
 import client.components.TransformComponent;
@@ -36,7 +36,7 @@ public class DebugText {
             initialText, 
             new Vector4f(1, 1, 1, 1), 
             1.0f, 
-            0.5f,
+            1.5f,
             "fixed"
         );
         

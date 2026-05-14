@@ -3,8 +3,8 @@ package client.components;
 import framework.engine.Component;
 
 public class HealthComponent implements Component {
-    public float maxHealth = 100.0f;
-    public float currentHealth = 100.0f;
+    public float maxHealth = 5;
+    public float currentHealth = 5;
     
     public HealthComponent() {
     }
@@ -20,5 +20,9 @@ public class HealthComponent implements Component {
     
     public void damage(float amount) {
         currentHealth -= amount;
+    }
+
+    public float getHealth() {
+        return currentHealth;
     }
 }
