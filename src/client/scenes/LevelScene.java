@@ -188,7 +188,7 @@ public class LevelScene extends Scene {
                         if (syncComponent == null) {
                             continue;
                         }
-                        syncComponent.syncFromBytes(component.getData());
+                        syncComponent.fromBytes(component.getData());
                     }
                 }
             }
