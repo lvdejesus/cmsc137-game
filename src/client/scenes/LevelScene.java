@@ -1,4 +1,4 @@
-    package client.scenes;
+package client.scenes;
 
 import client.components.*;
 import client.components.player.MovementInputComponent;
@@ -18,12 +18,12 @@ import org.joml.Vector4f;
 import org.joml.primitives.AABBf;
 import org.lwjgl.BufferUtils;
 
-    import java.io.IOException;
-    import java.nio.ByteBuffer;
-    import java.nio.file.Files;
-    import java.nio.file.Paths;
-    import java.util.ArrayList;
-    import java.util.List;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import static client.entities.Tile.placeTile;
 import static org.lwjgl.glfw.GLFW.*;
@@ -31,40 +31,40 @@ import static org.lwjgl.glfw.GLFW.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-    public class LevelScene extends Scene {
-        private Engine<Context> engine;
-        private Player player;
+import client.scenes.overlays.Menu;
 
-        private TransformComponent playerTransform;
-        private MovementInputComponent playerMovementInput;
-        private PlayerStateComponent playerState;
-        private MovementComponent playerMovement;
+public class LevelScene extends Scene {
+    private Engine<Context> engine;
+    private Player player;
+    private Menu menu;
+    private TransformComponent playerTransform;
+    private MovementInputComponent playerMovementInput;
+    private PlayerStateComponent playerState;
+    private MovementComponent playerMovement;
 
-        // For netrorks
-        private ClientPrefabRegistry prefabRegistry = new ClientPrefabRegistry();
-        private final Map<Integer, Integer> networkEntityMap = new ConcurrentHashMap<>();
+    private Font pauseFont;
+    private ClientPrefabRegistry prefabRegistry = new ClientPrefabRegistry();
 
-        //Debug text
-        private DebugText debugText;
+    private final Map<Integer, Integer> networkEntityMap = new ConcurrentHashMap<>();
 
-        // pause menu
-        private Menu menu;
+    //Debug text
+    private DebugText debugText;
 
-        @Override
-        public void init(Engine<Context> engine) {
-            this.engine = engine;
+    @Override
+    public void init(Engine<Context> engine) {
+        this.engine = engine;
 
-            // Ensure systems are enabled
-            setGameSystemsEnabled(true);
+        // Ensure systems are enabled
+        setGameSystemsEnabled(true);
 
-            int playerIndex = NetworkManager.getInstance().getPlayerIndex();
-            this.player = new Player(engine, playerIndex, NetworkManager.getInstance().getNetworkId());
-            this.player.spawn();
+        int playerIndex = NetworkManager.getInstance().getPlayerIndex();
+        this.player = new Player(engine, playerIndex, NetworkManager.getInstance().getNetworkId());
+        this.player.spawn();
 
-            this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
-            this.playerMovement = player.getEntity().getComponent(MovementComponent.class);
-            this.playerMovementInput = player.getEntity().getComponent(MovementInputComponent.class);
-            this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
+        this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
+        this.playerMovement = player.getEntity().getComponent(MovementComponent.class);
+        this.playerMovementInput = player.getEntity().getComponent(MovementInputComponent.class);
+        this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
 
         try {
             TileRegistry.loadTiles();
@@ -95,19 +95,47 @@ import java.util.concurrent.ConcurrentHashMap;
 //        mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f / 1339.0f, 600.0f / 1175.0f), Anchor.CENTER));
 //        mapBg.addComponent(new RenderComponent(TextureAtlas.get().getRegion("map_1.png"), -0.5f));
 
+        // Load Font for pause menu
+        try {
+            ByteBuffer fontBuffer = loadResource("res/fonts/KiwiSoda.ttf");
+            pauseFont = new Font(fontBuffer, 32); // Smaller font
+            menu = new Menu(engine, pauseFont);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        private void setGameSystemsEnabled(boolean enabled) {
-            // enableSystem(EnemySystem.class, enabled);
-            enableSystem(BulletSystem.class, enabled);
-            enableSystem(MovementSystem.class, enabled);
-            enableSystem(client.systems.client.player.PlayerRotationSystem.class, enabled);
-            enableSystem(DamageSystem.class, enabled);
-            enableSystem(PhysicsSystem.class, enabled);
+        // Initialize debug text
+        debugText = DebugText.create(engine, "State: idle");
+
+    }
+
+    private void setGameSystemsEnabled(boolean enabled) {
+        // enableSystem(EnemySystem.class, enabled);
+        enableSystem(BulletSystem.class, enabled);
+        enableSystem(MovementSystem.class, enabled);
+        enableSystem(client.systems.client.player.PlayerRotationSystem.class, enabled);
+        enableSystem(DamageSystem.class, enabled);
+        enableSystem(PhysicsSystem.class, enabled);
+    }
+
+    private <T extends EntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
+        T system = engine.getSystem(type);
+        if (system != null) {
+            system.setEnabled(enabled);
+        }
+    }
+
+    @Override
+    public void update() {
+        InputHandler input = InputHandler.getInstance();
+        this.debugText.setText("State: " + player.getState());
+        // Toggle menu with Esc
+        if (input.keyDown(GLFW_KEY_ESCAPE)) {
+            menu.toggleMenu();
         }
 
-        if (isPaused) {
-            handlePauseMenuInput(input);
+        if (menu.isVisible()) {
+            menu.handlePauseMenuInput(input);
         }
 
         NetworkManager nm = NetworkManager.getInstance();
@@ -128,58 +156,34 @@ import java.util.concurrent.ConcurrentHashMap;
             }
         }
 
-        @Override
-        public void update() {
-            InputHandler input = InputHandler.getInstance();
-            this.debugText.setText("State: " + player.getState());
-            // Toggle menu with Esc
-            if (input.keyDown(GLFW_KEY_ESCAPE)) {
-                menu.toggleMenu();
-            }
+        // 1. Broadcast our position
+        if (playerTransform != null && playerState != null && playerMovementInput != null) {
+            nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovementInput.x, playerMovementInput.y);
+        }
 
-            if (menu.isVisible()) {
-                menu.handlePauseMenuInput(input);
-            }
+        Message msg;
+        while ((msg = nm.inQueue.poll()) != null) {
+            if (msg instanceof S_Spawn m) {
+                // if self, skip
+                if (nm.networkId == m.getNetworkId()) continue;
+                Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
+                networkEntityMap.put(m.getNetworkId(), prefab.getEntity().getId());
+            } else if (msg instanceof S_Despawn m) {
+                int entityId = networkEntityMap.remove(m.getNetworkId());
+                engine.destroyEntity(entityId);
+            } else if (msg instanceof S_Snapshot m) {
+                for (var entitySnapshot : m.getEntitySnapshots()) {
+                    Integer entityId = networkEntityMap.get(entitySnapshot.getNetworkId());
+                    if (entitySnapshot.getNetworkId() == nm.networkId) continue;
 
-            NetworkManager nm = NetworkManager.getInstance();
-
-            for (InputHandler.MouseEvent event : input.getEvents()) {
-                if (event.type == InputHandler.MouseEventType.LEFT_CLICK && !event.consumed) {
-                    event.consume();
-
-                    if (playerTransform != null ) {
-                        Vector2f d = camera.toWorldPosition(event.position).sub(playerTransform.position);
-                        float angle = (float) Math.toDegrees(Math.atan2(d.y, d.x));
-                        
-                        // Get player's current velocity for velocity inheritance
-                        float pvx = playerMovementInput.x * playerMovement.speed;
-                        float pvy = playerMovementInput.y * playerMovement.speed;
-                        nm.shoot(playerTransform.position.x, playerTransform.position.y, angle, pvx, pvy);
+                    if (entityId == null) {
+                        continue;
                     }
-                }
-            }
 
-            // 1. Broadcast our position
-            if (playerTransform != null && playerState != null && playerMovementInput != null) {
-                nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovementInput.x, playerMovementInput.y);
-            }
-
-            Message msg;
-            while ((msg = nm.inQueue.poll()) != null) {
-                if (msg instanceof S_Spawn m) {
-                    // if self, skip
-                    if (nm.networkId == m.getNetworkId()) continue;
-                    Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
-                    networkEntityMap.put(m.getNetworkId(), prefab.getEntity().getId());
-                } else if (msg instanceof S_Despawn m) {
-                    int entityId = networkEntityMap.remove(m.getNetworkId());
-                    engine.destroyEntity(entityId);
-                } else if (msg instanceof S_Snapshot m) {
-                    for (var entitySnapshot : m.getEntitySnapshots()) {
-                        Integer entityId = networkEntityMap.get(entitySnapshot.getNetworkId());
-                        if (entitySnapshot.getNetworkId() == nm.networkId) continue;
-
-                        if (entityId == null) {
+                    for (var component : entitySnapshot.getComponents()) {
+                        var cc = engine.getComponentClass(component.getComponentId());
+                        var syncComponent = (SyncComponent) engine.getMapper(cc).get(entityId);
+                        if (syncComponent == null) {
                             continue;
                         }
                         syncComponent.fromBytes(component.getData());
@@ -187,17 +191,18 @@ import java.util.concurrent.ConcurrentHashMap;
                 }
             }
         }
-
-        private ByteBuffer loadResource(String path) throws IOException {
-            byte[] bytes = Files.readAllBytes(Paths.get(path));
-            ByteBuffer buffer = BufferUtils.createByteBuffer(bytes.length);
-            buffer.put(bytes);
-            buffer.flip();
-            return buffer;
-        }
-
-        @Override
-        public void clean() {
-            menu.hidePauseMenu();
-        }
     }
+
+    private ByteBuffer loadResource(String path) throws IOException {
+        byte[] bytes = Files.readAllBytes(Paths.get(path));
+        ByteBuffer buffer = BufferUtils.createByteBuffer(bytes.length);
+        buffer.put(bytes);
+        buffer.flip();
+        return buffer;
+    }
+
+    @Override
+    public void clean() {
+        menu.hidePauseMenu();
+    }
+}
