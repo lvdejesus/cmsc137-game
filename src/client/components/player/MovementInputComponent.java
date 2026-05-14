@@ -18,45 +18,20 @@ public class MovementInputComponent implements SyncComponent {
     }
 
     @Override
-    public void syncFromBytes(byte[] bytes) {
-        MovementInputComponent.Sync sync = MovementInputComponent.Sync.fromBytes(bytes);
-        sync.apply(this);
+    public void fromBytes(byte[] bytes) {
+        ByteBuffer buf = ByteBuffer.wrap(bytes);
+
+        x = buf.getFloat();
+        y = buf.getFloat();
     }
 
-    public static class Sync {
-        private final float x;
-        private final float y;
+    @Override
+    public byte[] toBytes() {
+        ByteBuffer buf = ByteBuffer.allocate(12);
 
-        public Sync(float x, float y) {
-            this.x = x;
-            this.y = y;
-        }
+        buf.putFloat(x);
+        buf.putFloat(y);
 
-        public void apply(MovementInputComponent mic) {
-            mic.x = x;
-            mic.y = y;
-        }
-
-        public byte[] toBytes() {
-            ByteBuffer buf = ByteBuffer.allocate(8);
-
-            buf.putFloat(x);
-            buf.putFloat(y);
-
-            return buf.array();
-        }
-
-        public static MovementInputComponent.Sync fromBytes(byte[] bytes) {
-            ByteBuffer buf = ByteBuffer.wrap(bytes);
-
-            float x = buf.getFloat();
-            float y = buf.getFloat();
-
-            return new MovementInputComponent.Sync(x, y);
-        }
-
-        public static MovementInputComponent.Sync extract(MovementInputComponent mic) {
-            return new MovementInputComponent.Sync(mic.x, mic.y);
-        }
+        return buf.array();
     }
 }

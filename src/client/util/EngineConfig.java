@@ -5,6 +5,8 @@ import client.network.NetworkSpawnManager;
 import client.rendering.Camera;
 import client.systems.client.*;
 import client.systems.client.player.PlayerTiltSystem;
+import editor.components.TileComponent;
+import editor.components.TileGridComponent;
 import framework.engine.*;
 import client.systems.client.player.PlayerRotationSystem;
 import client.components.*;
@@ -24,6 +26,9 @@ public class EngineConfig {
         engine.register(CollisionComponent.class);
         engine.register(MovementComponent.class);
         engine.register(HealthComponent.class);
+        engine.register(TileGridComponent.class);
+        engine.register(TileComponent.class);
+        engine.register(WallComponent.class);
     }
 
     public static void registerComponents(Engine<Context> engine) {

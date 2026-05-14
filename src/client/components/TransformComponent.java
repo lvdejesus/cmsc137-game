@@ -29,47 +29,22 @@ public class TransformComponent implements SyncComponent {
     }
 
     @Override
-    public void syncFromBytes(byte[] bytes) {
-        Sync sync = Sync.fromBytes(bytes);
-        sync.apply(this);
+    public void fromBytes(byte[] bytes) {
+        ByteBuffer buf = ByteBuffer.wrap(bytes);
+
+        position.x = buf.getFloat();
+        position.y = buf.getFloat();
+        rotation = buf.getFloat();
     }
 
-    public static class Sync {
-        private final Vector2f position;
-        private final float rotation;
+    @Override
+    public byte[] toBytes() {
+        ByteBuffer buf = ByteBuffer.allocate(12);
 
-        public Sync(Vector2f position, float rotation) {
-            this.position = position;
-            this.rotation = rotation;
-        }
+        buf.putFloat(position.x);
+        buf.putFloat(position.y);
+        buf.putFloat(rotation);
 
-        public void apply(TransformComponent tc) {
-            tc.position.set(position);
-            tc.rotation = rotation;
-        }
-
-        public byte[] toBytes() {
-            ByteBuffer buf = ByteBuffer.allocate(12);
-
-            buf.putFloat(position.x);
-            buf.putFloat(position.y);
-            buf.putFloat(rotation);
-
-            return buf.array();
-        }
-
-        public static Sync fromBytes(byte[] bytes) {
-            ByteBuffer buf = ByteBuffer.wrap(bytes);
-
-            float x = buf.getFloat();
-            float y = buf.getFloat();
-            float rot = buf.getFloat();
-
-            return new Sync(new Vector2f(x, y), rot);
-        }
-
-        public static Sync extract(TransformComponent tc) {
-            return new Sync(tc.position, tc.rotation);
-        }
+        return buf.array();
     }
 }

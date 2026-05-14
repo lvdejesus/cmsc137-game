@@ -1,23 +1,22 @@
     package client.scenes;
 
-    import client.components.AnimationComponent;
-    import client.components.RenderComponent;
-    import client.components.TextComponent;
-    import client.components.TransformComponent;
-    import client.components.player.MovementInputComponent;
-    import client.components.MovementComponent;
-    import client.components.player.PlayerStateComponent;
-    import client.entities.*;
-    import client.network.NetworkManager;
-    import client.network.messages.Message;
-    import client.network.messages.server.*;
-    import client.rendering.*;
-    import client.systems.client.*;
-    import client.scenes.overlays.Menu;
-    import framework.engine.*;
-    import org.joml.Vector2f;
-    import org.joml.Vector4f;
-    import org.lwjgl.BufferUtils;
+import client.components.*;
+import client.components.player.MovementInputComponent;
+import client.components.player.PlayerStateComponent;
+import client.entities.*;
+import client.network.NetworkManager;
+import client.network.messages.Message;
+import client.network.messages.server.*;
+import client.rendering.*;
+import client.systems.client.*;
+import editor.components.TileGridComponent;
+import editor.util.LevelManager;
+import editor.util.TileRegistry;
+import framework.engine.*;
+import org.joml.Vector2f;
+import org.joml.Vector4f;
+import org.joml.primitives.AABBf;
+import org.lwjgl.BufferUtils;
 
     import java.io.IOException;
     import java.nio.ByteBuffer;
@@ -26,11 +25,11 @@
     import java.util.ArrayList;
     import java.util.List;
 
-    import static org.lwjgl.glfw.GLFW.*;
+import static client.entities.Tile.placeTile;
+import static org.lwjgl.glfw.GLFW.*;
 
-    import java.util.HashMap;
-    import java.util.Map;
-    import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
     public class LevelScene extends Scene {
         private Engine<Context> engine;
@@ -67,22 +66,34 @@
             this.playerMovementInput = player.getEntity().getComponent(MovementInputComponent.class);
             this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
 
-            // Load background map
-            Entity<Context> mapBg = engine.createEntity();
-            mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f / 1339.0f, 600.0f / 1175.0f), Anchor.CENTER));
-            mapBg.addComponent(new RenderComponent(TextureAtlas.get().getRegion("map_1.png"), -0.5f));
+        try {
+            TileRegistry.loadTiles();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-            // Initialize pause menu
-            try {
-                ByteBuffer fontBuffer = loadResource("res/fonts/KiwiSoda.ttf");
-                Font pauseFont = new Font(fontBuffer, 32); // Smaller font
-                this.menu = new Menu(engine, pauseFont);
-            } catch (IOException e) {
-                e.printStackTrace();
+        TileGridComponent tgc = new TileGridComponent();
+        tgc.tiles = TileRegistry.loadTileTextures();
+
+        int[][] grid = LevelManager.loadGrid("room1.json");
+
+        for (int y = 0; y < grid.length; y++) {
+            for (int x = 0; x < grid[y].length; x++) {
+                int tileIndex = grid[y][x] - 1;
+                if (tileIndex < 0 || tileIndex >= tgc.tiles.size()) {
+                    continue;
+                }
+
+                Entity<Context> entity = placeTile(engine, tgc, x, y, tileIndex);
+                entity.addComponent(new CollisionComponent(new AABBf((float) x, (float) y, 0.0f, x + 48.0f, y + 48.0f, 0.1f)));
+                entity.addComponent(new WallComponent());
             }
+        }
 
-            // Initialize debug text
-            debugText = DebugText.create(engine, "State: idle");
+        // Load background map
+//        Entity<Context> mapBg = engine.createEntity();
+//        mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f / 1339.0f, 600.0f / 1175.0f), Anchor.CENTER));
+//        mapBg.addComponent(new RenderComponent(TextureAtlas.get().getRegion("map_1.png"), -0.5f));
 
         }
 
@@ -95,10 +106,25 @@
             enableSystem(PhysicsSystem.class, enabled);
         }
 
-        private <T extends EntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
-            T system = engine.getSystem(type);
-            if (system != null) {
-                system.setEnabled(enabled);
+        if (isPaused) {
+            handlePauseMenuInput(input);
+        }
+
+        NetworkManager nm = NetworkManager.getInstance();
+
+        for (InputHandler.MouseEvent event : input.getEvents()) {
+            if (event.type == InputHandler.MouseEventType.LEFT_CLICK && !event.consumed) {
+                event.consume();
+
+                if (playerTransform != null) {
+                    Vector2f d = camera.toWorldPosition(event.position).sub(playerTransform.position);
+                    float angle = (float) Math.toDegrees(Math.atan2(d.y, d.x));
+
+                    // Get player's current velocity for velocity inheritance
+                    float pvx = playerMovementInput.x * playerMovement.speed;
+                    float pvy = playerMovementInput.y * playerMovement.speed;
+                    nm.shoot(playerTransform.position.x, playerTransform.position.y, angle, pvx, pvy);
+                }
             }
         }
 
@@ -156,15 +182,7 @@
                         if (entityId == null) {
                             continue;
                         }
-
-                        for (var component : entitySnapshot.getComponents()) {
-                            var cc = engine.getComponentClass(component.getComponentId());
-                            var syncComponent = (SyncComponent) engine.getMapper(cc).get(entityId);
-                            if (syncComponent == null) {
-                                continue;
-                            }
-                            syncComponent.syncFromBytes(component.getData());
-                        }
+                        syncComponent.fromBytes(component.getData());
                     }
                 }
             }

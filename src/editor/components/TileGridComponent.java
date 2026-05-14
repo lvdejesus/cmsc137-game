@@ -11,10 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EditorComponent implements Component {
+public class TileGridComponent implements Component {
     public static final int GRID_WIDTH = 20;
     public static final int GRID_HEIGHT = 15;
-
 
     public static class TileTexture {
         public TileRegistry.TileTextureType type;

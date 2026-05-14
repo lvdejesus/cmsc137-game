@@ -1,6 +1,5 @@
 package editor.util;
 
-import editor.components.EditorComponent;
 import framework.json.JsonArray;
 import framework.json.JsonPair;
 import framework.json.JsonReader;

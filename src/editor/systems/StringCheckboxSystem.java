@@ -3,7 +3,7 @@ package editor.systems;
 import client.components.TextComponent;
 import client.systems.client.Context;
 import editor.components.BooleanComponent;
-import editor.components.EditorComponent;
+import editor.components.TileGridComponent;
 import editor.util.TileRegistry;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -12,9 +12,9 @@ import framework.engine.IteratingEntitySystem;
 public class StringCheckboxSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<BooleanComponent> bfm;
     private ComponentMapper<TextComponent> tcm;
-    private final EditorComponent editor;
+    private final TileGridComponent editor;
 
-    public StringCheckboxSystem(EditorComponent editor) {
+    public StringCheckboxSystem(TileGridComponent editor) {
         super(BooleanComponent.class, TextComponent.class);
         this.editor = editor;
     }

@@ -31,6 +31,10 @@ class ComponentRegistry {
     Class<? extends Component> index(int index) {
         return invertedIndex.get(index);
     }
+
+    public Iterable<Class<? extends Component>> getComponentClasses() {
+        return invertedIndex.values();
+    }
 }
 
 public class Engine<T> {
@@ -158,6 +162,10 @@ public class Engine<T> {
 
     public Class<? extends Component> getComponentClass(int componentId) {
         return componentRegistry.index(componentId);
+    }
+
+    public Iterable<Class<? extends Component>> getComponentClasses() {
+        return componentRegistry.getComponentClasses();
     }
 
 
