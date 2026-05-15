@@ -57,7 +57,6 @@ public class DamageSystem extends EntitySystem<Context> {
                 if (!targetHealth.isAlive()) continue;
                 if (!getWorldBox(targetId).intersectsAABB(bulletBox)) continue;
 
-                System.out.println("damaged something");
                 targetHealth.damage(25.0f);
 
                 nsm.despawn(bulletId, bulletnic.networkId);

@@ -5,6 +5,8 @@ import client.components.player.PlayerStateComponent;
 import client.entities.*;
 import client.network.NetworkManager;
 import client.network.messages.Message;
+import client.network.messages.client.C_PlayerState;
+import client.network.messages.client.C_Shoot;
 import client.network.messages.server.*;
 import client.rendering.*;
 import client.systems.client.*;
@@ -164,15 +166,12 @@ public class LevelScene extends Scene {
                     // Get player's current velocity for velocity inheritance
                     float pvx = playerMovement.velocity.x;
                     float pvy = playerMovement.velocity.y;
-                    nm.shoot(d.x, d.y, pvx, pvy);
+                    nm.sendMessage(new C_Shoot(d.x, d.y, pvx, pvy));
                 }
             }
         }
 
-        // 1. Broadcast our position
-        if (playerTransform != null && playerState != null && playerMovement != null) {
-            nm.broadcastPosition(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovement.velocity.x, playerMovement.velocity.y);
-        }
+        nm.sendMessage(new C_PlayerState(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovement.velocity.x, playerMovement.velocity.y));
     }
 
     private ByteBuffer loadResource(String path) throws IOException {

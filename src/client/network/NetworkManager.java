@@ -88,12 +88,8 @@ public class NetworkManager {
         client.connect(ip, TCP_PORT);
     }
 
-    public void broadcastPosition(float x, float y, float rot, PlayerStateComponent.State previous, PlayerStateComponent.State current, float mx, float my) {
-        client.sendPosition(x, y, rot, previous, current, mx, my);
-    }
-
-    public void shoot(float px, float py, float pvx, float pvy) {
-        client.sendBullet(px, py, pvx, pvy);
+    public void sendMessage(Message message) {
+        client.sendMessage(message);
     }
 
     public void stop() {

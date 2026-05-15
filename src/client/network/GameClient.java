@@ -68,22 +68,11 @@ public class GameClient {
         }).start();
     }
 
-    public void sendPosition(float x, float y, float rot, PlayerStateComponent.State previous, PlayerStateComponent.State current, float mx, float my) {
+    public void sendMessage(Message message) {
         if (!connected || out == null) return;
         synchronized (out) {
             try {
-                clientRegistry.send(out, new C_PlayerState(x, y, rot, previous, current, mx, my));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void sendBullet(float px, float py, float pvx, float pvy) {
-        if (!connected || out == null) return;
-        synchronized (out) {
-            try {
-                clientRegistry.send(out, new C_Shoot(px, py, pvx, pvy));
+                clientRegistry.send(out, message);
             } catch (IOException e) {
                 e.printStackTrace();
             }
