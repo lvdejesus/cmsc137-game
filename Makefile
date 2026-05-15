@@ -12,9 +12,12 @@ CLASSPATH := $(shell find $(LIB) -name "*.jar" | tr '\n' ':').:$(OUT)
 # Ensure the native path matches your actual folder structure
 NATIVE_PATH = $(LIB)/natives/x64/linux
 
-.PHONY: all build run clean
+.PHONY: all build run clean genmap
 
 all: run
+
+genmap: build
+	java -cp "$(CLASSPATH)" common.MapGeneratorTest
 
 build:
 	@mkdir -p $(OUT)
