@@ -23,8 +23,8 @@ public class Window {
     private long windowHandle;
 
     private Window() {
-        this.width = 800;
-        this.height = 600;
+        this.width = 1280;
+        this.height = 720;
         this.title = "GameTitle";
     }
 

@@ -82,7 +82,7 @@ public class UpgradeOverlay {
         for (Entity<Context>entity : cards){
             TransformComponent tc = entity.getComponent(TransformComponent.class);
             RenderComponent rc = entity.getComponent(RenderComponent.class);
-            tc.position.y += 800f; // Drop them off-screen bottom
+            tc.position.y += Window.getWindow().getHeight(); // Drop them off-screen bottom
             rc.tint.w = 0f;
         }
         destroyUpgrades();

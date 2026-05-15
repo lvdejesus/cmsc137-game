@@ -61,12 +61,12 @@ public class MenuScene extends Scene {
         
         Entity<Context> bg = engine.createEntity();
         bg.addComponent(new TransformComponent(new Vector2f(centerX, centerY), new Vector2f(scaleX, scaleY)));
-        bg.addComponent(new RenderComponent(bgTex, 0.0f));
+        bg.addComponent(new RenderComponent(bgTex, 0.0f, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f), "fixed"));
 
         // Title
         Entity<Context> title = engine.createEntity();
         title.addComponent(new TransformComponent(new Vector2f(centerX, centerY - 100), new Vector2f(1, 1), Anchor.CENTER));
-        title.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_title.png"), 0.1f));
+        title.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_title.png"), 0.1f, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f), "fixed"));
 
         // Options
         optionPositions = new Vector2f[] {
@@ -77,20 +77,20 @@ public class MenuScene extends Scene {
 
         Entity<Context> startText = engine.createEntity();
         startText.addComponent(new TransformComponent(optionPositions[0], new Vector2f(1, 1), Anchor.CENTER));
-        startText.addComponent(new TextComponent(menuFont, "start game", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f));
+        startText.addComponent(new TextComponent(menuFont, "start game", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f, "fixed"));
 
         Entity<Context> joinText = engine.createEntity();
         joinText.addComponent(new TransformComponent(optionPositions[1], new Vector2f(1, 1), Anchor.CENTER));
-        joinText.addComponent(new TextComponent(menuFont, "join game", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f));
+        joinText.addComponent(new TextComponent(menuFont, "join game", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f, "fixed"));
 
         Entity<Context> exitText = engine.createEntity();
         exitText.addComponent(new TransformComponent(optionPositions[2], new Vector2f(1, 1), Anchor.CENTER));
-        exitText.addComponent(new TextComponent(menuFont, "exit", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f));
+        exitText.addComponent(new TextComponent(menuFont, "exit", new Vector4f(1, 1, 1, 1), 1.0f, 0.2f, "fixed"));
 
         // Selector
         selectorEntity = engine.createEntity();
         selectorEntity.addComponent(new TransformComponent(new Vector2f(Math.round(optionPositions[0].x - 120), Math.round(optionPositions[0].y)), new Vector2f(1, 1), Anchor.CENTER));
-        selectorEntity.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_selector.png"), 0.3f));
+        selectorEntity.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_selector.png"), 0.3f, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f), "fixed"));
     }
 
     @Override

@@ -19,9 +19,11 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
     private ComponentMapper<MovementComponent> mm;
     private ComponentMapper<HealthComponent> healthM;
+    private ComponentMapper<MovementComponent> movementM;
     private final Random random = new Random();
     private float shootTimer = 0.0f;
-    private final float shootInterval = 1.0f;
+    private final float shootInterval = 1.2f;
+    private final float shootIntervalVariance = 0.4f;
 
     private NetworkSpawnManager nsm;
 
@@ -39,6 +41,7 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
         this.tm = engine.getMapper(TransformComponent.class);
         this.mm = engine.getMapper(MovementComponent.class);
         this.healthM = engine.getMapper(HealthComponent.class);
+        this.movementM = engine.getMapper(MovementComponent.class);
     }
 
     @Override
@@ -70,7 +73,7 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
         shootTimer -= ctx.deltaTime;
         if (shootTimer <= 0.0f) {
             shootAtPlayer();
-            shootTimer = shootInterval;
+            shootTimer = shootInterval + shootIntervalVariance * (random.nextFloat() * 0.5f);
         }
     }
 
@@ -85,11 +88,14 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
             Iterable<Integer> enemyIterator = engine.getFamily(EnemyComponent.class, HealthComponent.class)::iterator;
             for (int enemyId : enemyIterator) {
                 HealthComponent enemyHealth = healthM.get(enemyId);
+                MovementComponent enemyMovement = movementM.get(enemyId);
                 if (!enemyHealth.isAlive()) continue;
 
                 TransformComponent enemyTransform = tm.get(enemyId);
 
-                nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, playerTransform.position.x, playerTransform.position.y, 0.0f, 0.0f, true));
+                float dx = random.nextFloat() * 100.0f - 50.0f;
+                float dy = random.nextFloat() * 100.0f - 50.0f;
+                nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, playerTransform.position.x + dx, playerTransform.position.y + dy, enemyMovement.velocity.x, enemyMovement.velocity.y, true));
             }
 
             break;

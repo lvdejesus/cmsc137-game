@@ -22,6 +22,7 @@ public class Camera {
     // World-space projection dimensions (how much world is visible)
     public float worldWidth;
     public float worldHeight;
+    public float scale;
 
     public String name;
 
@@ -38,24 +39,31 @@ public class Camera {
     }
 
     public Camera(String name) {
+        this(name, 1.0f);
+    }
+
+    public Camera(String name, float scale) {
         this.name = name;
         this.position = new Vector2f(0, 0);
         this.rotation = 0.0f;
         this.viewportX = 0;
         this.viewportY = 0;
-        this.viewportWidth = 800;
-        this.viewportHeight = 600;
-        this.worldWidth = 800;
-        this.worldHeight = 600;
-        this.projectionMatrix = new Matrix4f().ortho(0, worldWidth, worldHeight, 0, -10, 10);
+        this.viewportWidth = 1280;
+        this.viewportHeight = 720;
+        this.worldWidth = this.viewportWidth * scale;
+        this.worldHeight = this.viewportHeight * scale;
         this.viewMatrix = new Matrix4f();
+        this.scale = scale;
+
+        updateProjection();
     }
+
 
     public void setSize(int width, int height) {
         this.viewportWidth = width;
         this.viewportHeight = height;
-        this.worldWidth = width;
-        this.worldHeight = height;
+        this.worldWidth = this.viewportWidth * scale;
+        this.worldHeight = this.viewportHeight * scale;
         updateProjection();
         this.viewMatrix = new Matrix4f();
     }
@@ -68,13 +76,13 @@ public class Camera {
     }
 
     public void setWorldSize(float width, float height) {
-        this.worldWidth = width;
-        this.worldHeight = height;
+        this.worldWidth = width * scale;
+        this.worldHeight = height * scale;
         updateProjection();
     }
 
     private void updateProjection() {
-        this.projectionMatrix = new Matrix4f().ortho(0, worldWidth, worldHeight, 0, -1, 1);
+        this.projectionMatrix = new Matrix4f().ortho(0, worldWidth, worldHeight, 0, -10, 10);
     }
 
     public Matrix4f getProjectionViewMatrix() {
@@ -92,12 +100,6 @@ public class Camera {
     public boolean containsScreenPoint(float screenX, float screenY) {
         return screenX >= viewportX && screenX < viewportX + viewportWidth &&
             screenY >= viewportY && screenY < viewportY + viewportHeight;
-    }
-
-    public Vector2f screenToWorld(float screenX, float screenY) {
-        float worldX = screenX - viewportX + position.x;
-        float worldY = screenY - viewportY + position.y;
-        return new Vector2f(worldX, worldY);
     }
 
     // Adjust position relative to camera viewport

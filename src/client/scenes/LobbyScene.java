@@ -58,19 +58,19 @@ public class LobbyScene extends Scene {
         // Status Text
         statusTextEntity = engine.createEntity();
         statusTextEntity.addComponent(new TransformComponent(new Vector2f(centerX, centerY - 50), new Vector2f(1, 1), Anchor.CENTER));
-        statusTextEntity.addComponent(new TextComponent(font, "Waiting for players...", new Vector4f(1, 1, 1, 1), 1.0f, 0.5f));
+        statusTextEntity.addComponent(new TextComponent(font, "Waiting for players...", new Vector4f(1, 1, 1, 1), 1.0f, 0.5f, "fixed"));
         entities.add(statusTextEntity);
 
         // IP Text
         ipTextEntity = engine.createEntity();
         ipTextEntity.addComponent(new TransformComponent(new Vector2f(centerX, centerY + 50), new Vector2f(1, 1), Anchor.CENTER));
-        ipTextEntity.addComponent(new TextComponent(font, "Host IP: " + hostIP, new Vector4f(1, 1, 1, 1), 1.0f, 0.4f));
+        ipTextEntity.addComponent(new TextComponent(font, "Host IP: " + hostIP, new Vector4f(1, 1, 1, 1), 1.0f, 0.4f, "fixed"));
         entities.add(ipTextEntity);
 
         // Start Button (only visible to host)
         startButtonEntity = engine.createEntity();
         startButtonEntity.addComponent(new TransformComponent(new Vector2f(centerX, centerY + 120), new Vector2f(1, 1), Anchor.CENTER));
-        startButtonEntity.addComponent(new TextComponent(font, "Start Game", new Vector4f(0, 1, 0, 1), 1.0f, 0.5f));
+        startButtonEntity.addComponent(new TextComponent(font, "Start Game", new Vector4f(0, 1, 0, 1), 1.0f, 0.5f, "fixed"));
         entities.add(startButtonEntity);
 
         // Disable game systems while waiting
