@@ -22,8 +22,8 @@ public class EnemySpawnSystem extends EntitySystem<Context> {
         spawnTimer -= ctx.deltaTime;
         if (spawnTimer <= 0.0f) {
 
-            float x = 50.0f + rand.nextFloat() * 700.0f;
-            float y = 50.0f + rand.nextFloat() * 500.0f;
+            float x = 155 * 64.0f + (rand.nextFloat() - 0.5f) * 400.0f;
+            float y = 155 * 64.0f + (rand.nextFloat() - 0.5f) * 400.0f;
 
             nsm.spawn(Enemy.class, Enemy.serialize(x, y));
             spawnTimer = spawnInterval;
