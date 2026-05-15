@@ -2,6 +2,7 @@ package client.systems.client;
 
 import client.components.NetworkIdComponent;
 import client.components.player.PlayerNetworkComponent;
+import client.components.player.PlayerStateComponent;
 import client.network.NetworkSpawnManager;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -15,6 +16,7 @@ import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
 
 public class DamageSystem extends EntitySystem<Context> {
+    private ComponentMapper<PlayerStateComponent> playerM;
     private ComponentMapper<HealthComponent> healthM;
     private ComponentMapper<TransformComponent> transformM;
     private ComponentMapper<CollisionComponent> collisionM;
@@ -29,6 +31,7 @@ public class DamageSystem extends EntitySystem<Context> {
     @Override
     public void setEngine(Engine<Context> engine) {
         super.setEngine(engine);
+        this.playerM = engine.getMapper(PlayerStateComponent.class);
         this.healthM = engine.getMapper(HealthComponent.class);
         this.transformM = engine.getMapper(TransformComponent.class);
         this.collisionM = engine.getMapper(CollisionComponent.class);
@@ -42,21 +45,24 @@ public class DamageSystem extends EntitySystem<Context> {
             if (bulletM.get(bulletId).isEnemy) continue;
             AABBf bulletBox = getWorldBox(bulletId);
 
-            Iterable<Integer> enemyIterator = engine.getFamily(EnemyComponent.class, NetworkIdComponent.class)::iterator;
-            for (int enemyId : enemyIterator) {
-                HealthComponent enemyHealth = healthM.get(enemyId);
+            Iterable<Integer> targetIterator = engine.getFamily(HealthComponent.class, CollisionComponent.class, NetworkIdComponent.class)::iterator;
+            for (int targetId : targetIterator) {
+                if (playerM.get(targetId) != null) continue;
 
-                if (!enemyHealth.isAlive()) continue;
-                if (!getWorldBox(enemyId).intersectsAABB(bulletBox)) continue;
+                HealthComponent targetHealth = healthM.get(targetId);
 
-                enemyHealth.damage(25.0f);
+                if (!targetHealth.isAlive()) continue;
+                if (!getWorldBox(targetId).intersectsAABB(bulletBox)) continue;
+
+                System.out.println("damaged something");
+                targetHealth.damage(25.0f);
 
                 NetworkIdComponent bulletnic = engine.getMapper(NetworkIdComponent.class).get(bulletId);
                 nsm.despawn(bulletId, bulletnic.networkId);
 
-                if (!enemyHealth.isAlive()) {
-                    NetworkIdComponent enemynic = engine.getMapper(NetworkIdComponent.class).get(enemyId);
-                    nsm.despawn(enemyId, enemynic.networkId);
+                if (!targetHealth.isAlive()) {
+                    NetworkIdComponent enemynic = engine.getMapper(NetworkIdComponent.class).get(targetId);
+                    nsm.despawn(targetId, enemynic.networkId);
                 }
             }
         }

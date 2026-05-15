@@ -11,6 +11,37 @@ public class MapGenerator {
     public static final int START_X = 150;
     public static final int START_Y = 150;
 
+    public static class MapResult {
+        public int[][] grid;
+        public int[][][] closedAreas;
+        public int[][] areaLookup;
+
+        public MapResult(int[][] grid, int[][][] closedAreas) {
+            this.grid = grid;
+            this.closedAreas = closedAreas;
+            this.areaLookup = new int[GRID_SIZE][GRID_SIZE];
+
+            for (int i = 0; i < GRID_SIZE; i++) {
+                Arrays.fill(this.areaLookup[i], -1);
+            }
+
+            for (int areaIdx = 0; areaIdx < closedAreas.length; areaIdx++) {
+                for (int[] coord : closedAreas[areaIdx]) {
+                    int x = coord[0];
+                    int y = coord[1];
+                    this.areaLookup[y][x] = areaIdx;
+                }
+            }
+        }
+
+        public int getAreaIndex(int x, int y) {
+            if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) {
+                return -1;
+            }
+            return areaLookup[y][x];
+        }
+    }
+
     public static class RoomData {
         public String filename;
         public boolean isHallway;
@@ -65,15 +96,15 @@ public class MapGenerator {
         }
     }
 
-    public static int[][] generateMap(long seed) throws IOException {
+    public static MapResult generateMap(long seed) throws IOException {
         return generateMap(seed, 30, 100, true);
     }
 
-    public static int[][] generateMap(long seed, int minRooms, int maxRooms) throws IOException {
+    public static MapResult generateMap(long seed, int minRooms, int maxRooms) throws IOException {
         return generateMap(seed, minRooms, maxRooms, false);
     }
 
-    public static int[][] generateMap(long seed, int minRooms, int maxRooms, boolean allowFallbackCapping) throws IOException {
+    public static MapResult generateMap(long seed, int minRooms, int maxRooms, boolean allowFallbackCapping) throws IOException {
         List<RoomData> rooms = loadAllRooms();
 
         for (RoomData room : rooms) {
@@ -87,7 +118,7 @@ public class MapGenerator {
         return placeRoomsBacktracking(rooms, seed, minRooms, maxRooms, allowFallbackCapping);
     }
 
-    private static int[][] placeRoomsBacktracking(List<RoomData> rooms, long seed, int minRooms, int maxRooms, boolean allowFallbackCapping) {
+    private static MapResult placeRoomsBacktracking(List<RoomData> rooms, long seed, int minRooms, int maxRooms, boolean allowFallbackCapping) {
         Random rng = new Random(seed);
 
         List<RoomData> startRooms = new ArrayList<>();
@@ -98,7 +129,7 @@ public class MapGenerator {
         }
 
         if (startRooms.isEmpty()) {
-            return new int[0][0];
+            return new MapResult(new int[0][0], new int[0][0][]);
         }
 
         RoomData startRoom = startRooms.get(rng.nextInt(startRooms.size()));
@@ -112,7 +143,7 @@ public class MapGenerator {
         if (initialPlacement.offsetX < 0 || initialPlacement.offsetY < 0 ||
             initialPlacement.offsetX + startRoom.width > GRID_SIZE ||
             initialPlacement.offsetY + startRoom.height > GRID_SIZE) {
-            return new int[0][0];
+            return new MapResult(new int[0][0], new int[0][0][]);
         }
 
         placedRooms.add(initialPlacement);
@@ -130,7 +161,7 @@ public class MapGenerator {
                 for (int ry = 0; ry < pr.room.height; ry++) {
                     for (int rx = 0; rx < pr.room.width; rx++) {
                         int tile = pr.room.grid[ry][rx];
-                        if (tile != 0) {
+                        if (mapGrid[pr.offsetY + ry][pr.offsetX + rx] == 0 && tile != 0) {
                             mapGrid[pr.offsetY + ry][pr.offsetX + rx] = tile;
                         }
                     }
@@ -155,10 +186,57 @@ public class MapGenerator {
             // remove hallway doors
             cleanUpHallwayDoors(mapGrid, placedRooms);
 
-            return mapGrid;
+            // --- Find Closed Areas (Flood Fill Air) ---
+            List<int[][]> closedAreasList = new ArrayList<>();
+            boolean[][] visited = new boolean[GRID_SIZE][GRID_SIZE];
+
+            for (int y = 0; y < GRID_SIZE; y++) {
+                for (int x = 0; x < GRID_SIZE; x++) {
+                    if (mapGrid[y][x] == 0 && !visited[y][x]) {
+                        List<int[]> currentArea = new ArrayList<>();
+                        Queue<int[]> queue = new LinkedList<>();
+                        queue.add(new int[]{x, y});
+                        visited[y][x] = true;
+
+                        boolean touchesEdge = false;
+
+                        while (!queue.isEmpty()) {
+                            int[] curr = queue.poll();
+                            int cx = curr[0];
+                            int cy = curr[1];
+                            currentArea.add(curr);
+
+                            if (cx == 0 || cx == GRID_SIZE - 1 || cy == 0 || cy == GRID_SIZE - 1) {
+                                touchesEdge = true;
+                            }
+
+                            int[][] dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                            for (int[] d : dirs) {
+                                int nx = cx + d[0];
+                                int ny = cy + d[1];
+                                if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+                                    if (mapGrid[ny][nx] == 0 && !visited[ny][nx]) {
+                                        visited[ny][nx] = true;
+                                        queue.add(new int[]{nx, ny});
+                                    }
+                                }
+                            }
+                        }
+
+                        // If it doesn't touch the edge, it's a closed pocket
+                        if (!touchesEdge && !currentArea.isEmpty()) {
+                            closedAreasList.add(currentArea.toArray(new int[0][]));
+                        }
+                    }
+                }
+            }
+
+            int[][][] closedAreasArray = closedAreasList.toArray(new int[0][][]);
+
+            return new MapResult(mapGrid, closedAreasArray);
         }
 
-        return new int[0][0];
+        return new MapResult(new int[0][0], new int[0][0][]);
     }
 
     private static void cleanUpHallwayDoors(int[][] mapGrid, List<PlacedRoom> placedRooms) {
@@ -428,7 +506,7 @@ public class MapGenerator {
         }
     }
 
-    private static boolean isDoorTile(int tileId) {
+    public static boolean isDoorTile(int tileId) {
         // TODO: use actual values
         return tileId >= 2 && tileId <= 5;
     }

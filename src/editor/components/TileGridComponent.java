@@ -25,6 +25,7 @@ public class TileGridComponent implements Component {
         }
     }
 
+    public List<TileDefinition> tileDefs;
     public List<TileTexture> tiles = new ArrayList<>();
     public Integer currentTile = null;
     private final Map<IntPair, Entity<Context>> entities = new HashMap<>();

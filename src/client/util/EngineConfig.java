@@ -69,7 +69,7 @@ public class EngineConfig {
         engine.addSystem(new EnemySpawnSystem(nsm));
         engine.addSystem(new EnemySystem(nsm));
         engine.addSystem(new BulletSystem(nsm));
-        engine.addSystem(new BulletWallTileCollisionSystem(nsm));
         engine.addSystem(new DamageSystem(nsm));
+        engine.addSystem(new BulletWallTileCollisionSystem(nsm));
     }
 }

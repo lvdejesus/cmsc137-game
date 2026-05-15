@@ -6,7 +6,7 @@ public class MapGeneratorTest {
     public static void main(String[] args) {
         try {
             long seed = args.length > 0 ? Long.parseLong(args[0]) : 42;
-            int[][] map = MapGenerator.generateMap(seed);
+            int[][] map = MapGenerator.generateMap(seed).grid;
 
             System.out.println("Map size: " + map[0].length + "x" + map.length);
             for (var row : map) {

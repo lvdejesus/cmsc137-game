@@ -184,16 +184,16 @@ public class GameServer implements Runnable {
         double lastTime = System.nanoTime() / NANO_TO_SECOND;
         Context ctx = new Context();
 
-        int[][] grid;
+        MapGenerator.MapResult grid;
         try {
             TileLoader.loadTiles();
             grid = MapGenerator.generateMap(System.nanoTime());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        for (int y = 0; y < grid.length; y++) {
-            for (int x = 0; x < grid[y].length; x++) {
-                int tileIndex = grid[y][x] - 1;
+        for (int y = 0; y < grid.grid.length; y++) {
+            for (int x = 0; x < grid.grid[y].length; x++) {
+                int tileIndex = grid.grid[y][x] - 1;
                 if (tileIndex < 0) {
                     continue;
                 }

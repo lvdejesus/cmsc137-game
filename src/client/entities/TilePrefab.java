@@ -1,10 +1,9 @@
 package client.entities;
 
-import client.components.CollisionComponent;
-import client.components.TransformComponent;
-import client.components.WallComponent;
+import client.components.*;
 import client.rendering.Anchor;
 import client.systems.client.Context;
+import common.MapGenerator;
 import editor.components.TileGridComponent;
 import common.TileLoader;
 import framework.engine.Engine;
@@ -43,7 +42,8 @@ public class TilePrefab extends Prefab{
             Entity<Context> e = engine.createEntity();
             tgc = new TileGridComponent();
             try {
-                tgc.tiles = TileLoader.loadTileTextures(TileLoader.loadTiles());
+                tgc.tileDefs =TileLoader.loadTiles();
+                tgc.tiles = TileLoader.loadTileTextures(tgc.tileDefs);
             } catch (IOException err) {
                 throw new RuntimeException(err);
             }
@@ -61,6 +61,11 @@ public class TilePrefab extends Prefab{
         entity.addComponent(new WallComponent());
         entity.addComponent(new TransformComponent(new Vector2f(x * 64.0f, y * 64.0f),
             new Vector2f(4.0f, 4.0f), Anchor.TOP_LEFT));
+        if (MapGenerator.isDoorTile(tileIndex + 1))  {
+            entity.addComponent(new HealthComponent(5));
+            entity.addComponent(new NetworkDuplicateComponent(HealthComponent.class));
+        }
+        entity.addComponent(new NetworkIdComponent(networkId));
     }
 
     public static TilePrefab deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
