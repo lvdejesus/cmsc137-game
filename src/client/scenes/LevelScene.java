@@ -114,7 +114,7 @@ public class LevelScene extends Scene {
             menu.handlePauseMenuInput(input);
         }
 
-        if (input.key(GLFW_KEY_V)){
+        if (input.keyDown(GLFW_KEY_V)){
             upgrade.splay();
         }
         upgrade.handleInput(input);

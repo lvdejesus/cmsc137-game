@@ -22,24 +22,24 @@ public class UpgradeOverlay {
     private List<Entity<Context>> cards = new ArrayList<>();
     private int selectedIndex = 0;
 
-    public UpgradeOverlay(Engine<Context> engine){
+    public UpgradeOverlay(Engine<Context> engine) {
         this.engine = engine;
     }
 
 
-    public void splay(){
+    public void splay() {
         // Destroy old upgrades
         destroyUpgrades();
-        
-        float centerx = 1920f / 2f;
-        float centery = 1080f / 2f;
+
+        float centerx = Window.getWindow().getWidth() / 2f;
+        float centery = Window.getWindow().getHeight() / 2f;
         float spacing = 350f;
         Vector2f startpos = new Vector2f(centerx, 1200f);
-        for(int i = 0; i < 3; i++) {
-            int randomIdx = (int)(Math.random()*2)+1;
+        for (int i = 0; i < 3; i++) {
+            int randomIdx = (int) (Math.random() * 2) + 1;
             Entity<Context> card = UpgradeCard.create(engine, randomIdx, startpos);
             cards.add(card);
-            
+
             TransformComponent tc = card.getComponent(TransformComponent.class);
             RenderComponent rc = card.getComponent(RenderComponent.class);
             tc.position.set(centerx + (i - 1) * spacing, centery);
@@ -61,25 +61,24 @@ public class UpgradeOverlay {
         }
     }
 
-    private void updateSelection(){
-        float centery = 1080f/2f;
-        for(int i=0; i< cards.size(); i++){
+    private void updateSelection() {
+        float centery = Window.getWindow().getHeight() / 2f;
+        for (int i = 0; i < cards.size(); i++) {
             TransformComponent tc = cards.get(i).getComponent(TransformComponent.class);
             RenderComponent rc = cards.get(i).getComponent(RenderComponent.class);
-            
+
             //Apply visuals for selected card
-            if (i == selectedIndex){
+            if (i == selectedIndex) {
                 tc.position.y = centery - 50f;
-            }
-            else {
-                    tc.position.y = centery + 50f;
+            } else {
+                tc.position.y = centery + 50f;
             }
         }
     }
 
     private void confirmSelection() {
         //TODO upgrade logic
-        for (Entity<Context>entity : cards){
+        for (Entity<Context> entity : cards) {
             TransformComponent tc = entity.getComponent(TransformComponent.class);
             RenderComponent rc = entity.getComponent(RenderComponent.class);
             tc.position.y += Window.getWindow().getHeight(); // Drop them off-screen bottom
@@ -98,5 +97,5 @@ public class UpgradeOverlay {
         }
         cards.clear();
     }
-    
+
 }
