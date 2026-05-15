@@ -3,6 +3,7 @@ package client.scenes;
 import client.components.TextComponent;
 import client.components.TransformComponent;
 import client.network.NetworkManager;
+import client.network.messages.client.C_RequestStartGame;
 import client.rendering.Anchor;
 import client.rendering.Font;
 import client.systems.client.*;
@@ -25,9 +26,11 @@ public class LobbyScene extends Scene {
     private Font font;
     private Entity<Context> statusTextEntity;
     private Entity<Context> ipTextEntity;
+    private Entity<Context> startButtonEntity;
     private final List<Entity<Context>> entities = new ArrayList<>();
     
     private final String hostIP;
+    private boolean isHost;
 
     public LobbyScene(String hostIP) {
         this.hostIP = hostIP;
@@ -64,6 +67,12 @@ public class LobbyScene extends Scene {
         ipTextEntity.addComponent(new TextComponent(font, "Host IP: " + hostIP, new Vector4f(1, 1, 1, 1), 1.0f, 0.4f));
         entities.add(ipTextEntity);
 
+        // Start Button (only visible to host)
+        startButtonEntity = engine.createEntity();
+        startButtonEntity.addComponent(new TransformComponent(new Vector2f(centerX, centerY + 120), new Vector2f(1, 1), Anchor.CENTER));
+        startButtonEntity.addComponent(new TextComponent(font, "Start Game", new Vector4f(0, 1, 0, 1), 1.0f, 0.5f));
+        entities.add(startButtonEntity);
+
         // Disable game systems while waiting
         setGameSystemsEnabled(false);
     }
@@ -92,6 +101,7 @@ public class LobbyScene extends Scene {
     public void update() {
         NetworkManager nm = NetworkManager.getInstance();
         int count = nm.getPlayerCount();
+        isHost = nm.isHost();
 
         if (count != lastCount) {
             System.out.println("UI Update: Player count is now " + count + "/4");
@@ -101,6 +111,17 @@ public class LobbyScene extends Scene {
         TextComponent tc = statusTextEntity.getComponent(TextComponent.class);
         if (tc != null) {
             tc.text = "Waiting for players (" + count + ")";
+        }
+
+        // Show/hide start button based on host status
+        TextComponent buttonText = startButtonEntity.getComponent(TextComponent.class);
+        if (buttonText != null) {
+            buttonText.text = isHost ? "Start Game (Press ENTER)" : "";
+        }
+
+        // Handle start game for host
+        if (isHost && InputHandler.getInstance().keyDown(GLFW_KEY_ENTER)) {
+            nm.sendMessage(C_RequestStartGame.INSTANCE);
         }
 
         // Transition to LevelScene when game starts

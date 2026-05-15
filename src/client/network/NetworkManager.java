@@ -76,6 +76,10 @@ public class NetworkManager {
         return playerCount;
     }
 
+    public boolean isHost() {
+        return playerIndex == 1;
+    }
+
     public boolean isGameStarted() {
         return gameStarted;
     }

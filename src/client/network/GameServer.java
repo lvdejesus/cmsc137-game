@@ -9,6 +9,7 @@ import client.entities.*;
 import client.network.messages.Message;
 import client.network.messages.client.C_PlayerState;
 import client.network.messages.client.C_Shoot;
+import client.network.messages.client.C_RequestStartGame;
 import client.network.messages.client.ClientRegistry;
 import client.network.messages.server.*;
 import client.systems.client.Context;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -48,7 +50,6 @@ public class GameServer implements Runnable {
     private ServerSocket serverSocket;
     private volatile boolean gameStarted = false;
 
-    private static final int NUM_PLAYERS = 1;
     private String localIP;
 
     private final ConcurrentLinkedQueue<MessagePair> inQueue = new ConcurrentLinkedQueue<>();
@@ -78,12 +79,6 @@ public class GameServer implements Runnable {
         }
     }
 
-    private void checkStartGame() {
-        if (!gameStarted && connectedClients.size() >= NUM_PLAYERS) {
-            startGame();
-        }
-    }
-
     public void stop() {
         discoveryService.stop();
         try {
@@ -99,6 +94,7 @@ public class GameServer implements Runnable {
     public void run() {
         try {
             serverSocket = new ServerSocket();
+            serverSocket.setSoTimeout(100);
             serverSocket.setReuseAddress(true);
             serverSocket.bind(new InetSocketAddress(TCP_PORT));
         } catch (IOException e) {
@@ -132,8 +128,12 @@ public class GameServer implements Runnable {
 
                 playerToEntityMap.put(playerId, res.prefab.getEntity().getId());
 
-                checkStartGame();
                 System.out.println("Client connected: " + socket.getInetAddress() + " assigned ID: " + playerId);
+            } catch (java.net.SocketTimeoutException e) {
+                MessagePair msg = inQueue.poll();
+                if (msg != null && msg.getMessage() instanceof C_RequestStartGame && msg.getPlayerId() == 1) {
+                    startGame();
+                }
             } catch (IOException e) {
                 if (!serverSocket.isClosed()) e.printStackTrace();
             }
@@ -173,6 +173,12 @@ public class GameServer implements Runnable {
             TransformComponent tc = tm.get(entityId);
 
             nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), false));
+        });
+
+        handlers.put(C_RequestStartGame.class, (id, message) -> {
+            if (id == 1 && !gameStarted) {
+                startGame();
+            }
         });
 
         MapGenerator.MapResult grid;
