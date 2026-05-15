@@ -23,6 +23,7 @@ public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
 
     private ComponentMapper<PlayerStateComponent> stateM;
     private ComponentMapper<EnemyComponent> enemyM;
+    private ComponentMapper<WallComponent> wallM;
 
     private final SpatialHashGrid wallGrid = new SpatialHashGrid(64);
     private final Set<Integer> potentialColliders = new HashSet<>();
@@ -44,6 +45,7 @@ public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
 
         stateM = engine.getMapper(PlayerStateComponent.class);
         enemyM = engine.getMapper(EnemyComponent.class);
+        wallM = engine.getMapper(WallComponent.class);
     }
 
     @Override
@@ -51,6 +53,7 @@ public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
         wallGrid.clear();
         Iterable<Integer> walls = engine.getFamily(WallComponent.class, CollisionComponent.class, TransformComponent.class)::iterator;
         for (int wallId : walls) {
+            if (!wallM.get(wallId).isActive()) continue;
             updateWorldBox(wallId, wallBox);
             wallGrid.addEntity(wallId, wallBox);
         }

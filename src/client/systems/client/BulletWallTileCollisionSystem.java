@@ -19,6 +19,7 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
     private ComponentMapper<TransformComponent> transformMapper;
     private ComponentMapper<CollisionComponent> collisionMapper;
     private ComponentMapper<NetworkIdComponent> networkIdMapper;
+    private ComponentMapper<WallComponent> wallMapper;
     private final NetworkSpawnManager networkSpawnManager;
     private final SpatialHashGrid wallGrid;
 
@@ -38,6 +39,7 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
         this.transformMapper = engine.getMapper(TransformComponent.class);
         this.collisionMapper = engine.getMapper(CollisionComponent.class);
         this.networkIdMapper = engine.getMapper(NetworkIdComponent.class);
+        this.wallMapper = engine.getMapper(WallComponent.class);
     }
 
     @Override
@@ -46,6 +48,7 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
         Iterable<Integer> walls = engine.getFamily(WallComponent.class)::iterator;
 
         for (int wallId : walls) {
+            if (!wallMapper.get(wallId).isActive()) continue;
             syncWorldBox(wallId, wallWorldBox);
             wallGrid.addEntity(wallId, wallWorldBox);
         }
