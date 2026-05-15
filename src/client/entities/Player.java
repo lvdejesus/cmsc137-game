@@ -37,7 +37,7 @@ public class Player extends Prefab {
         double currentTime = glfwGetTime();
 
         // Add components to the internal entity
-        entity.addComponent(new TransformComponent(new Vector2f(400.0f, 300.0f), new Vector2f(2.0f, 2.0f)));
+        entity.addComponent(new TransformComponent(new Vector2f(155 * 64.0f, 155 * 64.0f), new Vector2f(2.0f, 2.0f)));
         entity.addComponent(new MovementComponent(movement_speed, acceleration, friction, new Vector2f(0.0f, 0.0f)));
         entity.addComponent(new RenderComponent());
 

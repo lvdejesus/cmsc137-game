@@ -74,10 +74,21 @@ public class RoomLoader {
         return null;
     }
 
-    public static int[][] loadGrid(String filename) {
+    public static class Room {
+        public int[][] grid;
+        boolean isHallway;
+
+        public Room(int[][] grid, boolean isHallway) {
+            this.grid = grid;
+            this.isHallway = isHallway;
+        }
+    }
+
+    public static Room loadGrid(String filename) {
         try (JsonReader reader = new JsonReader(LEVELS_DIR + "/" + filename)) {
             int width = 0;
             int height = 0;
+            boolean isHallway = false;
             int[][] grid = null;
             
             int currentRow = 0;
@@ -93,6 +104,7 @@ public class RoomLoader {
 
                 switch (key) {
                     case "width" -> width = value.getInt();
+                    case "isHallway" -> isHallway = value.getInt() == 1;
                     case "height" -> {
                         height = value.getInt();
                         grid = new int[height][width];
@@ -130,7 +142,7 @@ public class RoomLoader {
                     }
                 }
             }
-            return grid;
+            return new Room(grid, isHallway);
         } catch (IOException e) {
             e.printStackTrace();
             return null;

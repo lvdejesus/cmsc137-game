@@ -3,7 +3,7 @@ package client.rendering;
 import static org.lwjgl.opengl.GL33.*;
 
 public class Batch {
-    private final int MAX_SPRITES = 1000;
+    private final int MAX_SPRITES = 16000;
     private final int VERTICES_PER_SPRITE = 4;
     private final int ELEMENTS_PER_VERTEX = 9; // x,y,z, u,v, r,g,b,a
 

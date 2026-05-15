@@ -52,7 +52,7 @@ public class ButtonSystem extends IteratingEntitySystem<Context> {
                 if (filename == null)
                     break;
 
-                int[][] grid = RoomLoader.loadGrid(filename);
+                int[][] grid = RoomLoader.loadGrid(filename).grid;
                 if (grid == null)
                     break;
 
