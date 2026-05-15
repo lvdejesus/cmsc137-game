@@ -24,8 +24,6 @@ public class S_Despawn implements Message {
 
     public static S_Despawn deserialize(DataInputStream in) throws IOException {
         int networkId = in.readInt();
-
-        System.out.printf("S_Despawn{networkId = %d}%n", networkId);
         return new S_Despawn(networkId);
     }
 }

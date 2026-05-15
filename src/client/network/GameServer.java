@@ -1,5 +1,6 @@
 package client.network;
 
+import client.systems.server.MapEnemySpawnSystem;
 import common.MapGenerator;
 import client.components.TransformComponent;
 import client.components.player.MovementInputComponent;
@@ -174,16 +175,6 @@ public class GameServer implements Runnable {
             nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), false));
         });
 
-        engine.addSystem(new ServerNetworkInputSystem(inQueue, handlers));
-
-        EngineConfig.addServerSystems(engine, nsm);
-
-        engine.addSystem(new SnapshotSystem(snapshotQueue, outQueue));
-        engine.addSystem(new ServerNetworkOutputSystem(outQueue, connectedClients));
-
-        double lastTime = System.nanoTime() / NANO_TO_SECOND;
-        Context ctx = new Context();
-
         MapGenerator.MapResult grid;
         try {
             TileLoader.loadTiles();
@@ -191,6 +182,18 @@ public class GameServer implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        engine.addSystem(new ServerNetworkInputSystem(inQueue, handlers));
+
+        EngineConfig.addServerSystems(engine, nsm);
+
+        engine.addSystem(new MapEnemySpawnSystem(grid, nsm));
+        engine.addSystem(new SnapshotSystem(snapshotQueue, outQueue));
+        engine.addSystem(new ServerNetworkOutputSystem(outQueue, connectedClients));
+
+        double lastTime = System.nanoTime() / NANO_TO_SECOND;
+        Context ctx = new Context();
+
         for (int y = 0; y < grid.grid.length; y++) {
             for (int x = 0; x < grid.grid[y].length; x++) {
                 int tileIndex = grid.grid[y][x] - 1;

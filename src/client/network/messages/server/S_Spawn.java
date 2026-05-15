@@ -42,8 +42,6 @@ public class S_Spawn implements Message {
         int networkId = in.readInt();
         int length = in.readInt();
         byte[] bytes = in.readNBytes(length);
-
-        System.out.printf("S_Spawn{prefabId = %d, networkId = %d}%n", prefabId, networkId);
         return new S_Spawn(prefabId, networkId, bytes);
     }
 }

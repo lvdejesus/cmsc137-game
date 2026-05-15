@@ -13,32 +13,87 @@ public class MapGenerator {
 
     public static class MapResult {
         public int[][] grid;
-        public int[][][] closedAreas;
-        public int[][] areaLookup;
+        public int[][][] closedAreas; // Array of closed areas, each area is an array of [x, y] coordinates
+        public int[][] areaLookup;    // [y][x] mapping to the index in closedAreas (-1 if not in a closed area)
+        public Map<Integer, Set<Integer>> adjacencyList; // Maps area index to a set of connected area indices
 
         public MapResult(int[][] grid, int[][][] closedAreas) {
             this.grid = grid;
             this.closedAreas = closedAreas;
             this.areaLookup = new int[GRID_SIZE][GRID_SIZE];
+            this.adjacencyList = new HashMap<>();
 
+            // Initialize with -1 to indicate no closed area
             for (int i = 0; i < GRID_SIZE; i++) {
                 Arrays.fill(this.areaLookup[i], -1);
             }
 
+            // Map each coordinate back to its area index
             for (int areaIdx = 0; areaIdx < closedAreas.length; areaIdx++) {
+                this.adjacencyList.put(areaIdx, new HashSet<>());
                 for (int[] coord : closedAreas[areaIdx]) {
                     int x = coord[0];
                     int y = coord[1];
                     this.areaLookup[y][x] = areaIdx;
                 }
             }
+
+            computeAdjacency();
         }
 
+        private void computeAdjacency() {
+            int[][] dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
+            for (int y = 0; y < GRID_SIZE; y++) {
+                for (int x = 0; x < GRID_SIZE; x++) {
+                    // If we find a door tile
+                    if (isDoorTile(grid[y][x])) {
+                        Set<Integer> neighboringAreas = new HashSet<>();
+
+                        // Check neighbors of the door
+                        for (int[] d : dirs) {
+                            int nx = x + d[0];
+                            int ny = y + d[1];
+
+                            int areaIdx = getAreaIndex(nx, ny);
+                            if (areaIdx != -1) {
+                                neighboringAreas.add(areaIdx);
+                            }
+                        }
+
+                        // If the door touches 2 or more different areas, they are connected
+                        if (neighboringAreas.size() >= 2) {
+                            List<Integer> areas = new ArrayList<>(neighboringAreas);
+                            for (int i = 0; i < areas.size(); i++) {
+                                for (int j = i + 1; j < areas.size(); j++) {
+                                    int a = areas.get(i);
+                                    int b = areas.get(j);
+                                    adjacencyList.get(a).add(b);
+                                    adjacencyList.get(b).add(a);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Returns the index of the closed room at the given coordinates.
+         * @return The index in closedAreas, or -1 if the coordinate is not inside a closed area.
+         */
         public int getAreaIndex(int x, int y) {
             if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) {
                 return -1;
             }
             return areaLookup[y][x];
+        }
+
+        /**
+         * Returns a set of area indices that are separated from the given area only by a door.
+         */
+        public Set<Integer> getNeighboringAreas(int areaIndex) {
+            return adjacencyList.getOrDefault(areaIndex, Collections.emptySet());
         }
     }
 
@@ -161,7 +216,7 @@ public class MapGenerator {
                 for (int ry = 0; ry < pr.room.height; ry++) {
                     for (int rx = 0; rx < pr.room.width; rx++) {
                         int tile = pr.room.grid[ry][rx];
-                        if (mapGrid[pr.offsetY + ry][pr.offsetX + rx] == 0 && tile != 0) {
+                        if (tile != 0) {
                             mapGrid[pr.offsetY + ry][pr.offsetX + rx] = tile;
                         }
                     }

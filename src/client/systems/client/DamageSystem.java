@@ -21,6 +21,7 @@ public class DamageSystem extends EntitySystem<Context> {
     private ComponentMapper<TransformComponent> transformM;
     private ComponentMapper<CollisionComponent> collisionM;
     private ComponentMapper<BulletComponent> bulletM;
+    private ComponentMapper<NetworkIdComponent> nim;
 
     private final NetworkSpawnManager nsm;
 
@@ -36,6 +37,7 @@ public class DamageSystem extends EntitySystem<Context> {
         this.transformM = engine.getMapper(TransformComponent.class);
         this.collisionM = engine.getMapper(CollisionComponent.class);
         this.bulletM = engine.getMapper(BulletComponent.class);
+        this.nim = engine.getMapper(NetworkIdComponent.class);
     }
 
     @Override
@@ -44,6 +46,7 @@ public class DamageSystem extends EntitySystem<Context> {
         for (int bulletId : bulletIterator) {
             if (bulletM.get(bulletId).isEnemy) continue;
             AABBf bulletBox = getWorldBox(bulletId);
+            NetworkIdComponent bulletnic = nim.get(bulletId);
 
             Iterable<Integer> targetIterator = engine.getFamily(HealthComponent.class, CollisionComponent.class, NetworkIdComponent.class)::iterator;
             for (int targetId : targetIterator) {
@@ -57,13 +60,14 @@ public class DamageSystem extends EntitySystem<Context> {
                 System.out.println("damaged something");
                 targetHealth.damage(25.0f);
 
-                NetworkIdComponent bulletnic = engine.getMapper(NetworkIdComponent.class).get(bulletId);
                 nsm.despawn(bulletId, bulletnic.networkId);
 
                 if (!targetHealth.isAlive()) {
-                    NetworkIdComponent enemynic = engine.getMapper(NetworkIdComponent.class).get(targetId);
+                    NetworkIdComponent enemynic = nim.get(targetId);
                     nsm.despawn(targetId, enemynic.networkId);
                 }
+
+                break;
             }
         }
 

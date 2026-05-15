@@ -57,7 +57,7 @@ public class TilePrefab extends Prefab{
 
     @Override
     public void spawnCommon() {
-        entity.addComponent(new CollisionComponent(new AABBf(0.0f, 0.0f, 0.0f, 48.0f, 48.0f, 0.1f)));
+        entity.addComponent(new CollisionComponent(new AABBf(0.0f, 0.0f, 0.0f, 64.0f, 64.0f, 0.1f)));
         entity.addComponent(new WallComponent());
         entity.addComponent(new TransformComponent(new Vector2f(x * 64.0f, y * 64.0f),
             new Vector2f(4.0f, 4.0f), Anchor.TOP_LEFT));
