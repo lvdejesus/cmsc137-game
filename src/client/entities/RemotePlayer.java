@@ -39,7 +39,7 @@ public class RemotePlayer extends Prefab {
     public void spawnCommon() {
         var tc = new TransformComponent(new Vector2f(155 * 64.0f, 155 * 64.0f), new Vector2f(2.0f, 2.0f));
         entity.addComponent(tc);
-        entity.addComponent(new HealthComponent(5.0f));
+        entity.addComponent(new HealthComponent(125.0f));
         entity.addComponent(new CollisionComponent(new AABBf(
             new Vector3f(-16.0f, -16.0f, 0.0f),
             new Vector3f(16.0f, 16.0f, 0.1f)

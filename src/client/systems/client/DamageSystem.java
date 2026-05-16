@@ -3,6 +3,7 @@ package client.systems.client;
 import client.components.NetworkIdComponent;
 import client.components.player.PlayerNetworkComponent;
 import client.components.player.PlayerStateComponent;
+import client.entities.Bullet;
 import client.network.NetworkSpawnManager;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -58,55 +59,33 @@ public class DamageSystem extends EntitySystem<Context> {
 
         Iterable<Integer> bulletIterator = engine.getFamily(BulletComponent.class, NetworkIdComponent.class)::iterator;
         for (int bulletId : bulletIterator) {
-            if (bulletM.get(bulletId).isEnemy) continue;
+            BulletComponent bc = bulletM.get(bulletId);
             AABBf bulletBox = getWorldBox(bulletId);
             NetworkIdComponent bulletnic = nim.get(bulletId);
-
             potentialTargets.clear();
             spatialHash.getPotentialColliders(bulletBox, potentialTargets);
 
             for (int targetId : potentialTargets) {
-                if (playerM.get(targetId) != null) continue;
+                PlayerStateComponent playerC = playerM.get(targetId);
+                if (bc.isEnemy == (playerC == null)) continue;
 
                 HealthComponent targetHealth = healthM.get(targetId);
                 if (!targetHealth.isAlive()) continue;
-                if (!getWorldBox(targetId).intersectsAABB(bulletBox)) continue;
-
-                targetHealth.damage(25.0f);
-                nsm.despawn(bulletId, bulletnic.networkId);
-
-                if (!targetHealth.isAlive()) {
-                    NetworkIdComponent enemynic = nim.get(targetId);
-                    spatialHash.removeEntity(targetId, getWorldBox(targetId));
-
-                    nsm.despawn(targetId, enemynic.networkId);
-                }
-
-                break;
-            }
-        }
-
-        bulletIterator = engine.getFamily(BulletComponent.class)::iterator;
-        for (int bulletId : bulletIterator) {
-            if (!bulletM.get(bulletId).isEnemy) continue;
-
-            AABBf bulletBox = getWorldBox(bulletId);
-
-            potentialTargets.clear();
-            spatialHash.getPotentialColliders(bulletBox, potentialTargets);
-
-            for (int targetId : potentialTargets) {
-                if (playerM.get(targetId) == null) continue;
-
-                HealthComponent playerHealth = healthM.get(targetId);
-                if (!playerHealth.isAlive()) continue;
 
                 AABBf playerBox = getWorldBox(targetId);
                 if (!playerBox.intersectsAABB(bulletBox)) continue;
 
-                playerHealth.damage(1.0f);
-                NetworkIdComponent bulletnic = engine.getMapper(NetworkIdComponent.class).get(bulletId);
+                targetHealth.damage(bc.damage);
                 nsm.despawn(bulletId, bulletnic.networkId);
+
+                if (playerC == null) {
+                    if (!targetHealth.isAlive()) {
+                        NetworkIdComponent enemynic = nim.get(targetId);
+                        spatialHash.removeEntity(targetId, getWorldBox(targetId));
+
+                        nsm.despawn(targetId, enemynic.networkId);
+                    }
+                }
                 break;
             }
         }
