@@ -46,6 +46,8 @@ public class LevelScene extends Scene {
 
     // Health bar
     private HealthBar healthBar;
+    private double shootTimer = 0.0;
+
     @Override
     public void init(Engine<Context> engine) {
         this.engine = engine;
@@ -114,7 +116,7 @@ public class LevelScene extends Scene {
             menu.handlePauseMenuInput(input);
         }
 
-        if (input.keyDown(GLFW_KEY_V)){
+        if (input.keyDown(GLFW_KEY_V)) {
             upgrade.splay();
         }
         upgrade.handleInput(input);
@@ -158,18 +160,16 @@ public class LevelScene extends Scene {
             }
         }
 
-        for (InputHandler.MouseEvent event : input.getEvents()) {
-            if (event.type == InputHandler.MouseEventType.LEFT_CLICK && !event.consumed) {
-                event.consume();
+        if (InputHandler.getInstance().leftMouseHeld) {
+            if (shootTimer < glfwGetTime())  {
+                Vector2f d = camera.toWorldPosition(InputHandler.getInstance().cursorPosition);
 
-                if (playerTransform != null) {
-                    Vector2f d = camera.toWorldPosition(event.position);
+                // Get player's current velocity for velocity inheritance
+                float pvx = playerMovement.velocity.x;
+                float pvy = playerMovement.velocity.y;
+                nm.sendMessage(new C_Shoot(d.x, d.y, pvx, pvy));
 
-                    // Get player's current velocity for velocity inheritance
-                    float pvx = playerMovement.velocity.x;
-                    float pvy = playerMovement.velocity.y;
-                    nm.sendMessage(new C_Shoot(d.x, d.y, pvx, pvy));
-                }
+                shootTimer = glfwGetTime() + 0.1f;
             }
         }
 
