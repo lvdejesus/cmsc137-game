@@ -1,9 +1,6 @@
 package client.entities;
 
-import client.components.CollisionComponent;
-import client.components.RenderComponent;
-import client.components.TransformComponent;
-import client.components.NetworkIdComponent;
+import client.components.*;
 import client.rendering.Texture;
 import client.rendering.TextureAtlas;
 import client.systems.client.Context;
@@ -36,18 +33,17 @@ public class Key extends Prefab {
         Texture keyTexture = atlas.getRegion("key.png");
         double currentTime = glfwGetTime();
         
-        // Just a static texture for the key - no animation
         entity.addComponent(new RenderComponent(keyTexture, 0.0f));
     }
 
     @Override
     public void spawnCommon() {
-        // Small collision box for pickup (smaller than player)
         entity.addComponent(new CollisionComponent(new AABBf(
                 new Vector3f(-16.0f, -16.0f, 0.0f),
                 new Vector3f(16.0f, 16.0f, 0.1f)
         )));
         entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.0f, 2.0f)));
+        entity.addComponent(new KeyComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
     }
 

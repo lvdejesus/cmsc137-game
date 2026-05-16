@@ -21,6 +21,7 @@ public class EngineConfig {
         engine.register(PlayerStateComponent.class);
         engine.register(HealthComponent.class);
         engine.register(PlayerKeysComponent.class);
+        engine.register(KeyComponent.class);
 
         engine.register(PlayerNetworkComponent.class);
         engine.register(NetworkIdComponent.class);
