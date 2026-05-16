@@ -84,7 +84,7 @@ public class LevelScene extends Scene {
         engine.addSystem(new PlayerFollowSystem(camera));
         engine.addSystem(new DespawnSystem());
         engine.addSystem(new HealthBarUpdateSystem(healthBar));
-        engine.addSystem(new KeyUISystem(player.getEntity().getId()));
+        engine.addSystem(new KeyUISystem());
 
         engine.addSystem(new ClientNetworkOutputSystem(outQueue));
     }

@@ -1,6 +1,7 @@
 package client.systems.client;
 
 import client.components.*;
+import client.components.player.MovementInputComponent;
 import client.components.player.PlayerStateComponent;
 import client.rendering.Animation;
 import framework.engine.IteratingEntitySystem;
@@ -19,8 +20,13 @@ public class DeathSystem extends IteratingEntitySystem<Context> {
         if (!hc.isAlive()) {
             if (ac == null) {
             } else if (ac.animation.numFrames != 12) {
-                System.out.println("kil" + ac.animation.numFrames);
                 engine.removeComponent(entityId, AnimationComponent.class);
+                var mc = engine.getMapper(MovementComponent.class).get(entityId);
+                mc.velocity.set(0.0f, 0.0f);
+                var mic = engine.getMapper(MovementInputComponent.class).get(entityId);
+                mic.x = 0.0f;
+                mic.y = 0.0f;
+
                 double currentTime = glfwGetTime();
                 String spritePath = "enemyExplosion.png";
                 engine.addComponent(entityId, new AnimationComponent(Animation.fromFile(spritePath, 12, 0.1f), (float) currentTime, false));

@@ -1,5 +1,6 @@
 package client.systems.client;
 
+import client.components.FollowComponent;
 import client.components.PlayerKeysComponent;
 import client.components.RenderComponent;
 import client.components.TransformComponent;
@@ -7,22 +8,22 @@ import client.rendering.Texture;
 import client.rendering.TextureAtlas;
 import framework.engine.Entity;
 import framework.engine.EntitySystem;
+import framework.engine.IteratingEntitySystem;
 import framework.engine.Window;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
 
-public class KeyUISystem extends EntitySystem<Context> {
-    private final int entityId;
+public class KeyUISystem extends IteratingEntitySystem<Context> {
     private final ArrayList<Integer> keyEntities = new ArrayList<>();
 
-    public KeyUISystem(int entityId) {
-        this.entityId = entityId;
+    public KeyUISystem() {
+        super(FollowComponent.class);
     }
 
     @Override
-    public void update(Context ctx) {
+    public void processEntity(int entityId, Context ctx) {
         PlayerKeysComponent pkc = engine.getMapper(PlayerKeysComponent.class).get(entityId);
         if (pkc.lastKeyCount != pkc.keyCount) {
             updateGraphics(pkc.keyCount);
