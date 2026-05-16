@@ -18,7 +18,8 @@ public class MapGenerator {
         public int[][][] closedAreas; // Array of closed areas, each area is an array of [x, y] coordinates
         public int[][] areaLookup;    // [y][x] mapping to the index in closedAreas (-1 if not in a closed area)
         public Map<Integer, Set<Integer>> adjacencyList; // Maps area index to a set of connected area indices
-        public int bossAreaIndex = -1; // Index of the boss room
+        public int bossRoomIndex = -1; // Index of the boss room
+        public PlacedRoom bossRoom;
         public int startRoom;
 
         public MapResult(int[][] grid, int[][][] closedAreas, List<PlacedRoom> placedRooms) {
@@ -49,7 +50,8 @@ public class MapGenerator {
                         // Find the center of the boss room
                         int bossCenterX = pr.offsetX + pr.room.width / 2;
                         int bossCenterY = pr.offsetY + pr.room.height / 2;
-                        this.bossAreaIndex = getAreaIndex(bossCenterX, bossCenterY);
+                        this.bossRoomIndex = getAreaIndex(bossCenterX, bossCenterY);
+                        this.bossRoom = pr;
                         break;
                     }
                 }
@@ -92,7 +94,7 @@ public class MapGenerator {
 
             List<Integer> candidates = new ArrayList<>();
             for (int i = 0; i < v; i++) {
-                if (i == startRoom || i == bossAreaIndex) continue;
+                if (i == startRoom || i == bossRoomIndex) continue;
                 candidates.add(i);
             }
             return getPath(candidates, dist);

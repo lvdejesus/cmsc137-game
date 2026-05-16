@@ -17,11 +17,14 @@ import java.util.List;
 
 import static client.entities.Tile.placeTile;
 
-public class TilePrefab extends Prefab{
+public class TilePrefab extends Prefab {
     int networkId;
     int x;
     int y;
     int tileIndex;
+    boolean isBoss;
+    int bx;
+    int by;
 
     public TilePrefab(Engine<Context> engine, int networkId, int x, int y, int tileIndex) {
         super(engine);
@@ -30,6 +33,19 @@ public class TilePrefab extends Prefab{
         this.x = x;
         this.y = y;
         this.tileIndex = tileIndex;
+        this.isBoss = false;
+    }
+
+    public TilePrefab(Engine<Context> engine, int networkId, int x, int y, int tileIndex, int bx, int by) {
+        super(engine);
+
+        this.networkId = networkId;
+        this.x = x;
+        this.y = y;
+        this.tileIndex = tileIndex;
+        this.isBoss = true;
+        this.bx = bx;
+        this.by = by;
     }
 
     @Override
@@ -42,7 +58,7 @@ public class TilePrefab extends Prefab{
             Entity<Context> e = engine.createEntity();
             tgc = new TileGridComponent();
             try {
-                tgc.tileDefs =TileLoader.loadTiles();
+                tgc.tileDefs = TileLoader.loadTiles();
                 tgc.tiles = TileLoader.loadTileTextures(tgc.tileDefs);
             } catch (IOException err) {
                 throw new RuntimeException(err);
@@ -61,23 +77,62 @@ public class TilePrefab extends Prefab{
         entity.addComponent(new WallComponent());
         entity.addComponent(new TransformComponent(new Vector2f(x * 64.0f, y * 64.0f),
             new Vector2f(4.0f, 4.0f), Anchor.TOP_LEFT));
-        if (MapGenerator.isDoorTile(tileIndex + 1))  {
-            entity.addComponent(new HealthComponent(5));
-            entity.addComponent(new NetworkDuplicateComponent(HealthComponent.class));
+        if (MapGenerator.isDoorTile(tileIndex + 1)) {
+            if (!isBoss) {
+                entity.addComponent(new HealthComponent(5));
+                entity.addComponent(new NetworkDuplicateComponent(HealthComponent.class));
+            }
         }
         entity.addComponent(new NetworkIdComponent(networkId));
     }
 
+    @Override
+    public void spawnServerInternal() {
+        if (isBoss) {
+            entity.addComponent(new BossDoorComponent(bx, by));
+        }
+    }
+
     public static TilePrefab deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
-        return new TilePrefab(engine, networkId,bytes.getInt(), bytes.getInt(), bytes.getInt());
+        int x = bytes.getInt();
+        int y= bytes.getInt();
+        int tileIndex = bytes.getInt();
+        boolean isBoss = bytes.get() == 1;
+
+        if (isBoss) {
+            int bx = bytes.getInt();
+            int by = bytes.getInt();
+            return new TilePrefab(engine, networkId, x, y, tileIndex, bx, by);
+        } else {
+            return new TilePrefab(engine, networkId, x, y, tileIndex);
+        }
     }
 
     public static byte[] serialize(int x, int y, int tileIndex) {
-        ByteBuffer bytes = ByteBuffer.allocate(12);
+        ByteBuffer bytes = ByteBuffer.allocate(13);
 
         bytes.putInt(x);
         bytes.putInt(y);
         bytes.putInt(tileIndex);
+
+        // is boss
+        bytes.put((byte) 0);
+
+        return bytes.array();
+    }
+
+    public static byte[] serialize(int x, int y, int tileIndex, int bx, int by) {
+        ByteBuffer bytes = ByteBuffer.allocate(21);
+
+        bytes.putInt(x);
+        bytes.putInt(y);
+        bytes.putInt(tileIndex);
+
+        // is boss
+        bytes.put((byte) 1);
+
+        bytes.putInt(bx);
+        bytes.putInt(by);
 
         return bytes.array();
     }

@@ -1,10 +1,7 @@
 package client.network;
 
-import client.components.NetworkIdComponent;
 import client.network.messages.client.*;
-import client.systems.server.MapEnemySpawnSystem;
-import client.systems.server.MapKeySpawnSystem;
-import client.systems.server.KeyPickupSystem;
+import client.systems.server.*;
 import common.MapGenerator;
 import client.components.TransformComponent;
 import client.components.player.MovementInputComponent;
@@ -13,11 +10,7 @@ import client.entities.*;
 import client.network.messages.Message;
 import client.network.messages.server.*;
 import client.systems.client.Context;
-import client.systems.server.ServerNetworkInputSystem;
-import client.systems.server.ServerNetworkOutputSystem;
-import client.systems.server.SnapshotSystem;
 import client.util.EngineConfig;
-import common.RoomLoader;
 import common.TileLoader;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -207,20 +200,42 @@ public class GameServer implements Runnable {
         engine.addSystem(new MapEnemySpawnSystem(grid, nsm));
         engine.addSystem(new MapKeySpawnSystem(grid, nsm));
         engine.addSystem(new KeyPickupSystem(nsm));
+        engine.addSystem(new BossDoorSystem(nsm));
         engine.addSystem(new SnapshotSystem(snapshotQueue, outQueue));
         engine.addSystem(new ServerNetworkOutputSystem(outQueue, connectedClients));
 
         double lastTime = System.nanoTime() / NANO_TO_SECOND;
         Context ctx = new Context();
 
+        Set<Long> bossDoorSet = new HashSet<>();
+
+        var bossRoom = grid.bossRoom;
+        var bossDoors = bossRoom.room.doorBlocks.getFirst();
+        int bx = bossDoors.originX;
+        int by = bossDoors.originY;
+        for (var bossDoor : bossDoors.tiles) {
+            int x = bossRoom.offsetX + bossDoors.originX + bossDoor.dx;
+            int y = bossRoom.offsetY + bossDoors.originY + bossDoor.dy;
+            System.out.printf("%d %d%n", x, y);
+            long hash = ((long) x << 32) | (y & 0xFFFFFFFFL);
+            bossDoorSet.add(hash);
+        }
+
         for (int y = 0; y < grid.grid.length; y++) {
             for (int x = 0; x < grid.grid[y].length; x++) {
+                long hash = ((long) x << 32) | (y & 0xFFFFFFFFL);
+                boolean isBoss = bossDoorSet.contains(hash);
+
                 int tileIndex = grid.grid[y][x] - 1;
                 if (tileIndex < 0) {
                     continue;
                 }
 
-                nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, tileIndex));
+                if (isBoss) {
+                    nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, tileIndex, bx, by));
+                } else {
+                    nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, tileIndex));
+                }
             }
         }
 

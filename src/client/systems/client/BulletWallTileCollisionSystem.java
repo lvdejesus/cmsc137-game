@@ -18,7 +18,6 @@ import java.util.HashSet;
 public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> transformMapper;
     private ComponentMapper<CollisionComponent> collisionMapper;
-    private ComponentMapper<NetworkIdComponent> networkIdMapper;
     private ComponentMapper<WallComponent> wallMapper;
     private final NetworkSpawnManager networkSpawnManager;
     private final SpatialHashGrid wallGrid;
@@ -38,7 +37,6 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
         super.setEngine(engine);
         this.transformMapper = engine.getMapper(TransformComponent.class);
         this.collisionMapper = engine.getMapper(CollisionComponent.class);
-        this.networkIdMapper = engine.getMapper(NetworkIdComponent.class);
         this.wallMapper = engine.getMapper(WallComponent.class);
     }
 

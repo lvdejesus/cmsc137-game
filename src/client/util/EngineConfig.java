@@ -22,6 +22,7 @@ public class EngineConfig {
         engine.register(HealthComponent.class);
         engine.register(PlayerKeysComponent.class);
 
+        engine.register(BossDoorComponent.class);
         engine.register(KeyComponent.class);
         engine.register(PlayerNetworkComponent.class);
         engine.register(NetworkIdComponent.class);
@@ -32,7 +33,6 @@ public class EngineConfig {
         engine.register(TileGridComponent.class);
         engine.register(TileComponent.class);
         engine.register(WallComponent.class);
-        engine.register(NetworkDuplicateComponent.class);
         engine.register(NetworkDuplicateComponent.class);
     }
 
