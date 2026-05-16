@@ -19,6 +19,8 @@ import java.nio.file.Paths;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -72,7 +74,6 @@ public class LevelScene extends Scene {
 
         engine.addSystem(new ClientNetworkInputSystem(NetworkManager.getInstance().inQueue, networkPrefabMap, player));
 
-        engine.addSystem(new PhysicsSystem());
         engine.addSystem(new PlayerRotationSystem(camera));
         engine.addSystem(new PlayerShootSystem(outQueue, camera));
         engine.addSystem(new PlayerUpdateSystem(outQueue));

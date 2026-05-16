@@ -59,11 +59,11 @@ public class EngineConfig {
     }
 
     public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm) {
-        engine.addSystem(new PhysicsSystem());
+//        engine.addSystem(new PhysicsSystem());
         engine.addSystem(new EnemySystem(nsm));
         engine.addSystem(new BulletSystem(nsm));
         engine.addSystem(new DamageSystem(nsm));
-        engine.addSystem(new WallTileCollisionSystem());
         engine.addSystem(new BulletWallTileCollisionSystem(nsm));
+        engine.addSystem(new WallTileCollisionSystem());
     }
 }

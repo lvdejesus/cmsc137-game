@@ -64,7 +64,7 @@ public class Enemy extends Prefab {
             )));
             this.entity.addComponent(new EnemyComponent(1.2f, 0.8f));
         } else if (type == EnemyType.Boss) {
-            this.entity.addComponent(new HealthComponent(12500.0f)); // Enemy health
+            this.entity.addComponent(new HealthComponent(1250.0f)); // Enemy health
             this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(5.0f, 5.0f)));
             this.entity.addComponent(new CollisionComponent(new AABBf(
                 new Vector3f(-40.0f, -40.0f, 0.0f),

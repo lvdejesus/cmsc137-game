@@ -32,7 +32,7 @@ public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
     private final AABBf wallBox = new AABBf(0.0f, 0.0f, Float.NEGATIVE_INFINITY, 0.0f, 0.0f, Float.POSITIVE_INFINITY);
 
     public WallTileCollisionSystem() {
-        super(TransformComponent.class, CollisionComponent.class, MovementComponent.class);
+        super(TransformComponent.class, MovementComponent.class);
     }
 
     @Override
@@ -63,46 +63,56 @@ public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
 
     @Override
     protected void processEntity(int entityId, Context ctx) {
-        // player or enemies
-        if (stateM.get(entityId) == null && enemyM.get(entityId) == null) return;
+        boolean canSlide = stateM.get(entityId) != null || enemyM.get(entityId) != null;
 
         var pos = transformM.get(entityId).position;
         var vel = movementM.get(entityId).velocity;
-        var localBox = collisionM.get(entityId).boundingBox;
+        var cc = collisionM.get(entityId);
+
+        AABBf localBox = null;
+        if (cc != null) {
+            localBox = cc.boundingBox;
+        }
 
         float dt = ctx.deltaTime;
 
         pos.x += vel.x * dt;
-        syncWorldBox(pos, localBox, scratchBox);
-        wallGrid.getPotentialColliders(scratchBox, potentialColliders);
+        if (localBox != null && canSlide) {
+            syncWorldBox(pos, localBox, scratchBox);
+            wallGrid.getPotentialColliders(scratchBox, potentialColliders);
 
-        for (int wallId : potentialColliders) {
-            if (wallId == entityId) continue;
+            for (int wallId : potentialColliders) {
+                if (wallId == entityId) continue;
+                updateWorldBox(wallId, wallBox);
 
-            updateWorldBox(wallId, wallBox);
-
-            if (scratchBox.intersectsAABB(wallBox)) {
-                float overlapX = calculateOverlapX(scratchBox, wallBox);
-
-                pos.x += (overlapX > 0) ? overlapX + 0.01f : overlapX - 0.01f;
-                vel.x = 0;
-                syncWorldBox(pos, localBox, scratchBox);
+                if (scratchBox.minY < wallBox.maxY && scratchBox.maxY > wallBox.minY) {
+                    if (scratchBox.intersectsAABB(wallBox)) {
+                        float overlapX = calculateOverlapX(scratchBox, wallBox);
+                        pos.x += overlapX;
+                        vel.x = 0;
+                        syncWorldBox(pos, localBox, scratchBox);
+                    }
+                }
             }
         }
 
         pos.y += vel.y * dt;
-        syncWorldBox(pos, localBox, scratchBox);
-        wallGrid.getPotentialColliders(scratchBox, potentialColliders);
+        if (localBox != null && canSlide) {
+            syncWorldBox(pos, localBox, scratchBox);
+            wallGrid.getPotentialColliders(scratchBox, potentialColliders);
 
-        for (int wallId : potentialColliders) {
-            if (wallId == entityId) continue;
-            updateWorldBox(wallId, wallBox);
+            for (int wallId : potentialColliders) {
+                if (wallId == entityId) continue;
+                updateWorldBox(wallId, wallBox);
 
-            if (scratchBox.intersectsAABB(wallBox)) {
-                float overlapY = calculateOverlapY(scratchBox, wallBox);
-                pos.y += (overlapY > 0) ? overlapY + 0.01f : overlapY - 0.01f;
-                vel.y = 0;
-                syncWorldBox(pos, localBox, scratchBox);
+                if (scratchBox.minX < wallBox.maxX && scratchBox.maxX > wallBox.minX) {
+                    if (scratchBox.intersectsAABB(wallBox)) {
+                        float overlapY = calculateOverlapY(scratchBox, wallBox);
+                        pos.y += overlapY;
+                        vel.y = 0;
+                        syncWorldBox(pos, localBox, scratchBox);
+                    }
+                }
             }
         }
     }
