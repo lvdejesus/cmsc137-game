@@ -257,7 +257,7 @@ public class MapGenerator {
     }
 
     public static MapResult generateMap(long seed) throws IOException {
-        return generateMap(seed, 5, 7, true);
+        return generateMap(seed, 30, 50, true);
     }
 
     public static MapResult generateMap(long seed, int minRooms, int maxRooms) throws IOException {
