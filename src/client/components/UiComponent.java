@@ -15,22 +15,23 @@ public class UiComponent implements Component {
     public int currentState = 0;
     public int targetState =0;
 
-    public String shaderVert = "res/shaders/ui_default.vert";
-    public String shaderFrag = "res/shaders/ui_default.frag";
+    public String shaderVert = "res/shaders/default.vert";
+    public String shaderFrag = "res/shaders/default.frag";
     
     // For tweening
     public final Vector2f targetPosistion = new Vector2f();
     public float targetRotation = 0f;
     public float lerpSpeed = 10f;
     public Vector4f targetTint = new Vector4f(1,1,1,1);
-    
-    // So that code can be applied when a UIs State Changes
+
+    // Interface for custom functionality on state reached per ui element
     public interface UiStateListener {
-        void onStateCHanged(int idx, String state);
+        void onStateChanged(int idx, String state);
     }
 
-    public UiComponent(Vector2f pos, String... states){
-        this.targetPosistion.set(pos);
+    public UiStateListener onStateChanged;
+
+    public UiComponent(String... states){
         if (states !=null){
             Collections.addAll(this.states,states);
         }

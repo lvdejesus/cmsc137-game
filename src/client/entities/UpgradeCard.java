@@ -2,6 +2,7 @@ package client.entities;
 
 import client.components.RenderComponent;
 import client.components.TransformComponent;
+import client.components.UiComponent;
 import client.rendering.*;
 import client.systems.client.*;
 import framework.engine.*;
@@ -31,6 +32,19 @@ public class UpgradeCard {
             "fixed"
         );
         entity.addComponent(rc);
+    
+        UiComponent ui = new UiComponent("BACK","FRONT");
+        ui.onStateChanged = (index,state) -> {
+            if(state.equals("FRONT")){
+                rc.texture = cardFrontTexture;
+            }
+            else{
+                rc.texture = cardBackTexture;
+            }
+        };
+        entity.addComponent(ui);
+
         return entity;
     }    
+        
 }
