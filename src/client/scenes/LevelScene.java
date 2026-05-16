@@ -10,6 +10,8 @@ import client.network.messages.client.C_Shoot;
 import client.network.messages.server.*;
 import client.rendering.*;
 import client.systems.client.*;
+import client.systems.client.player.PlayerRotationSystem;
+import client.systems.client.player.PlayerTiltSystem;
 import framework.engine.*;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
@@ -19,49 +21,32 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static client.entities.Tile.placeTile;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import client.scenes.overlays.*;
 
 public class LevelScene extends Scene {
-    private Engine<Context> engine;
     private Player player;
     private Menu menu;
     private UpgradeOverlay upgrade;
-    private TransformComponent playerTransform;
-    private MovementComponent playerMovement;
-    private PlayerStateComponent playerState;
 
     private Font pauseFont;
-    private ClientPrefabRegistry prefabRegistry = new ClientPrefabRegistry();
-
-    private final Map<Integer, Prefab> networkPrefabMap = new ConcurrentHashMap<>();
 
     //Debug text
     private DebugText debugText;
 
     // Health bar
     private HealthBar healthBar;
-    private double shootTimer = 0.0;
 
     @Override
     public void init(Engine<Context> engine) {
-        this.engine = engine;
-
-        // Ensure systems are enabled
-        setGameSystemsEnabled(true);
-
         int playerIndex = NetworkManager.getInstance().getPlayerIndex();
         this.player = new Player(engine, playerIndex, NetworkManager.getInstance().getNetworkId());
         this.player.spawnClient();
-
-        this.playerTransform = player.getEntity().getComponent(TransformComponent.class);
-        this.playerMovement = player.getEntity().getComponent(MovementComponent.class);
-        this.playerState = player.getEntity().getComponent(PlayerStateComponent.class);
 
         // Load background map
 //        Entity<Context> mapBg = engine.createEntity();
@@ -86,20 +71,35 @@ public class LevelScene extends Scene {
         debugText = DebugText.create(engine, "State: idle");
     }
 
-    private void setGameSystemsEnabled(boolean enabled) {
-        // enableSystem(EnemySystem.class, enabled);
-        enableSystem(BulletSystem.class, enabled);
-        enableSystem(MovementSystem.class, enabled);
-        enableSystem(client.systems.client.player.PlayerRotationSystem.class, enabled);
-        enableSystem(DamageSystem.class, enabled);
-        enableSystem(PhysicsSystem.class, enabled);
+    @Override
+    public void addSystems(Engine<Context> engine) {
+        Map<Integer, Prefab> networkPrefabMap = new ConcurrentHashMap<>();
+
+        ConcurrentLinkedQueue<Message> spawnQueue = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<Message> snapshotQueue = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<Message> outQueue = new ConcurrentLinkedQueue<>();
+
+        engine.addSystem(new ClientNetworkInputSystem(NetworkManager.getInstance().inQueue, spawnQueue, snapshotQueue));
+        engine.addSystem(new ClientSpawnSystem(spawnQueue, networkPrefabMap, player));
+        engine.addSystem(new ClientSnapshotSystem(snapshotQueue, networkPrefabMap));
+
+        engine.addSystem(new PhysicsSystem());
+        engine.addSystem(new PlayerRotationSystem(camera));
+        engine.addSystem(new PlayerShootSystem(outQueue, camera));
+        engine.addSystem(new PlayerUpdateSystem(outQueue));
+        engine.addSystem(new MovementInputSystem());
+        engine.addSystem(new MovementSystem());
+        engine.addSystem(new WallTileCollisionSystem());
+        engine.addSystem(new PlayerTiltSystem());
+        engine.addSystem(new PlayerFollowSystem(camera));
+        engine.addSystem(new DespawnSystem());
+
+        engine.addSystem(new ClientNetworkOutputSystem(outQueue));
     }
 
-    private <T extends EntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
-        T system = engine.getSystem(type);
-        if (system != null) {
-            system.setEnabled(enabled);
-        }
+    @Override
+    public void clearSystems(Engine<Context> engine) {
+        engine.removeSystems(0);
     }
 
     @Override
@@ -120,60 +120,6 @@ public class LevelScene extends Scene {
             upgrade.splay();
         }
         upgrade.handleInput(input);
-
-        NetworkManager nm = NetworkManager.getInstance();
-
-        Message msg;
-        while ((msg = nm.inQueue.poll()) != null) {
-            if (msg instanceof S_Spawn m) {
-                // if self, skip
-                if (nm.networkId == m.getNetworkId()) {
-                    networkPrefabMap.put(m.getNetworkId(), player);
-                    continue;
-                }
-
-                Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
-                networkPrefabMap.put(m.getNetworkId(), prefab);
-            } else if (msg instanceof S_Despawn m) {
-                Prefab prefab = networkPrefabMap.remove(m.getNetworkId());
-                if (prefab.onDespawn()) {
-                    engine.destroyEntity(prefab.getEntity().getId());
-                }
-            } else if (msg instanceof S_Snapshot m) {
-                for (var entitySnapshot : m.getEntitySnapshots()) {
-                    Prefab entity = networkPrefabMap.get(entitySnapshot.getNetworkId());
-                    if (entity == null) {
-                        continue;
-                    }
-
-                    var keySet = engine.getMapper(NetworkDuplicateComponent.class).get(entity.getEntity().getId()).components.keySet();
-                    for (var component : entitySnapshot.getComponents()) {
-                        var cc = engine.getComponentClass(component.getComponentId());
-                        if (!keySet.contains(cc)) continue;
-
-                        var syncComponent = (SyncComponent) engine.getMapper(cc).get(entity.getEntity().getId());
-                        if (syncComponent == null) continue;
-
-                        syncComponent.fromBytes(component.getData());
-                    }
-                }
-            }
-        }
-
-        if (InputHandler.getInstance().leftMouseHeld) {
-            if (shootTimer < glfwGetTime())  {
-                Vector2f d = camera.toWorldPosition(InputHandler.getInstance().cursorPosition);
-
-                // Get player's current velocity for velocity inheritance
-                float pvx = playerMovement.velocity.x;
-                float pvy = playerMovement.velocity.y;
-                nm.sendMessage(new C_Shoot(d.x, d.y, pvx, pvy));
-
-                shootTimer = glfwGetTime() + 0.1f;
-            }
-        }
-
-        nm.sendMessage(new C_PlayerState(playerTransform.position.x, playerTransform.position.y, playerTransform.rotation, playerState.previous, playerState.current, playerMovement.velocity.x, playerMovement.velocity.y));
     }
 
     private ByteBuffer loadResource(String path) throws IOException {

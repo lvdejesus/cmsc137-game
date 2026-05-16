@@ -48,24 +48,12 @@ public class EngineConfig {
     }
 
     public static void addSystems(Engine<Context> engine, Camera camera, Camera fixedCamera) {
-        engine.addSystem(new PhysicsSystem());
-        engine.addSystem(new AnimationSystem());
-        engine.addSystem(new PlayerRotationSystem(camera));
-        engine.addSystem(new MovementInputSystem());
-        engine.addSystem(new MovementSystem());
-
-        engine.addSystem(new WallTileCollisionSystem());
-
-        engine.addSystem(new PlayerTiltSystem());
-        engine.addSystem(new CameraSystem(camera));
-        engine.addSystem(new RenderSystem(camera, "default"));
-        engine.addSystem(new UiRenderSystem("fixed"));
-        engine.addSystem(new RenderSystem(fixedCamera, "fixed"));
-
-        engine.addSystem(new TextRenderingSystem(camera, "default"));
-        engine.addSystem(new TextRenderingSystem(fixedCamera, "fixed"));
-
-        engine.addSystem(new DespawnSystem());
+        engine.addSystem(new AnimationSystem(), 1000);
+        engine.addSystem(new RenderSystem(camera, "default"), 1000);
+        engine.addSystem(new UiRenderSystem("fixed"), 1000);
+        engine.addSystem(new RenderSystem(fixedCamera, "fixed"), 1000);
+        engine.addSystem(new TextRenderingSystem(camera, "default"), 1000);
+        engine.addSystem(new TextRenderingSystem(fixedCamera, "fixed"), 1000);
     }
 
     public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm) {

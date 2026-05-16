@@ -72,27 +72,6 @@ public class LobbyScene extends Scene {
         startButtonEntity.addComponent(new TransformComponent(new Vector2f(centerX, centerY + 120), new Vector2f(1, 1), Anchor.CENTER));
         startButtonEntity.addComponent(new TextComponent(font, "Start Game", new Vector4f(0, 1, 0, 1), 1.0f, 0.5f, "fixed"));
         entities.add(startButtonEntity);
-
-        // Disable game systems while waiting
-        setGameSystemsEnabled(false);
-    }
-
-    private void setGameSystemsEnabled(boolean enabled) {
-        if (engine == null) return;
-        
-        // enableSystem(EnemySystem.class, enabled);
-        enableSystem(BulletSystem.class, enabled);
-        enableSystem(MovementSystem.class, enabled);
-        enableSystem(PhysicsSystem.class, enabled);
-        enableSystem(client.systems.client.player.PlayerRotationSystem.class, enabled);
-        enableSystem(DamageSystem.class, enabled);
-    }
-
-    private <T extends EntitySystem<Context>> void enableSystem(Class<T> type, boolean enabled) {
-        T system = engine.getSystem(type);
-        if (system != null) {
-            system.setEnabled(enabled);
-        }
     }
 
     private int lastCount = -1;
@@ -137,8 +116,6 @@ public class LobbyScene extends Scene {
 
     @Override
     public void clean() {
-        for (Entity<Context> e : entities) {
-            engine.destroyEntity(e.getId());
-        }
+        engine.clearEntities();
     }
 }

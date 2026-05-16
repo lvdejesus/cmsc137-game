@@ -40,9 +40,6 @@ public class MenuScene extends Scene {
         // Ensure depth testing is enabled for proper layering
         glEnable(GL_DEPTH_TEST);
 
-        // Disable game systems
-        setGameSystemsEnabled(false);
-        
         // Load Font
         try {
             ByteBuffer fontBuffer = loadResource("res/fonts/KiwiSoda.ttf");
@@ -143,35 +140,16 @@ public class MenuScene extends Scene {
         }
     }
 
-    private void setGameSystemsEnabled(boolean enabled) {
-        if (engine == null) return;
-        
-        // disableSystem(EnemySystem.class, enabled);
-        disableSystem(BulletSystem.class, enabled);
-        disableSystem(MovementSystem.class, enabled);
-        disableSystem(PhysicsSystem.class, enabled);
-        disableSystem(PlayerRotationSystem.class, enabled);
-        disableSystem(DamageSystem.class, enabled);
-    }
-
-    private <T extends EntitySystem<Context>> void disableSystem(Class<T> type, boolean enabled) {
-        T system = engine.getSystem(type);
-        if (system != null) {
-            system.setEnabled(enabled);
-        }
-    }
-
-    @Override
-    public void clean() {
-        // We re-enable systems when leaving the menu scene
-        setGameSystemsEnabled(true);
-    }
-
     private ByteBuffer loadResource(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         ByteBuffer buffer = BufferUtils.createByteBuffer(bytes.length);
         buffer.put(bytes);
         buffer.flip();
         return buffer;
+    }
+
+    @Override
+    public void clean() {
+        engine.clearEntities();
     }
 }

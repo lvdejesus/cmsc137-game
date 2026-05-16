@@ -57,7 +57,6 @@ public class GameClient {
                             }
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
                         System.out.println("Disconnected from server.");
                         connected = false;
                     }

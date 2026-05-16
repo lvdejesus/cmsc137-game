@@ -10,10 +10,12 @@ public class SceneManager {
         if (currScene != null){
             currScene.clean();
             engine.clearEntities();
+            currScene.clearSystems(engine);
         }
         currScene = newScene;
         currScene.setCamera(camera);
         currScene.init(engine);
+        currScene.addSystems(engine);
     }
 
     public static void update(){

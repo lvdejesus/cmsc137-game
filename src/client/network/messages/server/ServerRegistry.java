@@ -10,5 +10,6 @@ public class ServerRegistry extends Registry {
         register(S_Snapshot.class, S_Snapshot::deserialize);
         register(S_Spawn.class, S_Spawn::deserialize);
         register(S_Despawn.class, S_Despawn::deserialize);
+        register(S_Disconnect.class, S_Disconnect::deserialize);
     }
 }

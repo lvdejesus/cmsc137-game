@@ -13,4 +13,7 @@ public abstract class Scene {
     public void setCamera(Camera camera) {
         this.camera = camera;
     }
+
+    public void clearSystems(Engine<Context> engine) {}
+    public void addSystems(Engine<Context> engine) {}
 }

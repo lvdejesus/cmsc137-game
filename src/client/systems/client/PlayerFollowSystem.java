@@ -7,12 +7,12 @@ import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
 
-public class CameraSystem extends IteratingEntitySystem<Context> {
+public class PlayerFollowSystem extends IteratingEntitySystem<Context> {
     private final Camera camera;
 
     private ComponentMapper<TransformComponent> tm;
 
-    public CameraSystem(Camera camera) {
+    public PlayerFollowSystem(Camera camera) {
         super(PlayerTagComponent.class, TransformComponent.class);
 
         this.camera = camera;

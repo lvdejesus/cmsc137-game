@@ -5,6 +5,7 @@ import client.components.RenderComponent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
 import client.entities.*;
+import client.network.NetworkManager;
 import client.rendering.*;
 import client.systems.client.*;
 import framework.engine.*;
@@ -119,6 +120,7 @@ public class Menu {
                 SceneManager.setScene(new LevelScene(), engine);
             } else {
                 // Back to Title
+                NetworkManager.getInstance().stop();
                 SceneManager.setScene(new MenuScene(Window.getWindow()), engine);
             }
         }

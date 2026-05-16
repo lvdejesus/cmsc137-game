@@ -1,5 +1,7 @@
 package client.network;
 
+import client.components.NetworkIdComponent;
+import client.network.messages.client.*;
 import client.systems.server.MapEnemySpawnSystem;
 import common.MapGenerator;
 import client.components.TransformComponent;
@@ -7,10 +9,6 @@ import client.components.player.MovementInputComponent;
 import client.components.player.PlayerStateComponent;
 import client.entities.*;
 import client.network.messages.Message;
-import client.network.messages.client.C_PlayerState;
-import client.network.messages.client.C_Shoot;
-import client.network.messages.client.C_RequestStartGame;
-import client.network.messages.client.ClientRegistry;
 import client.network.messages.server.*;
 import client.systems.client.Context;
 import client.systems.server.ServerNetworkInputSystem;
@@ -53,6 +51,9 @@ public class GameServer implements Runnable {
     private final ConcurrentLinkedQueue<MessagePair> outQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<EntitySnapshot> snapshotQueue = new ConcurrentLinkedQueue<>();
 
+    NetworkSpawnManager nsm;
+    Map<Integer, Integer> playerToEntityMap;
+
     private static final double NANO_TO_SECOND = 1_000_000_000.0;
 
     public GameServer(String localIP) {
@@ -73,6 +74,12 @@ public class GameServer implements Runnable {
         int count = connectedClients.size();
         for (ClientConnection client : connectedClients.values()) {
             client.send(new S_PlayerCount(count));
+        }
+    }
+
+    private void broadcastDisconnect(int networkId) {
+        for (ClientConnection client : connectedClients.values()) {
+            client.send(new S_Disconnect(networkId));
         }
     }
 
@@ -106,9 +113,9 @@ public class GameServer implements Runnable {
         Engine<Context> engine = new Engine<>();
         EngineConfig.registerSyncComponents(engine);
 
-        Map<Integer, Integer> playerToEntityMap = new HashMap<>();
+        playerToEntityMap = new HashMap<>();
 
-        NetworkSpawnManager nsm = new NetworkSpawnManager(engine, prefabRegistry, outQueue);
+        nsm = new NetworkSpawnManager(engine, prefabRegistry, outQueue);
 
         while (!serverSocket.isClosed() && !gameStarted) {
             try {
@@ -178,6 +185,12 @@ public class GameServer implements Runnable {
             }
         });
 
+        handlers.put(C_Disconnect.class, (id, message) -> {
+            int entityId = playerToEntityMap.get(id);
+            NetworkIdComponent nic = engine.getMapper(NetworkIdComponent.class).get(entityId);
+            nsm.despawn(entityId, nic.networkId);
+        });
+
         MapGenerator.MapResult grid;
         try {
             TileLoader.loadTiles();
@@ -224,10 +237,12 @@ public class GameServer implements Runnable {
         Socket socket;
         DataOutputStream out;
         int playerId;
+        int networkId;
 
         ClientConnection(ConcurrentLinkedQueue<MessagePair> queue, Socket socket, int playerId, int networkId) throws IOException {
             this.socket = socket;
             this.playerId = playerId;
+            this.networkId = networkId;
             this.out = new DataOutputStream(socket.getOutputStream());
             send(new S_AssignId(playerId, networkId));
 
@@ -248,6 +263,8 @@ public class GameServer implements Runnable {
         private void handleDisconnect() {
             connectedClients.remove(this.playerId);
             broadcastPlayerCount();
+            broadcastDisconnect(this.networkId);
+            inQueue.add(new MessagePair(this.playerId, new C_Disconnect()));
             try {
                 socket.close();
             } catch (IOException ignored) {
@@ -259,7 +276,6 @@ public class GameServer implements Runnable {
                 try {
                     serverRegistry.send(out, msg);
                 } catch (IOException e) {
-                    handleDisconnect();
                 }
             }
         }

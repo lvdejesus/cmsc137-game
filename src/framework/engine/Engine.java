@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -46,7 +47,7 @@ public class Engine<T> {
     private int[] entityVersions = new int[INITIAL_CAPACITY];
     private final Map<Class<? extends Component>, ComponentMapper<? extends Component>> mappers = new HashMap<>();
     private final ComponentRegistry componentRegistry = new ComponentRegistry();
-    private final ArrayList<EntitySystem<T>> systems = new ArrayList<>();
+    private final Map<Integer, ArrayList<EntitySystem<T>>> systems = new HashMap<>();
 
     public Entity<T> createEntity() {
         int index;
@@ -75,7 +76,7 @@ public class Engine<T> {
     }
 
     public void removeComponent(int id, Class<? extends Component> component) {
-        var mapper =  mappers.get(component);
+        var mapper = mappers.get(component);
         componentBitset[id] ^= 1L << mapper.getIndex();
         mapper.set(id, null);
     }
@@ -119,15 +120,22 @@ public class Engine<T> {
         return componentRegistry.get(component);
     }
 
-    public void addSystem(EntitySystem<T> system) {
-        systems.add(system);
+    public void addSystem(EntitySystem<T> system, int priority) {
+        systems.computeIfAbsent(priority, k -> new ArrayList<>()).add(system);
         system.setEngine(this);
     }
 
+    public void addSystem(EntitySystem<T> system) {
+        addSystem(system, 0);
+    }
+
     public void update(T ctx) {
-        for (var system : systems) {
-            if (system.isEnabled()) {
-                system.update(ctx);
+        var sortedSystems = systems.entrySet().stream().sorted((a, b) -> a.getKey() - b.getKey()).toList();
+        for (var systemGroup : sortedSystems) {
+            for (var system : systemGroup.getValue()) {
+                if (system.isEnabled()) {
+                    system.update(ctx);
+                }
             }
         }
     }
@@ -138,6 +146,10 @@ public class Engine<T> {
                 destroyEntity(i);
             }
         }
+    }
+
+    public void removeSystems(int priority) {
+        systems.remove(priority);
     }
 
     @SuppressWarnings("unchecked")
@@ -151,15 +163,6 @@ public class Engine<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <U extends EntitySystem<T>> U getSystem(Class<U> type) {
-        for (var system : systems) {
-            if (system.getClass().equals(type)) {
-                return (U) system;
-            }
-        }
-        return null;
-    }
-
     public Class<? extends Component> getComponentClass(int componentId) {
         return componentRegistry.index(componentId);
     }
