@@ -24,13 +24,15 @@ public class Enemy extends Prefab {
     private final int networkId;
     private final float x;
     private final float y;
+    private final int type;
 
-    public Enemy(Engine<Context> engine, int networkId, float x, float y) {
+    public Enemy(Engine<Context> engine, int networkId, float x, float y, int type) {
         super(engine);
 
         this.networkId = networkId;
         this.x = x;
         this.y = y;
+        this.type = type;
     }
 
     @Override
@@ -62,14 +64,16 @@ public class Enemy extends Prefab {
     public static Enemy deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
         float x = bytes.getFloat();
         float y = bytes.getFloat();
+        int type = bytes.getInt();
 
-        return new Enemy(engine, networkId, x, y);
+        return new Enemy(engine, networkId, x, y, type);
     }
 
-    public static byte[] serialize(float x, float y) {
-        ByteBuffer buf = ByteBuffer.allocate(8);
+    public static byte[] serialize(float x, float y, int type) {
+        ByteBuffer buf = ByteBuffer.allocate(12);
         buf.putFloat(x);
         buf.putFloat(y);
+        buf.putInt(type);
         return buf.array();
     }
 }

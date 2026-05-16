@@ -72,7 +72,7 @@ public class MapEnemySpawnSystem  extends EntitySystem<Context> {
             var closedAreas = grid.closedAreas[v];
             for (int i = 0; i < 5; i++) {
                 var pos = closedAreas[random.nextInt(closedAreas.length)];
-                nsm.spawn(Enemy.class, Enemy.serialize(pos[0] * 64.0f, pos[1] * 64.0f));
+                nsm.spawn(Enemy.class, Enemy.serialize(pos[0] * 64.0f, pos[1] * 64.0f, 0));
             }
         }
 
