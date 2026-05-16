@@ -61,7 +61,7 @@ public class Menu {
         // Popup background (menu_select)
         Entity<Context> popup = engine.createEntity();
         popup.addComponent(new TransformComponent(new Vector2f(centerX, centerY), new Vector2f(1, 1), Anchor.CENTER));
-        popup.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_select.png"), 0.5f));
+        popup.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_select.png"), 0.5f, new org.joml.Vector4f(1, 1, 1, 1), "fixed"));
         pauseMenuEntities.add(popup);
 
         // Options
@@ -69,23 +69,23 @@ public class Menu {
 
         Entity<Context> backToGameText = engine.createEntity();
         backToGameText.addComponent(new TransformComponent(optionPositions[0], new Vector2f(1, 1), Anchor.CENTER));
-        backToGameText.addComponent(new TextComponent(pauseFont, "back to game", new Vector4f(1, 1, 1, 1), 1.0f, 0.7f));
+        backToGameText.addComponent(new TextComponent(pauseFont, "back to game", new Vector4f(1, 1, 1, 1), 1.0f, 0.7f, "fixed"));
         pauseMenuEntities.add(backToGameText);
 
         Entity<Context> restartText = engine.createEntity();
         restartText.addComponent(new TransformComponent(optionPositions[1], new Vector2f(1, 1), Anchor.CENTER));
-        restartText.addComponent(new TextComponent(pauseFont, "restart", new Vector4f(1, 1, 1, 1), 1.0f, 0.7f));
+        restartText.addComponent(new TextComponent(pauseFont, "restart", new Vector4f(1, 1, 1, 1), 1.0f, 0.7f, "fixed"));
         pauseMenuEntities.add(restartText);
 
         Entity<Context> backText = engine.createEntity();
         backText.addComponent(new TransformComponent(optionPositions[2], new Vector2f(1, 1), Anchor.CENTER));
-        backText.addComponent(new TextComponent(pauseFont, "back to title", new Vector4f(1, 1, 1, 1), 1.0f, 0.7f));
+        backText.addComponent(new TextComponent(pauseFont, "back to title", new Vector4f(1, 1, 1, 1), 1.0f, 0.7f, "fixed"));
         pauseMenuEntities.add(backText);
 
         // Selector
         selectorEntity = engine.createEntity();
         selectorEntity.addComponent(new TransformComponent(new Vector2f(optionPositions[selectedOption].x - 120, optionPositions[selectedOption].y), new Vector2f(1, 1), Anchor.CENTER));
-        selectorEntity.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_selector.png"), 0.8f));
+        selectorEntity.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_selector.png"), 0.8f, new org.joml.Vector4f(1, 1, 1, 1), "fixed"));
         pauseMenuEntities.add(selectorEntity);
 
         updateSelector();
