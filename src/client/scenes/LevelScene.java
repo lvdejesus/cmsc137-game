@@ -1,19 +1,15 @@
 package client.scenes;
 
 import client.components.*;
-import client.components.player.PlayerStateComponent;
 import client.entities.*;
 import client.network.NetworkManager;
 import client.network.messages.Message;
-import client.network.messages.client.C_PlayerState;
-import client.network.messages.client.C_Shoot;
 import client.network.messages.server.*;
 import client.rendering.*;
 import client.systems.client.*;
 import client.systems.client.player.PlayerRotationSystem;
 import client.systems.client.player.PlayerTiltSystem;
 import framework.engine.*;
-import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
@@ -23,8 +19,6 @@ import java.nio.file.Paths;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -49,11 +43,6 @@ public class LevelScene extends Scene {
         int playerIndex = NetworkManager.getInstance().getPlayerIndex();
         this.player = new Player(engine, playerIndex, NetworkManager.getInstance().getNetworkId());
         this.player.spawnClient();
-
-        // Load background map
-//        Entity<Context> mapBg = engine.createEntity();
-//        mapBg.addComponent(new TransformComponent(new Vector2f(400, 300), new Vector2f(800.0f / 1339.0f, 600.0f / 1175.0f), Anchor.CENTER));
-//        mapBg.addComponent(new RenderComponent(TextureAtlas.get().getRegion("map_1.png"), -0.5f));
 
         // Load Font for pause menu
         try {
@@ -105,7 +94,8 @@ public class LevelScene extends Scene {
 
     @Override
     public void update() {
-        this.debugText.setText("State: " + player.getState());
+        var pos = player.getEntity().getComponent(TransformComponent.class).position;
+        this.debugText.setText(String.format("Position: %.2f,  %.2f", pos.x / 64.0f, pos.y / 64.0f));
         this.healthBar.updateHealth(player.getHealth());
         // Toggle menu with Esc
         InputHandler input = InputHandler.getInstance();

@@ -45,15 +45,15 @@ public class ClientNetworkInputSystem extends EntitySystem<Context> {
                 }
 
                 Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
-                System.out.printf("Spawn for %s %d (%d).%n", prefab.getClass().getName(), prefab.getEntity().getId(), m.getNetworkId());
+//                System.out.printf("Spawn for %s %d (%d).%n", prefab.getClass().getName(), prefab.getEntity().getId(), m.getNetworkId());
                 networkPrefabMap.put(m.getNetworkId(), prefab);
             } else if (msg instanceof S_Despawn m) {
                 Prefab prefab = networkPrefabMap.remove(m.getNetworkId());
                 if (prefab.onDespawn()) {
-                    System.out.printf("Immediate despawn for %s %d (%d).%n", prefab.getClass().getName(), prefab.getEntity().getId(), m.getNetworkId());
+//                    System.out.printf("Immediate despawn for %s %d (%d).%n", prefab.getClass().getName(), prefab.getEntity().getId(), m.getNetworkId());
                     engine.destroyEntity(prefab.getEntity().getId());
                 } else {
-                    System.out.printf("Delayed despawn for %s %d (%d).%n", prefab.getClass().getName(), prefab.getEntity().getId(), m.getNetworkId());
+//                    System.out.printf("Delayed despawn for %s %d (%d).%n", prefab.getClass().getName(), prefab.getEntity().getId(), m.getNetworkId());
                 }
             } else if (msg instanceof S_Disconnect m) {
 

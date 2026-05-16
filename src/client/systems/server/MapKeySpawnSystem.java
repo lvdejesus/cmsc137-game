@@ -21,12 +21,6 @@ public class MapKeySpawnSystem extends EntitySystem<Context> {
     }
 
     public MapKeySpawnSystem(MapGenerator.MapResult grid, NetworkSpawnManager nsm) {
-        int maxDepth = grid.getMaxDepth();
-        int minDepth = Math.max(0, maxDepth - 2);
-
-        List<Integer> roomsInRange = grid.getRoomsAtDepthRange(minDepth, maxDepth);
-        roomsInRange.removeIf(x -> x == grid.bossAreaIndex);
-
         Random random = new Random();
 
         int[] path = grid.findMaxShortestPath();

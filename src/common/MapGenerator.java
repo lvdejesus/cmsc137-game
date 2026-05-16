@@ -11,12 +11,13 @@ public class MapGenerator {
     public static final int START_X = 150;
     public static final int START_Y = 150;
 
+    private static final int INF = 100000000;
+
     public static class MapResult {
         public int[][] grid;
         public int[][][] closedAreas; // Array of closed areas, each area is an array of [x, y] coordinates
         public int[][] areaLookup;    // [y][x] mapping to the index in closedAreas (-1 if not in a closed area)
         public Map<Integer, Set<Integer>> adjacencyList; // Maps area index to a set of connected area indices
-        public int[] roomDepths; // Depth of each room from spawn (BFS distance)
         public int bossAreaIndex = -1; // Index of the boss room
         public int startRoom;
 
@@ -57,21 +58,13 @@ public class MapGenerator {
             startRoom = this.areaLookup[155][155];
 
             computeAdjacency();
-            computeRoomDepths();
         }
 
         public int[] findMaxShortestPath() {
-            List<Integer> rooms = new ArrayList<>(adjacencyList.keySet());
-            int v = rooms.size();
-
-            Map<Integer, Integer> roomToIndex = new HashMap<>();
-            for (int i = 0; i < v; i++) {
-                roomToIndex.put(rooms.get(i), i);
-            }
+            int v = closedAreas.length;
 
             // initialize distance matrix
             int[][] dist = new int[v][v];
-            int INF = 100000000;
 
             for (int[] row : dist) {
                 Arrays.fill(row, INF);
@@ -81,12 +74,9 @@ public class MapGenerator {
             }
 
             for (Map.Entry<Integer, Set<Integer>> entry : adjacencyList.entrySet()) {
-                int u = roomToIndex.get(entry.getKey());
-                for (int neighbor : entry.getValue()) {
-                    if (roomToIndex.containsKey(neighbor)) {
-                        int w = roomToIndex.get(neighbor);
-                        dist[u][w] = 1;
-                    }
+                int u = entry.getKey();
+                for (int w : entry.getValue()) {
+                    dist[u][w] = 1;
                 }
             }
 
@@ -101,14 +91,17 @@ public class MapGenerator {
             }
 
             List<Integer> candidates = new ArrayList<>();
-            for (int room : rooms) {
-                if (room == startRoom || room == bossAreaIndex) continue;
-                candidates.add(roomToIndex.get(room));
+            for (int i = 0; i < v; i++) {
+                if (i == startRoom || i == bossAreaIndex) continue;
+                candidates.add(i);
             }
+            return getPath(candidates, dist);
+        }
 
+        private int[] getPath(List<Integer> candidates, int[][] dist) {
             int n = candidates.size();
 
-            int startIndex = roomToIndex.get(startRoom);
+            int startIndex = startRoom;
             int maxPathLength = -1;
             int[] path  = null;
 
@@ -146,7 +139,6 @@ public class MapGenerator {
                     }
                 }
             }
-
             return path;
         }
 
@@ -203,78 +195,6 @@ public class MapGenerator {
          */
         public Set<Integer> getNeighboringAreas(int areaIndex) {
             return adjacencyList.getOrDefault(areaIndex, Collections.emptySet());
-        }
-
-        private void computeRoomDepths() {
-            if (closedAreas == null || closedAreas.length == 0) {
-                roomDepths = new int[0];
-                return;
-            }
-
-            roomDepths = new int[closedAreas.length];
-            Arrays.fill(roomDepths, -1);
-
-            // Find the start area (the one containing START_X, START_Y)
-            int startArea = getAreaIndex(START_X, START_Y);
-            if (startArea == -1) {
-                // Fallback: use the first area with the largest size as start
-                int maxSize = 0;
-                for (int i = 0; i < closedAreas.length; i++) {
-                    if (closedAreas[i].length > maxSize) {
-                        maxSize = closedAreas[i].length;
-                        startArea = i;
-                    }
-                }
-            }
-
-            if (startArea == -1) return;
-
-            // BFS from start area to compute depths
-            Queue<Integer> queue = new LinkedList<>();
-            queue.add(startArea);
-            roomDepths[startArea] = 0;
-
-            while (!queue.isEmpty()) {
-                int current = queue.poll();
-                int currentDepth = roomDepths[current];
-
-                for (int neighbor : getNeighboringAreas(current)) {
-                    if (roomDepths[neighbor] == -1) {
-                        roomDepths[neighbor] = currentDepth + 1;
-                        queue.add(neighbor);
-                    }
-                }
-            }
-
-            // Find the boss room (the room at max depth that's not the start)
-            int maxDepth = getMaxDepth();
-            for (int i = 0; i < roomDepths.length; i++) {
-                if (roomDepths[i] == maxDepth && i != startArea) {
-                    bossAreaIndex = i;
-                    break;
-                }
-            }
-        }
-
-        public int getMaxDepth() {
-            if (roomDepths == null || roomDepths.length == 0) return 0;
-            int max = 0;
-            for (int depth : roomDepths) {
-                if (depth > max) max = depth;
-            }
-            return max;
-        }
-
-        public List<Integer> getRoomsAtDepthRange(int minDepth, int maxDepth) {
-            List<Integer> result = new ArrayList<>();
-            if (roomDepths == null) return result;
-
-            for (int i = 0; i < roomDepths.length; i++) {
-                if (roomDepths[i] >= minDepth && roomDepths[i] <= maxDepth) {
-                    result.add(i);
-                }
-            }
-            return result;
         }
     }
 
@@ -591,7 +511,7 @@ public class MapGenerator {
                         }
 
                         openDoors.removeAll(newOpenDoors);
-                        placedRooms.remove(placedRooms.size() - 1);
+                        placedRooms.removeLast();
                     }
                 }
             }
@@ -717,6 +637,7 @@ public class MapGenerator {
 
         for (String filename : filenames) {
             RoomLoader.Room room = RoomLoader.loadGrid(filename);
+            assert room != null;
             int[][] grid = room.grid;
 
             boolean isHallway = room.isHallway;
@@ -739,8 +660,8 @@ public class MapGenerator {
                     DoorBlock block = new DoorBlock();
                     floodFillDoors(grid, width, height, x, y, visited, block);
                     if (!block.tiles.isEmpty()) {
-                        block.originX = block.tiles.get(0).dx;
-                        block.originY = block.tiles.get(0).dy;
+                        block.originX = block.tiles.getFirst().dx;
+                        block.originY = block.tiles.getFirst().dy;
                         for (DoorTile dt : block.tiles) {
                             dt.dx -= block.originX;
                             dt.dy -= block.originY;
