@@ -42,7 +42,7 @@ public class Player extends Prefab {
 
         // Add components to the internal entity
         entity.addComponent(new TransformComponent(spawnPosition, new Vector2f(2.0f, 2.0f)));
-        entity.addComponent(new MovementComponent(movement_speed, acceleration, friction, new Vector2f(0.0f, 0.0f)));
+        entity.addComponent(new MovementComponent(movement_speed, acceleration, friction));
         entity.addComponent(new RenderComponent());
 
         String spritePath = "players/player" + playerIndex + ".png";

@@ -1,5 +1,6 @@
 package client.network;
 
+import client.components.MovementComponent;
 import client.network.messages.client.*;
 import client.systems.server.*;
 import common.MapGenerator;
@@ -141,6 +142,7 @@ public class GameServer implements Runnable {
         Map<Class<? extends Message>, ServerNetworkInputSystem.MessageHandler> handlers = new HashMap<>();
         final ComponentMapper<TransformComponent> tm = engine.getMapper(TransformComponent.class);
         final ComponentMapper<MovementInputComponent> mim = engine.getMapper(MovementInputComponent.class);
+        final ComponentMapper<MovementComponent> mm = engine.getMapper(MovementComponent.class);
         final ComponentMapper<PlayerStateComponent> sm = engine.getMapper(PlayerStateComponent.class);
 
         handlers.put(C_PlayerState.class, (id, message) -> {
@@ -150,19 +152,24 @@ public class GameServer implements Runnable {
 
             TransformComponent tc = tm.get(entityId);
 
-            tc.position.x = pp.getX();
-            tc.position.y = pp.getY();
-            tc.rotation = pp.getRotation();
+            tc.position.x = pp.x;
+            tc.position.y = pp.y;
+            tc.rotation = pp.rotation;
 
             MovementInputComponent mic = mim.get(entityId);
 
-            mic.x = pp.getMx();
-            mic.y = pp.getMy();
+            mic.x = pp.mx;
+            mic.y = pp.my;
+
+            MovementComponent mc = mm.get(entityId);
+
+            mc.velocity.x = pp.vx;
+            mc.velocity.y = pp.vy;
 
             PlayerStateComponent sc = sm.get(entityId);
 
-            sc.previous = pp.getPrevious();
-            sc.current = pp.getCurrent();
+            sc.previous = pp.previous;
+            sc.current = pp.current;
         });
 
         handlers.put(C_Shoot.class, (id, message) -> {

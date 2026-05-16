@@ -23,6 +23,7 @@ public class EngineConfig {
         engine.register(PlayerKeysComponent.class);
 
         engine.register(BossDoorComponent.class);
+        engine.register(BossComponent.class);
         engine.register(KeyComponent.class);
         engine.register(PlayerNetworkComponent.class);
         engine.register(NetworkIdComponent.class);
@@ -61,6 +62,7 @@ public class EngineConfig {
     public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm) {
 //        engine.addSystem(new PhysicsSystem());
         engine.addSystem(new EnemySystem(nsm));
+        engine.addSystem(new BossSystem(nsm));
         engine.addSystem(new BulletSystem(nsm));
         engine.addSystem(new DamageSystem(nsm));
         engine.addSystem(new BulletWallTileCollisionSystem(nsm));

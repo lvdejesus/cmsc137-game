@@ -79,7 +79,7 @@ public class MapEnemySpawnSystem  extends EntitySystem<Context> {
         if (areaIndex == grid.bossRoomIndex) {
             var closedAreas = grid.closedAreas[areaIndex];
             var pos = closedAreas[random.nextInt(closedAreas.length)];
-            nsm.spawn(Enemy.class, Enemy.serialize(pos[0] * 64.0f, pos[1] * 64.0f, Enemy.EnemyType.Boss));
+            nsm.spawn(Enemy.class, Enemy.serialize(pos[0] * 64.0f, pos[1] * 64.0f, grid.bossRoom.offsetX + 11.0f, grid.bossRoom.offsetY + 8.5f));
         } else {
             var closedAreas = grid.closedAreas[areaIndex];
             int numEnemies = Math.max(5, (int) Math.floor(Math.sqrt(closedAreas.length)));

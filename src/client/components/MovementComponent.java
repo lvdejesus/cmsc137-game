@@ -9,7 +9,7 @@ public class MovementComponent implements Component {
     public float acceleration;
     public float friction;
     public float speed;
-    
+
 
     public MovementComponent(float speed, float acceleration, float friction, Vector2f velocity) {
         this.speed = speed;
@@ -17,8 +17,11 @@ public class MovementComponent implements Component {
         this.acceleration = acceleration;
         this.friction = friction;
     }
+    public MovementComponent(float speed, float acceleration, float friction) {
+        this(speed, acceleration, friction, new Vector2f(0.0f, 0.0f));
+    }
 
     public MovementComponent(float speed) {
-        this(speed, 0.0f, 0.0f, new Vector2f(0.0f, 0.0f));
+        this(speed, 0.0f, 0.0f);
     }
 }

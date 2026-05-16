@@ -31,6 +31,9 @@ public class Enemy extends Prefab {
     private final float y;
     private final EnemyType type;
 
+    private float cx = 0.0f;
+    private float cy = 0.0f;
+
     public Enemy(Engine<Context> engine, int networkId, float x, float y, EnemyType type) {
         super(engine);
 
@@ -38,6 +41,17 @@ public class Enemy extends Prefab {
         this.x = x;
         this.y = y;
         this.type = type;
+    }
+
+    public Enemy(Engine<Context> engine, int networkId, float x, float y, EnemyType type, float cx, float cy) {
+        super(engine);
+
+        this.networkId = networkId;
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.cx = cx;
+        this.cy = cy;
     }
 
     @Override
@@ -54,7 +68,7 @@ public class Enemy extends Prefab {
 
     @Override
     public void spawnCommon() {
-        this.entity.addComponent(new MovementComponent(50.0f, 20.0f, 10.0f, new Vector2f(0.0f, 0.0f)));
+        this.entity.addComponent(new MovementComponent(50.0f, 20.0f, 10.0f));
         if (type == EnemyType.Regular) {
             this.entity.addComponent(new HealthComponent(25.0f)); // Enemy health
             this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.0f, 2.0f)));
@@ -62,7 +76,7 @@ public class Enemy extends Prefab {
                 new Vector3f(-16.0f, -16.0f, 0.0f),
                 new Vector3f(16.0f, 16.0f, 0.1f)
             )));
-            this.entity.addComponent(new EnemyComponent(1.2f, 0.8f));
+            this.entity.addComponent(new EnemyComponent(type, 1.2f, 0.8f));
         } else if (type == EnemyType.Boss) {
             this.entity.addComponent(new HealthComponent(1250.0f)); // Enemy health
             this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(5.0f, 5.0f)));
@@ -70,7 +84,8 @@ public class Enemy extends Prefab {
                 new Vector3f(-40.0f, -40.0f, 0.0f),
                 new Vector3f(40.0f, 40.0f, 0.1f)
             )));
-            this.entity.addComponent(new EnemyComponent(0.2f, 0.1f));
+            this.entity.addComponent(new EnemyComponent(type, 0.2f, 0.1f));
+            this.entity.addComponent(new BossComponent(cx, cy));
         }
         this.entity.addComponent(new NetworkIdComponent(networkId));
         this.entity.addComponent(new NetworkDuplicateComponent(TransformComponent.class, HealthComponent.class));
@@ -81,7 +96,13 @@ public class Enemy extends Prefab {
         float y = bytes.getFloat();
         EnemyType type = EnemyType.values()[bytes.getInt()];
 
-        return new Enemy(engine, networkId, x, y, type);
+        if (type == EnemyType.Boss) {
+            float cx = bytes.getFloat();
+            float cy = bytes.getFloat();
+            return new Enemy(engine, networkId, x, y, type, cx, cy);
+        } else {
+            return new Enemy(engine, networkId, x, y, type);
+        }
     }
 
     public static byte[] serialize(float x, float y, EnemyType type) {
@@ -89,6 +110,16 @@ public class Enemy extends Prefab {
         buf.putFloat(x);
         buf.putFloat(y);
         buf.putInt(type.ordinal());
+        return buf.array();
+    }
+
+    public static byte[] serialize(float x, float y, float cx, float cy) {
+        ByteBuffer buf = ByteBuffer.allocate(20);
+        buf.putFloat(x);
+        buf.putFloat(y);
+        buf.putInt(EnemyType.Boss.ordinal());
+        buf.putFloat(cx);
+        buf.putFloat(cy);
         return buf.array();
     }
 

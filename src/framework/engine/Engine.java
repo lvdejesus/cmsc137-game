@@ -138,7 +138,7 @@ public class Engine<T> {
     }
 
     public void update(T ctx) {
-        var sortedSystems = systems.entrySet().stream().sorted((a, b) -> a.getKey() - b.getKey()).toList();
+        var sortedSystems = systems.entrySet().stream().sorted((a, b) -> Integer.compare(a.getKey(), b.getKey())).toList();
         for (var systemGroup : sortedSystems) {
             for (var system : systemGroup.getValue()) {
                 if (system.isEnabled()) {

@@ -8,15 +8,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class C_PlayerState implements Message {
-    private final float x;
-    private final float y;
-    private final float rotation;
-    private final PlayerStateComponent.State previous;
-    private final PlayerStateComponent.State current;
-    private final float mx;
-    private final float my;
+    public final float x;
+    public final float y;
+    public final float rotation;
+    public final PlayerStateComponent.State previous;
+    public final PlayerStateComponent.State current;
+    public final float mx;
+    public final float my;
+    public final float vx;
+    public final float vy;
 
-    public C_PlayerState(float x, float y, float rotation, PlayerStateComponent.State previous, PlayerStateComponent.State current, float mx, float my) {
+    public C_PlayerState(float x, float y, float rotation, PlayerStateComponent.State previous, PlayerStateComponent.State current, float mx, float my, float vx, float vy) {
         this.x = x;
         this.y = y;
         this.rotation = rotation;
@@ -24,34 +26,8 @@ public class C_PlayerState implements Message {
         this.current = current;
         this.mx = mx;
         this.my = my;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public float getRotation() {
-        return rotation;
-    }
-
-    public PlayerStateComponent.State getPrevious() {
-        return previous;
-    }
-
-    public PlayerStateComponent.State getCurrent() {
-        return current;
-    }
-
-    public float getMx() {
-        return mx;
-    }
-
-    public float getMy() {
-        return my;
+        this.vx = vx;
+        this.vy = vy;
     }
 
     public void serialize(DataOutputStream out) throws IOException {
@@ -62,6 +38,8 @@ public class C_PlayerState implements Message {
         out.writeInt(current.ordinal());
         out.writeFloat(mx);
         out.writeFloat(my);
+        out.writeFloat(vx);
+        out.writeFloat(vy);
     }
 
     public static C_PlayerState deserialize(DataInputStream in) throws IOException {
@@ -72,7 +50,9 @@ public class C_PlayerState implements Message {
         PlayerStateComponent.State current = PlayerStateComponent.State.values()[in.readInt()];
         float mx = in.readFloat();
         float my = in.readFloat();
+        float vx = in.readFloat();
+        float vy = in.readFloat();
 
-        return new C_PlayerState(x, y, rotation, previous, current, mx, my);
+        return new C_PlayerState(x, y, rotation, previous, current, mx, my, vx, vy);
     }
 }

@@ -47,32 +47,35 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
         TransformComponent transform = tm.get(id);
         MovementComponent movement = mm.get(id);
 
-        transform.rotation += 45.0f * ctx.deltaTime;
-        transform.rotation %= 360.0f;
-
-        // random movement
-        if (random.nextFloat() < 0.0001f) {
-            movement.velocity.x = 0.0f;
-            movement.velocity.y = 0.0f;
-        } else if (random.nextFloat() < 0.002f) {
-            if (movement.velocity.x == 0 && movement.velocity.y == 0) {
-                float angle = random.nextFloat() * (float) Math.PI * 2;
-                float speed = 30.0f + random.nextFloat() * 40.0f;
-                movement.velocity.x = (float) Math.cos(angle) * speed;
-                movement.velocity.y = (float) Math.sin(angle) * speed;
-            }
-        }
-
         EnemyComponent ec = engine.getMapper(EnemyComponent.class).get(id);
 
         ec.shootTimer -= ctx.deltaTime;
-        if (ec.shootTimer <= 0.0f) {
-            shootAtPlayer(id);
-            ec.shootTimer = ec.shootInterval + ec.shootVariance * (random.nextFloat() * 0.5f);
+
+        if (ec.type == Enemy.EnemyType.Regular) {
+            transform.rotation += 45.0f * ctx.deltaTime;
+            transform.rotation %= 360.0f;
+
+            // random movement
+            if (random.nextFloat() < 0.0001f) {
+                movement.velocity.x = 0.0f;
+                movement.velocity.y = 0.0f;
+            } else if (random.nextFloat() < 0.002f) {
+                if (movement.velocity.x == 0 && movement.velocity.y == 0) {
+                    float angle = random.nextFloat() * (float) Math.PI * 2;
+                    float speed = 30.0f + random.nextFloat() * 40.0f;
+                    movement.velocity.x = (float) Math.cos(angle) * speed;
+                    movement.velocity.y = (float) Math.sin(angle) * speed;
+                }
+            }
+
+            if (ec.shootTimer <= 0.0f) {
+                shootAtPlayer(id);
+                ec.shootTimer = ec.shootInterval + ec.shootVariance * (random.nextFloat() * 0.5f);
+            }
         }
     }
 
-    private void shootAtPlayer(int enemyId) {
+    public void shootAtPlayer(int enemyId) {
         HealthComponent enemyHealth = healthM.get(enemyId);
         if (!enemyHealth.isAlive()) return;
 
