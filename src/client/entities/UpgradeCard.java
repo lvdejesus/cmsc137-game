@@ -30,8 +30,6 @@ public class UpgradeCard {
             new Vector4f(1,1,1,1),
             "fixed"
         );
-        rc.backTex = cardBackTexture;
-        rc.facingBack = true;
         entity.addComponent(rc);
         return entity;
     }    

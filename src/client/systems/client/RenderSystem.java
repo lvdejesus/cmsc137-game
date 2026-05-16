@@ -2,6 +2,7 @@ package client.systems.client;
 
 import client.components.RenderComponent;
 import client.components.TransformComponent;
+import client.components.UiComponent;
 import client.rendering.Camera;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -10,14 +11,18 @@ import client.rendering.Batch;
 import client.rendering.Texture;
 import framework.rendering.ShaderProgram;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL20.*;
+
 
 public class RenderSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<RenderComponent> rm;
     private ComponentMapper<TransformComponent> tm;
+    private ComponentMapper<UiComponent> um;
     private final Batch batch;
     private final Camera camera;
     private final String layer;
+    private int activeShaderId = -1;
     private final java.util.Map<Integer, VisualCache> visualCache = new java.util.HashMap<>();
 
     public RenderSystem(Camera camera, String layer) {
@@ -39,6 +44,7 @@ public class RenderSystem extends IteratingEntitySystem<Context> {
 
         this.rm = engine.getMapper(RenderComponent.class);
         this.tm = engine.getMapper(TransformComponent.class);
+        this.um =engine.getMapper(UiComponent.class);
     }
 
     @Override
@@ -57,29 +63,33 @@ public class RenderSystem extends IteratingEntitySystem<Context> {
     public void processEntity(int id, Context ctx) {
         RenderComponent rc = rm.get(id);
         TransformComponent tc = tm.get(id);
-        float dt = ctx.deltaTime;
+        UiComponent ui = um.get(id);
+
+        // Only applies to specified layer
         if (!rc.layer.equals(layer)) {return;}
 
-        VisualCache cache = visualCache.computeIfAbsent(id, k -> new VisualCache());
-        // If this entity has been rendered before
-        if (!cache.initialized){
-            cache.vScalex = tc.scale.x;
-            cache.initialized = true;
-        }
-        float targetScalex = (rc.isFlipping) ? 0f : tc.scale.x;
-        if (Math.abs(cache.vScalex - targetScalex) > 0.001f) {
-            float speed = 8f * dt;
-            if (cache.vScalex > targetScalex) {
-                cache.vScalex = Math.max(cache.vScalex - speed, targetScalex);
-            } else {
-                cache.vScalex = Math.min(cache.vScalex   + speed, tc.scale.x);
-            }
-        }
+        
+        // Manages shaders
 
+        // If not a ui component default
+        String vertPath = (ui != null) ? ui.shaderVert : "res/shaders/default.vert";
+        String fragPath = (ui != null) ? ui.shaderFrag : "res/shaders/default.frag";
+        
         Texture tex = rc.texture;
         
+        int shader = ShaderProgram.getShaderProgram(vertPath,fragPath);
+        
+        // Applies new shader if it chanes
+        if(shader != activeShaderId){
+            // Clears old texture to apply this one
+            batch.flush();
+            // Applies shader
+            glUseProgram(shader);
+            camera.bind(shader);
+            activeShaderId = shader;
+        }
 
-
+        
         if (tex != null) {
             batch.draw(
                 tex, 
@@ -87,8 +97,8 @@ public class RenderSystem extends IteratingEntitySystem<Context> {
                 tc.position.y, 
                 rc.z,
                 tc.rotation, 
-                rc.texture.width * tc.scale.x, 
-                rc.texture.height * tc.scale.y, 
+                tex.width * tc.scale.x * rc.visualScaleX, 
+                tex.height * tc.scale.y, 
                 rc.tint.x, rc.tint.y, rc.tint.z, rc.tint.w, 
                 tc.anchor
             );

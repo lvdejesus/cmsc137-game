@@ -41,6 +41,7 @@ public class EngineConfig {
         engine.register(RenderComponent.class);
         engine.register(AnimationComponent.class);
         engine.register(TextComponent.class);
+        engine.register(UiComponent.class);
 
         //tags
         engine.register(PlayerTagComponent.class);
