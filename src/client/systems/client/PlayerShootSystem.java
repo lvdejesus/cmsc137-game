@@ -1,6 +1,8 @@
 package client.systems.client;
 
 import client.components.MovementComponent;
+import client.components.PlayerUpgradeComponent;
+import client.components.TransformComponent;
 import client.components.player.PlayerTagComponent;
 import client.entities.Player;
 import client.network.messages.Message;
@@ -42,6 +44,7 @@ public class PlayerShootSystem extends IteratingEntitySystem<Context> {
     protected void processEntity(int entityId, Context ctx) {
         MovementComponent mc = mm.get(entityId);
         PlayerTagComponent ptc = ptm.get(entityId);
+        PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
 
         if (InputHandler.getInstance().leftMouseHeld) {
             if (ptc.shootTimer < glfwGetTime()) {
@@ -50,9 +53,23 @@ public class PlayerShootSystem extends IteratingEntitySystem<Context> {
                 // Get player's current velocity for velocity inheritance
                 float pvx = mc.velocity.x;
                 float pvy = mc.velocity.y;
-                outQueue.offer(new C_Shoot(d.x, d.y, pvx, pvy));
 
-                ptc.shootTimer = glfwGetTime() + 1.0f / ptc.fireRate;
+                if (puc.splatter > 1) {
+                    TransformComponent tc = engine.getMapper(TransformComponent.class).get(entityId);
+                    Vector2f dirVec = new Vector2f(d).sub(tc.position);
+                    float angle = (float) Math.atan2(dirVec.y, dirVec.x);
+                    float increment = (float) (Math.PI * 2.0f / puc.splatter);
+                    for (int i = 0; i < puc.splatter; i++) {
+                        float finalAngle = angle + increment * i;
+                        float nx = (float) (tc.position.x + Math.cos(finalAngle));
+                        float ny = (float) (tc.position.y + Math.sin(finalAngle));
+                        outQueue.offer(new C_Shoot(nx, ny, pvx, pvy));
+                    }
+                } else {
+                    outQueue.offer(new C_Shoot(d.x, d.y, pvx, pvy));
+                }
+
+                ptc.shootTimer = glfwGetTime() + 1.0f / puc.getEffectiveFireRate();
             }
         }
     }

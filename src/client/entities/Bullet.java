@@ -21,9 +21,10 @@ public class Bullet extends Prefab {
     float py;
     float pvx;
     float pvy;
+    float speed;
     boolean isEnemy;
 
-    public Bullet(Engine<Context> engine, int networkId, float x, float y, float px, float py, float pvx, float pvy, boolean isEnemy) {
+    public Bullet(Engine<Context> engine, int networkId, float x, float y, float px, float py, float pvx, float pvy, float speed, boolean isEnemy) {
         super(engine);
 
         this.networkId = networkId;
@@ -33,6 +34,7 @@ public class Bullet extends Prefab {
         this.py = py;
         this.pvx = pvx;
         this.pvy = pvy;
+        this.speed = speed;
         this.isEnemy = isEnemy;
     }
 
@@ -49,7 +51,6 @@ public class Bullet extends Prefab {
         /*
         bullet should go to (px, py) from (x, y) with an initial speed of `speed`.
          */
-        float speed = isEnemy ? 300.0f : 700.0f;
         Vector2f dir = new Vector2f(px - x, py - y).normalize();
         // speed = new Vector2f(dir.x, dir.y).mul(speed).add(pvx, pvy).length();
 
@@ -79,13 +80,14 @@ public class Bullet extends Prefab {
         float py = bytes.getFloat();
         float pvx = bytes.getFloat();
         float pvy = bytes.getFloat();
+        float speed = bytes.getFloat();
         boolean isEnemy = bytes.get() == 1;
 
-        return new Bullet(engine, networkId, x, y, px, py, pvx, pvy, isEnemy);
+        return new Bullet(engine, networkId, x, y, px, py, pvx, pvy, speed, isEnemy);
     }
 
-    public static byte[] serialize(float x, float y, float px, float py, float pvx, float pvy, boolean isEnemy) {
-        ByteBuffer bytes = ByteBuffer.allocate(25);
+    public static byte[] serialize(float x, float y, float px, float py, float pvx, float pvy, float speed, boolean isEnemy) {
+        ByteBuffer bytes = ByteBuffer.allocate(29);
 
         bytes.putFloat(x);
         bytes.putFloat(y);
@@ -93,6 +95,7 @@ public class Bullet extends Prefab {
         bytes.putFloat(py);
         bytes.putFloat(pvx);
         bytes.putFloat(pvy);
+        bytes.putFloat(speed);
         bytes.put((byte) (isEnemy ? 1 : 0));
 
         return bytes.array();

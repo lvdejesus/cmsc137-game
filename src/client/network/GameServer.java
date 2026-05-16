@@ -1,7 +1,9 @@
 package client.network;
 
 import client.components.MovementComponent;
+import client.components.PlayerUpgradeComponent;
 import client.network.messages.client.*;
+import client.systems.client.PlayerUpdateSystem;
 import client.systems.server.*;
 import common.MapGenerator;
 import client.components.TransformComponent;
@@ -172,13 +174,22 @@ public class GameServer implements Runnable {
             sc.current = pp.current;
         });
 
+        handlers.put(C_ApplyUpgrade.class, (id, message) -> {
+            if (!(message instanceof C_ApplyUpgrade pp)) return;
+
+            int entityId = playerToEntityMap.get(id);
+            PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
+            puc.applyActual(pp.index);
+        });
+
         handlers.put(C_Shoot.class, (id, message) -> {
             if (!(message instanceof C_Shoot pp)) return;
 
             int entityId = playerToEntityMap.get(id);
             TransformComponent tc = tm.get(entityId);
+            PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
 
-            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), false));
+            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, false));
         });
 
         handlers.put(C_RequestStartGame.class, (id, message) -> {

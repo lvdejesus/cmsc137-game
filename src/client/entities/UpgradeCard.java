@@ -1,8 +1,6 @@
     package client.entities;
 
-    import client.components.RenderComponent;
-    import client.components.TransformComponent;
-    import client.components.UiComponent;
+    import client.components.*;
     import client.rendering.*;
     import client.systems.client.*;
     import framework.engine.*;
@@ -31,6 +29,7 @@
                 new Vector4f(1,1,1,1),
                 "fixed"
             );
+            entity.addComponent(new UpgradeKindComponent(idx));
             rc.visualScaleX = 1.0f;
             entity.addComponent(rc);
         

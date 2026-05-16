@@ -1,9 +1,7 @@
 package client.scenes.overlays;
 
-import client.components.DespawnTimerComponent;
-import client.components.RenderComponent;
-import client.components.TransformComponent;
-import client.components.UiComponent;
+import client.components.*;
+import client.entities.Player;
 import client.entities.UpgradeCard;
 import client.rendering.*;
 import client.systems.client.*;
@@ -17,15 +15,20 @@ import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.TreeMap;
 
 public class UpgradeOverlay {
     private final Engine<Context> engine;
     private List<Entity<Context>> cards = new ArrayList<>();
     private int selectedIndex = 0;
+    private final Player player;
 
-    public UpgradeOverlay(Engine<Context> engine) {
+    private Random random = new Random();
+
+    public UpgradeOverlay(Engine<Context> engine, Player player) {
         this.engine = engine;
+        this.player = player;
     }
 
 
@@ -40,7 +43,7 @@ public class UpgradeOverlay {
         Vector2f startpos = new Vector2f(centerx - 500f, centery);
         
         for (int i = 0; i < 3; i++) {
-            int randomIdx = (int) (Math.random() * 2) + 1;
+            int randomIdx = random.nextInt(1, 4);
             Entity<Context> card = UpgradeCard.create(engine, randomIdx, startpos);
             cards.add(card);
 
@@ -91,6 +94,11 @@ public class UpgradeOverlay {
     private void confirmSelection() {
         float despawnTime = 2f;
         float centery = Window.getWindow().getHeight() / 2f;
+
+        int upgradeKind = cards.get(selectedIndex).getComponent(UpgradeKindComponent.class).index;
+
+        System.out.println(upgradeKind);
+        player.getEntity().getComponent(PlayerUpgradeComponent.class).queueApply(upgradeKind);
         //TODO upgrade logic
         for (Entity<Context> entity : cards) {
             UiComponent ui = entity.getComponent(UiComponent.class);

@@ -52,8 +52,9 @@ public class RemotePlayer extends Prefab {
         entity.addComponent(new PlayerKeysComponent());
         entity.addComponent(new MovementComponent(Player.movement_speed, Player.acceleration, Player.friction));
         entity.addComponent(new MovementInputComponent());
+        entity.addComponent(new PlayerUpgradeComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
-        entity.addComponent(new NetworkDuplicateComponent(TransformComponent.class, PlayerStateComponent.class, MovementInputComponent.class, PlayerKeysComponent.class, HealthComponent.class));
+        entity.addComponent(new NetworkDuplicateComponent(TransformComponent.class, PlayerStateComponent.class, MovementInputComponent.class, PlayerKeysComponent.class, HealthComponent.class, PlayerUpgradeComponent.class));
     }
 
     public static RemotePlayer deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {

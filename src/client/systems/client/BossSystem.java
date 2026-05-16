@@ -115,7 +115,7 @@ public class BossSystem extends IteratingEntitySystem<Context> {
                 float angleOffset = 30.0f + 10.0f * i;
                 float angleRad = (float) Math.toRadians(transform.rotation + angleOffset);
                 Vector2f dest = new Vector2f(transform.position).add(new Vector2f((float) Math.cos(angleRad), (float) Math.sin(angleRad)).mul(100.0f));
-                nsm.spawn(Bullet.class, Bullet.serialize(transform.position.x, transform.position.y, dest.x, dest.y, 0.0f, 0.0f, true));
+                nsm.spawn(Bullet.class, Bullet.serialize(transform.position.x, transform.position.y, dest.x, dest.y, 0.0f, 0.0f, ec.bulletSpeed, true));
             }
             startPulse(bc);
             System.out.println("Transitioned to state " + bc.state + " due to finishing PulseHit");
@@ -146,6 +146,7 @@ public class BossSystem extends IteratingEntitySystem<Context> {
         HealthComponent enemyHealth = healthM.get(enemyId);
         if (!enemyHealth.isAlive()) return;
 
+        EnemyComponent ec = engine.getMapper(EnemyComponent.class).get(enemyId);
         TransformComponent enemyTransform = tm.get(enemyId);
 
         Iterable<Integer> playerIterator = engine.getFamily(PlayerNetworkComponent.class, HealthComponent.class)::iterator;
@@ -176,10 +177,10 @@ public class BossSystem extends IteratingEntitySystem<Context> {
             float dy = random.nextFloat() * variance * 2 - variance;
 
             var position = target.position;
-            nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, position.x + dx, position.y + dy, enemyMovement.velocity.x, enemyMovement.velocity.y, true));
+            nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, position.x + dx, position.y + dy, enemyMovement.velocity.x, enemyMovement.velocity.y, ec.bulletSpeed, true));
 
             position = target.prediction;
-            nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, position.x + dx, position.y + dy, enemyMovement.velocity.x, enemyMovement.velocity.y, true));
+            nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, position.x + dx, position.y + dy, enemyMovement.velocity.x, enemyMovement.velocity.y, ec.bulletSpeed, true));
         }
     }
 }

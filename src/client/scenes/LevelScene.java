@@ -55,7 +55,7 @@ public class LevelScene extends Scene {
             e.printStackTrace();
         }
 
-        upgrade = new UpgradeOverlay(engine);
+        upgrade = new UpgradeOverlay(engine, player);
         healthBar = new HealthBar(engine);
         healthBar.updateHealth(player.getHealth()); // Set initial health
         healthBar.createHealthBar();
@@ -77,6 +77,7 @@ public class LevelScene extends Scene {
         engine.addSystem(new PlayerRotationSystem(camera));
         engine.addSystem(new PlayerShootSystem(outQueue, camera));
         engine.addSystem(new PlayerUpdateSystem(outQueue));
+        engine.addSystem(new PlayerUpgradeUpdateSystem(outQueue));
         engine.addSystem(new MovementInputSystem());
         engine.addSystem(new MovementSystem());
         engine.addSystem(new WallTileCollisionSystem());

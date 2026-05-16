@@ -8,5 +8,6 @@ public class ClientRegistry extends Registry {
         register(C_Shoot.class, C_Shoot::deserialize);
         register(C_RequestStartGame.class, C_RequestStartGame::deserialize);
         register(C_Disconnect.class, C_Disconnect::deserialize);
+        register(C_ApplyUpgrade.class, C_ApplyUpgrade::deserialize);
     }
 }

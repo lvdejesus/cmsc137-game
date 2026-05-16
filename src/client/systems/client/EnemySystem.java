@@ -79,6 +79,7 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
         HealthComponent enemyHealth = healthM.get(enemyId);
         if (!enemyHealth.isAlive()) return;
 
+        EnemyComponent ec = engine.getMapper(EnemyComponent.class).get(enemyId);
         TransformComponent enemyTransform = tm.get(enemyId);
         float minDistance = Float.POSITIVE_INFINITY;
         Vector2f minPosition = null;
@@ -104,6 +105,6 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
 
         float dx = random.nextFloat() * variance * 2 - variance;
         float dy = random.nextFloat() * variance * 2 - variance;
-        nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, minPosition.x + dx, minPosition.y + dy, enemyMovement.velocity.x, enemyMovement.velocity.y, true));
+        nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, minPosition.x + dx, minPosition.y + dy, enemyMovement.velocity.x, enemyMovement.velocity.y, ec.bulletSpeed, true));
     }
 }

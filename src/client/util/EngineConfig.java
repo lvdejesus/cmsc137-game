@@ -21,6 +21,7 @@ public class EngineConfig {
         engine.register(PlayerStateComponent.class);
         engine.register(HealthComponent.class);
         engine.register(PlayerKeysComponent.class);
+        engine.register(PlayerUpgradeComponent.class);
 
         engine.register(BossDoorComponent.class);
         engine.register(BossComponent.class);
@@ -35,6 +36,7 @@ public class EngineConfig {
         engine.register(TileComponent.class);
         engine.register(WallComponent.class);
         engine.register(NetworkDuplicateComponent.class);
+        engine.register(UpgradeKindComponent.class);
     }
 
     public static void registerComponents(Engine<Context> engine) {
@@ -44,6 +46,7 @@ public class EngineConfig {
         engine.register(AnimationComponent.class);
         engine.register(TextComponent.class);
         engine.register(UiComponent.class);
+        engine.register(UpgradeKindComponent.class);
 
         //tags
         engine.register(PlayerTagComponent.class);
