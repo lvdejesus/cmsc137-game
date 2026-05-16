@@ -15,20 +15,20 @@ public class Animation {
         this(frames, numFrames, null);
     }
 
-    public static Animation fromFile(String fileName, int xCount, float frameDuration) {
+    public static Animation fromFile(String fileName, int numFrames, float frameDuration) {
         Texture texture = TextureAtlas.get().getRegion(fileName);
-        int width = texture.width / xCount;
-        Texture[] textures = new Texture[xCount];
+        int width = texture.width / numFrames;
+        Texture[] textures = new Texture[numFrames];
 
-        float du = (texture.u2 - texture.u1) / xCount;
+        float du = (texture.u2 - texture.u1) / numFrames;
 
-        for (int j = 0; j < xCount; j++) {
+        for (int j = 0; j < numFrames; j++) {
             textures[j] = new Texture(texture.u1 + du * j, texture.v1,
                     texture.u1 + du * (j + 1),
                     texture.v2, width, texture.height);
         }
 
-        return new Animation(textures, width, frameDuration);
+        return new Animation(textures, numFrames, frameDuration);
     }
 
     static Animation createStaticAnimation(String fileName) {

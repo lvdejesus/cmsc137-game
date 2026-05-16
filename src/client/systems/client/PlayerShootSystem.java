@@ -1,5 +1,6 @@
 package client.systems.client;
 
+import client.components.HealthComponent;
 import client.components.MovementComponent;
 import client.components.PlayerUpgradeComponent;
 import client.components.TransformComponent;
@@ -42,6 +43,8 @@ public class PlayerShootSystem extends IteratingEntitySystem<Context> {
 
     @Override
     protected void processEntity(int entityId, Context ctx) {
+        if (!engine.getMapper(HealthComponent.class).get(entityId).isAlive()) return;
+
         MovementComponent mc = mm.get(entityId);
         PlayerTagComponent ptc = ptm.get(entityId);
         PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);

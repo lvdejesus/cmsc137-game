@@ -1,5 +1,6 @@
 package client.systems.client;
 
+import client.components.FollowComponent;
 import client.components.TransformComponent;
 import client.components.player.PlayerTagComponent;
 import client.rendering.Camera;
@@ -13,7 +14,7 @@ public class PlayerFollowSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
 
     public PlayerFollowSystem(Camera camera) {
-        super(PlayerTagComponent.class, TransformComponent.class);
+        super(FollowComponent.class, TransformComponent.class);
 
         this.camera = camera;
     }

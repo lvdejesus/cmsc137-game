@@ -4,11 +4,11 @@ import client.components.*;
 import client.entities.*;
 import client.network.NetworkManager;
 import client.network.messages.Message;
-import client.network.messages.server.*;
 import client.rendering.*;
 import client.systems.client.*;
 import client.systems.client.player.PlayerRotationSystem;
 import client.systems.client.player.PlayerTiltSystem;
+import client.systems.client.DeathSystem;
 import framework.engine.*;
 import org.lwjgl.BufferUtils;
 
@@ -19,8 +19,6 @@ import java.nio.file.Paths;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -74,6 +72,7 @@ public class LevelScene extends Scene {
 
         engine.addSystem(new ClientNetworkInputSystem(NetworkManager.getInstance().inQueue, networkPrefabMap, player));
 
+        engine.addSystem(new DeathSystem());
         engine.addSystem(new PlayerRotationSystem(camera));
         engine.addSystem(new PlayerShootSystem(outQueue, camera));
         engine.addSystem(new PlayerUpdateSystem(outQueue));
@@ -84,6 +83,7 @@ public class LevelScene extends Scene {
         engine.addSystem(new PlayerTiltSystem());
         engine.addSystem(new PlayerFollowSystem(camera));
         engine.addSystem(new DespawnSystem());
+        engine.addSystem(new HealthBarUpdateSystem(healthBar));
         engine.addSystem(new KeyUISystem(player.getEntity().getId()));
 
         engine.addSystem(new ClientNetworkOutputSystem(outQueue));
@@ -98,7 +98,7 @@ public class LevelScene extends Scene {
     public void update() {
         var pos = player.getEntity().getComponent(TransformComponent.class).position;
         this.debugText.setText(String.format("Position: %.2f,  %.2f", pos.x / 64.0f, pos.y / 64.0f));
-        this.healthBar.updateHealth(player.getHealth());
+
         // Toggle menu with Esc
         InputHandler input = InputHandler.getInstance();
         if (input.keyDown(GLFW_KEY_ESCAPE)) {

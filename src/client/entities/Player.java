@@ -59,6 +59,7 @@ public class Player extends Prefab {
         entity.addComponent(new NetworkIdComponent(networkId));
         entity.addComponent(new PlayerKeysComponent());
         entity.addComponent(new PlayerUpgradeComponent());
+        entity.addComponent(new FollowComponent());
         entity.addComponent(new NetworkDuplicateComponent(PlayerUpgradeComponent.class, PlayerKeysComponent.class, HealthComponent.class));
     }
 

@@ -47,6 +47,7 @@ public class EngineConfig {
         engine.register(TextComponent.class);
         engine.register(UiComponent.class);
         engine.register(UpgradeKindComponent.class);
+        engine.register(FollowComponent.class);
 
         //tags
         engine.register(PlayerTagComponent.class);

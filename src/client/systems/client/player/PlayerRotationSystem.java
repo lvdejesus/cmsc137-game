@@ -1,5 +1,6 @@
 package client.systems.client.player;
 
+import client.components.HealthComponent;
 import client.components.TransformComponent;
 import client.components.player.PlayerTagComponent;
 import client.rendering.Camera;
@@ -28,6 +29,8 @@ public class PlayerRotationSystem extends IteratingEntitySystem<Context> {
 
     @Override
     public void processEntity(int id, Context ctx) {
+        if (!engine.getMapper(HealthComponent.class).get(id).isAlive()) return;
+
         TransformComponent tc = tm.get(id);
         Vector2f cursorPosition = camera.toWorldPosition(InputHandler.getInstance().cursorPosition);
         float dx = cursorPosition.x - tc.position.x;

@@ -1,5 +1,6 @@
 package client.systems.client;
 
+import client.components.HealthComponent;
 import client.components.player.MovementInputComponent;
 import client.components.player.PlayerTagComponent;
 import framework.engine.ComponentMapper;
@@ -23,6 +24,8 @@ public class MovementInputSystem extends IteratingEntitySystem<Context> {
 
     @Override
     public void processEntity(int id, Context ctx) {
+        if (!engine.getMapper(HealthComponent.class).get(id).isAlive()) return;
+
         float x = 0;
         float y = 0;
 

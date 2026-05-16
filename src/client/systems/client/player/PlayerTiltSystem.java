@@ -1,6 +1,7 @@
 package client.systems.client.player;
 
 import client.components.AnimationComponent;
+import client.components.HealthComponent;
 import client.components.player.MovementInputComponent;
 import client.components.player.PlayerStateComponent;
 import client.systems.client.Context;
@@ -27,6 +28,8 @@ public class PlayerTiltSystem extends IteratingEntitySystem<Context> {
 
     @Override
     public void processEntity(int id, Context ctx) {
+        if (!engine.getMapper(HealthComponent.class).get(id).isAlive()) return;
+
         MovementInputComponent mic = mim.get(id);
         PlayerStateComponent state = sm.get(id);
         AnimationComponent ac = am.get(id);
