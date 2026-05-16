@@ -90,9 +90,9 @@ public class TextRenderingSystem extends IteratingEntitySystem<Context> {
 
         glBindTexture(GL_TEXTURE_2D, textComp.font.getTextureID());
 
-        int shaderProgram = ShaderProgram.getShaderProgram("res/shaders/default.vert", "res/shaders/default.frag");
-
-        camera.bind(shaderProgram);
+        ShaderProgram shaderProgram = ShaderProgram.getShaderProgram("res/shaders/default.vert", "res/shaders/default.frag");
+        int shaderId = shaderProgram.getId();
+        camera.bind(shaderId);
         batch.flush();
     }
 }

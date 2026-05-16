@@ -112,7 +112,7 @@ public class Engine<T> {
         return componentBitset;
     }
 
-    int getEntityMax() {
+    public int getEntityMax() {
         return entityMax;
     }
 

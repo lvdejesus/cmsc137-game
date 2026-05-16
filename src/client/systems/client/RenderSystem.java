@@ -14,6 +14,8 @@ import framework.rendering.ShaderProgram;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL20.*;
 
+import java.util.Map;
+
 
 public class RenderSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<RenderComponent> rm;
@@ -51,11 +53,11 @@ public class RenderSystem extends IteratingEntitySystem<Context> {
     public void update(Context ctx) {
         super.update(ctx);
 
-        int shaderProgram = ShaderProgram.getShaderProgram("res/shaders/default.vert", "res/shaders/default.frag");
-
+        ShaderProgram shaderProgram = ShaderProgram.getShaderProgram("res/shaders/default.vert", "res/shaders/default.frag");
+        int shaderId = shaderProgram.getId();
         glViewport((int)camera.viewportX, (int)camera.viewportY,
                    (int)camera.viewportWidth, (int)camera.viewportHeight);
-        camera.bind(shaderProgram);
+        camera.bind(shaderId);
         batch.flush();
     }
 
@@ -69,24 +71,33 @@ public class RenderSystem extends IteratingEntitySystem<Context> {
         if (!rc.layer.equals(layer)) {return;}
 
         
-        // Manages shaders
-
-        // If not a ui component default
+        // Manages shaders    
         String vertPath = (ui != null) ? ui.shaderVert : "res/shaders/default.vert";
         String fragPath = (ui != null) ? ui.shaderFrag : "res/shaders/default.frag";
         
+        ShaderProgram shader= ShaderProgram.getShaderProgram(vertPath, fragPath);
+        int shaderId = shader.getId();
+        boolean hasUniforms = !rc.shaderUniforms.isEmpty();
+
         Texture tex = rc.texture;
         
-        int shader = ShaderProgram.getShaderProgram(vertPath,fragPath);
         
-        // Applies new shader if it chanes
-        if(shader != activeShaderId){
+        
+        // Applies new shader
+        if(shaderId != activeShaderId || hasUniforms){
             // Clears old texture to apply this one
             batch.flush();
             // Applies shader
-            glUseProgram(shader);
-            camera.bind(shader);
-            activeShaderId = shader;
+            glUseProgram(shaderId);
+            camera.bind(shaderId);
+            activeShaderId = shaderId;
+            // Applies unifroms
+            for (Map.Entry<String,Float> entry: rc.shaderUniforms.entrySet()) {
+                int loc = shader.getUniformLocation(entry.getKey());
+                if(loc!=-1){
+                    glUniform1f(loc,entry.getValue());
+                }    
+            }
         }
 
         

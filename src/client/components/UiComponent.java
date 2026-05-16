@@ -23,7 +23,7 @@ public class UiComponent implements Component {
     public float targetRotation = 0f;
     public float lerpSpeed = 10f;
     public Vector4f targetTint = new Vector4f(1,1,1,1);
-
+    
     // Interface for custom functionality on state reached per ui element
     public interface UiStateListener {
         void onStateChanged(int idx, String state);
