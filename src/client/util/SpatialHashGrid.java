@@ -36,6 +36,20 @@ public class SpatialHashGrid {
         }
     }
 
+    public void removeEntity(int entityId, AABBf worldBounds) {
+        int minX = (int) Math.floor(worldBounds.minX / cellSize);
+        int minY = (int) Math.floor(worldBounds.minY / cellSize);
+        int maxX = (int) Math.floor(worldBounds.maxX / cellSize);
+        int maxY = (int) Math.floor(worldBounds.maxY / cellSize);
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                long key = hash(x, y);
+                grid.get(key).removeIf(i -> i == entityId);
+            }
+        }
+    }
+
     public void getPotentialColliders(AABBf worldBounds, Set<Integer> result) {
         result.clear();
         int minX = (int) Math.floor(worldBounds.minX / cellSize);
