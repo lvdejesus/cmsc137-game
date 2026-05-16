@@ -35,4 +35,8 @@ public abstract class Prefab {
 
     public void spawnServerInternal() {
     }
+
+    public boolean onDespawn() {
+        return true;
+    }
 }

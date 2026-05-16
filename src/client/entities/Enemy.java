@@ -76,4 +76,22 @@ public class Enemy extends Prefab {
         buf.putInt(type);
         return buf.array();
     }
+
+    @Override
+    public boolean onDespawn() {
+        this.entity.removeComponent(MovementComponent.class);
+        this.entity.removeComponent(EnemyComponent.class);
+        this.entity.removeComponent(CollisionComponent.class);
+        this.entity.removeComponent(HealthComponent.class);
+        this.entity.removeComponent(NetworkIdComponent.class);
+        this.entity.removeComponent(NetworkDuplicateComponent.class);
+        this.entity.removeComponent(AnimationComponent.class);
+
+        double currentTime = glfwGetTime();
+        String spritePath = "enemyExplosion.png";
+        this.entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 12, 0.1f), (float) currentTime, false));
+        this.entity.addComponent(new DespawnTimerComponent(1.2f));
+
+        return false;
+    }
 }

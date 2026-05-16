@@ -39,7 +39,7 @@ public class LevelScene extends Scene {
     private Font pauseFont;
     private ClientPrefabRegistry prefabRegistry = new ClientPrefabRegistry();
 
-    private final Map<Integer, Integer> networkEntityMap = new ConcurrentHashMap<>();
+    private final Map<Integer, Prefab> networkPrefabMap = new ConcurrentHashMap<>();
 
     //Debug text
     private DebugText debugText;
@@ -126,28 +126,30 @@ public class LevelScene extends Scene {
             if (msg instanceof S_Spawn m) {
                 // if self, skip
                 if (nm.networkId == m.getNetworkId()) {
-                    networkEntityMap.put(m.getNetworkId(), player.getEntity().getId());
+                    networkPrefabMap.put(m.getNetworkId(), player);
                     continue;
                 }
 
                 Prefab prefab = prefabRegistry.spawn(engine, m.getPrefabId(), m.getNetworkId(), m.getBytes());
-                networkEntityMap.put(m.getNetworkId(), prefab.getEntity().getId());
+                networkPrefabMap.put(m.getNetworkId(), prefab);
             } else if (msg instanceof S_Despawn m) {
-                int entityId = networkEntityMap.remove(m.getNetworkId());
-                engine.destroyEntity(entityId);
+                Prefab prefab = networkPrefabMap.remove(m.getNetworkId());
+                if (prefab.onDespawn()) {
+                    engine.destroyEntity(prefab.getEntity().getId());
+                }
             } else if (msg instanceof S_Snapshot m) {
                 for (var entitySnapshot : m.getEntitySnapshots()) {
-                    Integer entityId = networkEntityMap.get(entitySnapshot.getNetworkId());
-                    if (entityId == null) {
+                    Prefab entity = networkPrefabMap.get(entitySnapshot.getNetworkId());
+                    if (entity == null) {
                         continue;
                     }
 
-                    var keySet = engine.getMapper(NetworkDuplicateComponent.class).get(entityId).components.keySet();
+                    var keySet = engine.getMapper(NetworkDuplicateComponent.class).get(entity.getEntity().getId()).components.keySet();
                     for (var component : entitySnapshot.getComponents()) {
                         var cc = engine.getComponentClass(component.getComponentId());
                         if (!keySet.contains(cc)) continue;
 
-                        var syncComponent = (SyncComponent) engine.getMapper(cc).get(entityId);
+                        var syncComponent = (SyncComponent) engine.getMapper(cc).get(entity.getEntity().getId());
                         if (syncComponent == null) continue;
 
                         syncComponent.fromBytes(component.getData());
