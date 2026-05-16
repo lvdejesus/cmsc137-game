@@ -36,9 +36,8 @@ public class HealthBar {
         createLayer(basePos, scale, bgTex, 0.0f);
 
         // segment layer
-        for (int i = 0; i < currentHealth; i++) {
-            createSegment(i);
-        }
+        updateHealth(currentHealth);
+
         // top layer
         Vector2f gemPos = new Vector2f(basePos.x + 8, basePos.y + 30);
         createLayer(gemPos, scale, gemTex, 0.2f);
@@ -84,13 +83,9 @@ public class HealthBar {
     }
 
     public void updateHealth(float newHealth) {
-        if (currentHealth == newHealth) return; 
-        
-        if (newHealth < 0 || newHealth > 5) {
-            throw new IllegalArgumentException("Health must be between 0 and 5  ");
-        }
+        if (currentHealth == newHealth) return;
         currentHealth = newHealth;
-        
+
         // Remove existing segments
         for (Entity<Context> entity : segmentEntities) {
             engine.destroyEntity(entity.getId());
@@ -98,7 +93,7 @@ public class HealthBar {
         segmentEntities.clear();
 
         // Create new segments
-        for (int i = 0; i < currentHealth; i++) {
+        for (int i = 0; i < Math.round(currentHealth / 25.0f); i++) {
             createSegment(i);
         }
     }

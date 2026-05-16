@@ -77,10 +77,12 @@ public class RoomLoader {
     public static class Room {
         public int[][] grid;
         boolean isHallway;
+        boolean isBoss;
 
-        public Room(int[][] grid, boolean isHallway) {
+        public Room(int[][] grid, boolean isHallway, boolean isBoss) {
             this.grid = grid;
             this.isHallway = isHallway;
+            this.isBoss = isBoss;
         }
     }
 
@@ -89,6 +91,7 @@ public class RoomLoader {
             int width = 0;
             int height = 0;
             boolean isHallway = false;
+            boolean isBoss = false;
             int[][] grid = null;
             
             int currentRow = 0;
@@ -105,6 +108,7 @@ public class RoomLoader {
                 switch (key) {
                     case "width" -> width = value.getInt();
                     case "isHallway" -> isHallway = value.getInt() == 1;
+                    case "isBoss" -> isBoss = value.getInt() == 1;
                     case "height" -> {
                         height = value.getInt();
                         grid = new int[height][width];
@@ -142,7 +146,7 @@ public class RoomLoader {
                     }
                 }
             }
-            return new Room(grid, isHallway);
+            return new Room(grid, isHallway, isBoss);
         } catch (IOException e) {
             e.printStackTrace();
             return null;

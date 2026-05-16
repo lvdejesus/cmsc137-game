@@ -100,14 +100,16 @@ public class MapGenerator {
     public static class RoomData {
         public String filename;
         public boolean isHallway;
+        public boolean isBoss;
         public int[][] grid;
         public int width, height;
         public double weight = 1.0;
         public List<DoorBlock> doorBlocks = new ArrayList<>();
 
-        public RoomData(String filename, boolean isHallway, int[][] grid, int width, int height) {
+        public RoomData(String filename, boolean isHallway, boolean isBoss, int[][] grid, int width, int height) {
             this.filename = filename;
             this.isHallway = isHallway;
+            this.isBoss = isBoss;
             this.grid = grid;
             this.width = width;
             this.height = height;
@@ -152,7 +154,7 @@ public class MapGenerator {
     }
 
     public static MapResult generateMap(long seed) throws IOException {
-        return generateMap(seed, 30, 100, true);
+        return generateMap(seed, 30, 50, true);
     }
 
     public static MapResult generateMap(long seed, int minRooms, int maxRooms) throws IOException {
@@ -178,7 +180,7 @@ public class MapGenerator {
 
         List<RoomData> startRooms = new ArrayList<>();
         for (RoomData r : rooms) {
-            if (r.doorBlocks.size() == 4) {
+            if (r.doorBlocks.size() == 4 && !r.isBoss) { // Don't start with a boss room
                 startRooms.add(r);
             }
         }
@@ -206,7 +208,10 @@ public class MapGenerator {
             openDoors.add(new OpenDoor(db, initialPlacement));
         }
 
-        boolean success = backtrack(placedRooms, openDoors, cappedDoors, rooms, rng, minRooms, maxRooms, allowFallbackCapping);
+        // Initialize boss state tracking
+        boolean bossPlaced = false;
+
+        boolean success = backtrack(placedRooms, openDoors, cappedDoors, rooms, rng, minRooms, maxRooms, allowFallbackCapping, bossPlaced);
 
         if (success) {
             int[][] mapGrid = new int[GRID_SIZE][GRID_SIZE];
@@ -324,25 +329,53 @@ public class MapGenerator {
 
     private static boolean backtrack(List<PlacedRoom> placedRooms, List<OpenDoor> openDoors,
                                      List<OpenDoor> cappedDoors, List<RoomData> rooms,
-                                     Random rng, int minRooms, int maxRooms, boolean allowFallbackCapping) {
+                                     Random rng, int minRooms, int maxRooms, boolean allowFallbackCapping, boolean bossPlaced) {
+
+        // Base case 1: Out of open doors
         if (openDoors.isEmpty()) {
-            return placedRooms.size() >= minRooms;
+            // We only consider the layout successful if we have enough rooms AND we've placed the boss.
+            return placedRooms.size() >= minRooms && bossPlaced;
         }
 
+        // Base case 2: Reached maximum room limit
         if (placedRooms.size() >= maxRooms) {
-            return true;
+            return bossPlaced;
         }
 
         OpenDoor targetDoor = openDoors.removeFirst();
 
         Map<RoomData, Double> scores = new HashMap<>();
         for (RoomData r : rooms) {
+            // Logic to handle boss rooms
+            if (r.isBoss) {
+                if (bossPlaced) {
+                    continue; // Skip if a boss is already placed
+                }
+
+                // Only consider placing a boss room if we're getting close to minRooms or maxRooms
+                // to prevent it from spawning right next to start.
+                if (placedRooms.size() < minRooms / 2) {
+                    continue;
+                }
+
+                // If we are getting close to maxRooms and no boss is placed, dramatically increase weight
+                if (placedRooms.size() > maxRooms - 5) {
+                    scores.put(r, 0.0); // Highest priority
+                    continue;
+                }
+            } else {
+                // Try to force boss placement if we are out of open doors and it's still missing.
+                if (!bossPlaced && openDoors.isEmpty() && placedRooms.size() >= minRooms) {
+                    continue; // skip normal rooms, force a boss (or backtrack)
+                }
+            }
+
             double randomVal = rng.nextDouble();
             if (randomVal <= 0.0001) randomVal = 0.0001;
             scores.put(r, -Math.log(randomVal) / r.weight);
         }
 
-        List<RoomData> randomizedRooms = new ArrayList<>(rooms);
+        List<RoomData> randomizedRooms = new ArrayList<>(scores.keySet());
         randomizedRooms.sort(Comparator.comparingDouble(scores::get));
 
         for (RoomData candidateRoom : randomizedRooms) {
@@ -368,8 +401,10 @@ public class MapGenerator {
 
                         openDoors.addAll(newOpenDoors);
 
+                        boolean currentBossPlaced = bossPlaced || candidateRoom.isBoss;
+
                         if (!hasBlockedDoors(placedRooms, openDoors)) {
-                            if (backtrack(placedRooms, openDoors, cappedDoors, rooms, rng, minRooms, maxRooms, allowFallbackCapping)) {
+                            if (backtrack(placedRooms, openDoors, cappedDoors, rooms, rng, minRooms, maxRooms, allowFallbackCapping, currentBossPlaced)) {
                                 return true;
                             }
                         }
@@ -383,7 +418,7 @@ public class MapGenerator {
 
         if (allowFallbackCapping) {
             cappedDoors.add(targetDoor);
-            if (backtrack(placedRooms, openDoors, cappedDoors, rooms, rng, minRooms, maxRooms, allowFallbackCapping)) {
+            if (backtrack(placedRooms, openDoors, cappedDoors, rooms, rng, minRooms, maxRooms, allowFallbackCapping, bossPlaced)) {
                 return true;
             }
             cappedDoors.removeLast();
@@ -504,9 +539,10 @@ public class MapGenerator {
             int[][] grid = room.grid;
 
             boolean isHallway = room.isHallway;
+            boolean isBoss = room.isBoss;
 
             if (grid != null && grid.length > 0 && grid[0].length > 0) {
-                rooms.add(new RoomData(filename, isHallway, grid, grid[0].length, grid.length));
+                rooms.add(new RoomData(filename, isHallway, isBoss, grid, grid[0].length, grid.length));
             }
         }
         return rooms;

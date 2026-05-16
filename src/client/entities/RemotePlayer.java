@@ -37,9 +37,12 @@ public class RemotePlayer extends Prefab {
 
     @Override
     public void spawnCommon() {
-        var tc = new TransformComponent(new Vector2f(155 * 64.0f, 155 * 64.0f), new Vector2f(2.0f, 2.0f));
+        var spawnPosition = new Vector2f(156 * 64.0f, 156 * 64.0f);
+        spawnPosition.add(new Vector2f((float) Math.cos(Math.toRadians(45.0f * playerIndex)), (float) Math.sin(Math.toRadians(45.0f * playerIndex))).mul(16.0f * 5.0f));
+
+        var tc = new TransformComponent(spawnPosition, new Vector2f(2.0f, 2.0f));
         entity.addComponent(tc);
-        entity.addComponent(new HealthComponent(5.0f));
+        entity.addComponent(new HealthComponent(125.0f));
         entity.addComponent(new CollisionComponent(new AABBf(
             new Vector3f(-16.0f, -16.0f, 0.0f),
             new Vector3f(16.0f, 16.0f, 0.1f)

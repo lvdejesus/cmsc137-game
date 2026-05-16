@@ -31,6 +31,7 @@ public class EngineConfig {
         engine.register(TileComponent.class);
         engine.register(WallComponent.class);
         engine.register(NetworkDuplicateComponent.class);
+        engine.register(NetworkDuplicateComponent.class);
     }
 
     public static void registerComponents(Engine<Context> engine) {
@@ -43,6 +44,7 @@ public class EngineConfig {
 
         //tags
         engine.register(PlayerTagComponent.class);
+        engine.register(DespawnTimerComponent.class);
     }
 
     public static void addSystems(Engine<Context> engine, Camera camera, Camera fixedCamera) {
@@ -62,6 +64,8 @@ public class EngineConfig {
 
         engine.addSystem(new TextRenderingSystem(camera, "default"));
         engine.addSystem(new TextRenderingSystem(fixedCamera, "fixed"));
+
+        engine.addSystem(new DespawnSystem());
     }
 
     public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm) {

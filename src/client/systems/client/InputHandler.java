@@ -25,6 +25,7 @@ public class InputHandler {
     public Vector2f cursorPosition = new Vector2f(0, 0);
     public Vector2f lastCursorPosition = new Vector2f(0, 0);
     public boolean middleMouseHeld = false;
+    public boolean leftMouseHeld = false;
     public Vector2f middleMouseDragDelta = new Vector2f(0, 0);
 
     private static InputHandler instance;
@@ -50,15 +51,18 @@ public class InputHandler {
         });
 
         glfwSetMouseButtonCallback(windowHandle, (window, button, action, mods) -> {
-            if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-                try (MemoryStack stack = MemoryStack.stackPush()) {
-                    DoubleBuffer xBuffer = stack.mallocDouble(1);
-                    DoubleBuffer yBuffer = stack.mallocDouble(1);
+            if (button == GLFW_MOUSE_BUTTON_LEFT) {
+                leftMouseHeld = (action == GLFW_PRESS);
+                if (action == GLFW_PRESS) {
+                    try (MemoryStack stack = MemoryStack.stackPush()) {
+                        DoubleBuffer xBuffer = stack.mallocDouble(1);
+                        DoubleBuffer yBuffer = stack.mallocDouble(1);
 
-                    glfwGetCursorPos(window, xBuffer, yBuffer);
+                        glfwGetCursorPos(window, xBuffer, yBuffer);
 
-                    Vector2f cursorPos = new Vector2f((float) xBuffer.get(), (float) yBuffer.get());
-                    eventsToAdd.add(new MouseEvent(MouseEventType.LEFT_CLICK, cursorPos));
+                        Vector2f cursorPos = new Vector2f((float) xBuffer.get(), (float) yBuffer.get());
+                        eventsToAdd.add(new MouseEvent(MouseEventType.LEFT_CLICK, cursorPos));
+                    }
                 }
             }
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {

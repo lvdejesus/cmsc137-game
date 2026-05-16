@@ -21,6 +21,12 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 public class Player extends Prefab {
     private int playerIndex;
     private int networkId;
+
+    public static float maxHealth = 125.0f;
+    public static float movement_speed = 1000.0f;
+    public static float friction = 200.0f;
+    public static float acceleration = 500.0f;
+
     public Player(Engine<Context> engine, int playerIndex, int networkId) {
         super(engine);
 
@@ -29,15 +35,13 @@ public class Player extends Prefab {
     }
 
     public void spawnClientInternal() {
-        int maxHealth = 6;
-        int health = 6;
-        float movement_speed = 1000.0f;
-        float friction = 200.0f;
-        float acceleration = 500.0f;
         double currentTime = glfwGetTime();
 
+        var spawnPosition = new Vector2f(156 * 64.0f, 156 * 64.0f);
+        spawnPosition.add(new Vector2f((float) Math.cos(Math.toRadians(45.0f * playerIndex)), (float) Math.sin(Math.toRadians(45.0f * playerIndex))).mul(16.0f * 5.0f));
+
         // Add components to the internal entity
-        entity.addComponent(new TransformComponent(new Vector2f(155 * 64.0f, 155 * 64.0f), new Vector2f(2.0f, 2.0f)));
+        entity.addComponent(new TransformComponent(spawnPosition, new Vector2f(2.0f, 2.0f)));
         entity.addComponent(new MovementComponent(movement_speed, acceleration, friction, new Vector2f(0.0f, 0.0f)));
         entity.addComponent(new RenderComponent());
 
@@ -50,7 +54,7 @@ public class Player extends Prefab {
             new Vector3f(-16.0f, -16.0f, 0.0f),
             new Vector3f(16.0f, 16.0f, 0.1f)
         )));
-        entity.addComponent(new HealthComponent(5.0f));
+        entity.addComponent(new HealthComponent(maxHealth));
         entity.addComponent(new MovementInputComponent());
         entity.addComponent(new NetworkIdComponent(networkId));
         entity.addComponent(new NetworkDuplicateComponent(HealthComponent.class));

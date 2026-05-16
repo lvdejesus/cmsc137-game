@@ -24,6 +24,9 @@ public class HealthComponent implements SyncComponent {
 
     public void damage(float amount) {
         currentHealth -= amount;
+        if (currentHealth < 0) {
+            currentHealth = 0;
+        }
     }
 
     public float getHealth() {

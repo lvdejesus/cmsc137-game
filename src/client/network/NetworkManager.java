@@ -20,8 +20,6 @@ import org.joml.Vector3f;
 
 public class NetworkManager {
     private static NetworkManager instance;
-    private static final int TCP_PORT = 12345;
-
     private final GameClient client;
 
     public volatile int playerIndex = 1;
@@ -88,8 +86,8 @@ public class NetworkManager {
         return new DiscoveryService().discoverHosts();
     }
 
-    public void joinGame(String ip) {
-        client.connect(ip, TCP_PORT);
+    public void joinGame(String ip, int port) {
+        client.connect(ip, port);
     }
 
     public void sendMessage(Message message) {

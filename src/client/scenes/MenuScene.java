@@ -112,13 +112,20 @@ public class MenuScene extends Scene {
                 GameServer server = new GameServer("0.0.0.0");
                 new Thread(server).start();
 
-                NetworkManager.getInstance().joinGame("127.0.0.1");
+                NetworkManager.getInstance().joinGame("127.0.0.1", GameServer.TCP_PORT);
                 SceneManager.setScene(new LobbyScene("127.0.0.1"), engine);
             } else if (selectedOption == 1) {
                 // Join Game (Client)
                 String hostIP = javax.swing.JOptionPane.showInputDialog(null, "Enter Host IP:", "Join Game", javax.swing.JOptionPane.QUESTION_MESSAGE);
+                int port = GameServer.TCP_PORT;
+                if (hostIP.contains(":")) {
+                    var result = hostIP.split(":");
+                    hostIP = result[0];
+                    port = Integer.parseInt(result[1]);
+                }
+
                 if (hostIP != null && !hostIP.isEmpty()) {
-                    NetworkManager.getInstance().joinGame(hostIP);
+                    NetworkManager.getInstance().joinGame(hostIP, port);
                     SceneManager.setScene(new LobbyScene(hostIP), engine);
                 }
             } else {

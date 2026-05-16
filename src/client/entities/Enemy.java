@@ -24,13 +24,15 @@ public class Enemy extends Prefab {
     private final int networkId;
     private final float x;
     private final float y;
+    private final int type;
 
-    public Enemy(Engine<Context> engine, int networkId, float x, float y) {
+    public Enemy(Engine<Context> engine, int networkId, float x, float y, int type) {
         super(engine);
 
         this.networkId = networkId;
         this.x = x;
         this.y = y;
+        this.type = type;
     }
 
     @Override
@@ -47,12 +49,12 @@ public class Enemy extends Prefab {
 
     @Override
     public void spawnCommon() {
-        this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(1.5f, 1.5f)));
+        this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.0f, 2.0f)));
         this.entity.addComponent(new MovementComponent(50.0f, 20.0f, 10.0f, new Vector2f(0.0f, 0.0f)));
         this.entity.addComponent(new EnemyComponent());
         this.entity.addComponent(new CollisionComponent(new AABBf(
-            new Vector3f(-12.0f, -12.0f, 0.0f),
-            new Vector3f(12.0f, 12.0f, 0.1f)
+            new Vector3f(-16.0f, -16.0f, 0.0f),
+            new Vector3f(16.0f, 16.0f, 0.1f)
         )));
         this.entity.addComponent(new HealthComponent(2.0f)); // Enemy health
         this.entity.addComponent(new NetworkIdComponent(networkId));
@@ -62,14 +64,34 @@ public class Enemy extends Prefab {
     public static Enemy deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
         float x = bytes.getFloat();
         float y = bytes.getFloat();
+        int type = bytes.getInt();
 
-        return new Enemy(engine, networkId, x, y);
+        return new Enemy(engine, networkId, x, y, type);
     }
 
-    public static byte[] serialize(float x, float y) {
-        ByteBuffer buf = ByteBuffer.allocate(8);
+    public static byte[] serialize(float x, float y, int type) {
+        ByteBuffer buf = ByteBuffer.allocate(12);
         buf.putFloat(x);
         buf.putFloat(y);
+        buf.putInt(type);
         return buf.array();
+    }
+
+    @Override
+    public boolean onDespawn() {
+        this.entity.removeComponent(MovementComponent.class);
+        this.entity.removeComponent(EnemyComponent.class);
+        this.entity.removeComponent(CollisionComponent.class);
+        this.entity.removeComponent(HealthComponent.class);
+        this.entity.removeComponent(NetworkIdComponent.class);
+        this.entity.removeComponent(NetworkDuplicateComponent.class);
+        this.entity.removeComponent(AnimationComponent.class);
+
+        double currentTime = glfwGetTime();
+        String spritePath = "enemyExplosion.png";
+        this.entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 12, 0.1f), (float) currentTime, false));
+        this.entity.addComponent(new DespawnTimerComponent(1.2f));
+
+        return false;
     }
 }
