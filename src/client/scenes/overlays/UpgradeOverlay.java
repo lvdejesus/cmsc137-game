@@ -23,6 +23,7 @@ public class UpgradeOverlay {
     private List<Entity<Context>> cards = new ArrayList<>();
     private int selectedIndex = 0;
     private final Player player;
+    private boolean visible = false;
 
     private Random random = new Random();
 
@@ -56,9 +57,11 @@ public class UpgradeOverlay {
             ui.targetState = 1;     
         }
         selectedIndex = 1;
+        visible = true;
     }
 
     public void handleInput(InputHandler input) {
+        if (!visible) return;
 
         int oldIndex = selectedIndex;
         if (input.keyDown(GLFW_KEY_LEFT)) selectedIndex = Math.max(0, selectedIndex - 1);
@@ -108,6 +111,7 @@ public class UpgradeOverlay {
             entity.addComponent(new DespawnTimerComponent(despawnTime));
         }
         cards.clear();
+        visible = true;
     }
 
     public void destroyUpgrades() {

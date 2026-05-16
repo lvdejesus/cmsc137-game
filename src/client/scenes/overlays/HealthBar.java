@@ -29,7 +29,7 @@ public class HealthBar {
         Texture bgTex = TextureAtlas.get().getRegion("healthbar/healthbar_empty.png");
         Texture gemTex = TextureAtlas.get().getRegion("healthbar/healthgem.png");
 
-        Vector2f basePos = new Vector2f(20.0f, 20.0f);
+        Vector2f basePos = new Vector2f(-30.0f, -10.0f);
         Vector2f scale = new Vector2f(3.0f, 3.0f);
 
         // bg layer
@@ -60,7 +60,7 @@ public class HealthBar {
         Texture segTex = TextureAtlas.get().getRegion("healthbar/healthSegment.png");
         
         float offset = 50.0f; // distance between segments
-        Vector2f segPos = new Vector2f(20.0f + 130 + index * offset, 20.0f + 75);
+        Vector2f segPos = new Vector2f(100 + index * offset, 65);
         Vector2f scale = new Vector2f(3.0f, 3.0f);
         
         Entity<Context> entity = engine.createEntity();

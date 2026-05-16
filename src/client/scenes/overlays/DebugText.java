@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import framework.engine.Window;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
@@ -26,9 +27,9 @@ public class DebugText {
         this.entity = engine.createEntity();
         
         this.entity.addComponent(new TransformComponent(
-            new Vector2f(20, 20),
+            new Vector2f(20, Window.getWindow().getHeight() - 20.0f),
             new Vector2f(1, 1), 
-            Anchor.TOP_LEFT
+            Anchor.BOTTOM_LEFT
         ));
 
         this.textComponent = new TextComponent(
