@@ -47,12 +47,12 @@ public class Enemy extends Prefab {
 
     @Override
     public void spawnCommon() {
-        this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(1.5f, 1.5f)));
+        this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.0f, 2.0f)));
         this.entity.addComponent(new MovementComponent(50.0f, 20.0f, 10.0f, new Vector2f(0.0f, 0.0f)));
         this.entity.addComponent(new EnemyComponent());
         this.entity.addComponent(new CollisionComponent(new AABBf(
-            new Vector3f(-12.0f, -12.0f, 0.0f),
-            new Vector3f(12.0f, 12.0f, 0.1f)
+            new Vector3f(-16.0f, -16.0f, 0.0f),
+            new Vector3f(16.0f, 16.0f, 0.1f)
         )));
         this.entity.addComponent(new HealthComponent(2.0f)); // Enemy health
         this.entity.addComponent(new NetworkIdComponent(networkId));
