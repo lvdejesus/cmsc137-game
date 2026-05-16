@@ -45,6 +45,8 @@ public class Engine<T> {
     private final Queue<Integer> entityReuse = new ArrayDeque<Integer>();
     private long[] componentBitset = new long[INITIAL_CAPACITY];
     private int[] entityVersions = new int[INITIAL_CAPACITY];
+    private boolean[] isAlive = new boolean[INITIAL_CAPACITY];
+
     private final Map<Class<? extends Component>, ComponentMapper<? extends Component>> mappers = new HashMap<>();
     private final ComponentRegistry componentRegistry = new ComponentRegistry();
     private final Map<Integer, ArrayList<EntitySystem<T>>> systems = new HashMap<>();
@@ -59,6 +61,7 @@ public class Engine<T> {
             entityVersions[index] = 1;
         }
 
+        isAlive[index] = true;
         componentBitset[index] = 0L;
         return new Entity<>(this, index, entityVersions[index]);
     }
@@ -82,6 +85,10 @@ public class Engine<T> {
     }
 
     public void destroyEntity(int id) {
+        if (!isAlive[id]) {
+            throw new RuntimeException(String.format("Tried destroying a dead entity %d.", id));
+        }
+        isAlive[id] = false;
         entityVersions[id]++;
         long bitset = componentBitset[id];
         for (ComponentMapper<?> mapper : mappers.values()) {
@@ -98,6 +105,7 @@ public class Engine<T> {
             int newCapacity = componentBitset.length * 2;
             componentBitset = java.util.Arrays.copyOf(componentBitset, newCapacity);
             entityVersions = java.util.Arrays.copyOf(entityVersions, newCapacity);
+            isAlive = java.util.Arrays.copyOf(isAlive, newCapacity); // right here!
             for (ComponentMapper<?> mapper : mappers.values()) {
                 mapper.resize(newCapacity);
             }

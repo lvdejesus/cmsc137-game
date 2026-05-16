@@ -81,9 +81,7 @@ public class LevelScene extends Scene {
         ConcurrentLinkedQueue<Message> snapshotQueue = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<Message> outQueue = new ConcurrentLinkedQueue<>();
 
-        engine.addSystem(new ClientNetworkInputSystem(NetworkManager.getInstance().inQueue, spawnQueue, snapshotQueue));
-        engine.addSystem(new ClientSpawnSystem(spawnQueue, networkPrefabMap, player));
-        engine.addSystem(new ClientSnapshotSystem(snapshotQueue, networkPrefabMap));
+        engine.addSystem(new ClientNetworkInputSystem(NetworkManager.getInstance().inQueue, networkPrefabMap, player));
 
         engine.addSystem(new PhysicsSystem());
         engine.addSystem(new PlayerRotationSystem(camera));
@@ -95,6 +93,7 @@ public class LevelScene extends Scene {
         engine.addSystem(new PlayerTiltSystem());
         engine.addSystem(new PlayerFollowSystem(camera));
         engine.addSystem(new DespawnSystem());
+        engine.addSystem(new KeyUISystem(player.getEntity().getId()));
 
         engine.addSystem(new ClientNetworkOutputSystem(outQueue));
     }

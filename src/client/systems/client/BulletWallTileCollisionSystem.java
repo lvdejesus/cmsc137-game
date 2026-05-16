@@ -67,11 +67,8 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
             syncWorldBox(wallId, wallWorldBox);
 
             if (bulletWorldBox.intersectsAABB(wallWorldBox)) {
-                var networkIdComp = networkIdMapper.get(bulletId);
-                if (networkIdComp != null) {
-                    networkSpawnManager.despawn(bulletId, networkIdComp.networkId);
-                    return;
-                }
+                networkSpawnManager.despawn(bulletId);
+                return;
             }
         }
     }

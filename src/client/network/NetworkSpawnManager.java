@@ -1,5 +1,6 @@
 package client.network;
 
+import client.components.NetworkIdComponent;
 import client.entities.Prefab;
 import client.entities.PrefabRegistry;
 import client.network.messages.Message;
@@ -42,8 +43,8 @@ public class NetworkSpawnManager {
         return new SpawnResult(prefabRegistry.spawnServer(engine, prefabId, id, bytes), id);
     }
 
-    public void despawn(int entityId, int networkId) {
-        Message msg = new S_Despawn(networkId);
+    public void despawn(int entityId) {
+        Message msg = new S_Despawn(engine.getMapper(NetworkIdComponent.class).get(entityId).networkId);
         outQueue.add(new MessagePair(-1, msg));
         engine.destroyEntity(entityId);
     }

@@ -102,9 +102,8 @@ public class MapGenerator {
 
             List<Integer> candidates = new ArrayList<>();
             for (int room : rooms) {
-                if (room != startRoom && room != bossAreaIndex) {
-                    candidates.add(roomToIndex.get(room));
-                }
+                if (room == startRoom || room == bossAreaIndex) continue;
+                candidates.add(roomToIndex.get(room));
             }
 
             int n = candidates.size();
@@ -336,7 +335,7 @@ public class MapGenerator {
     }
 
     public static MapResult generateMap(long seed) throws IOException {
-        return generateMap(seed, 30, 50, true);
+        return generateMap(seed, 5, 7, true);
     }
 
     public static MapResult generateMap(long seed, int minRooms, int maxRooms) throws IOException {

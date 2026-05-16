@@ -189,8 +189,7 @@ public class GameServer implements Runnable {
 
         handlers.put(C_Disconnect.class, (id, message) -> {
             int entityId = playerToEntityMap.get(id);
-            NetworkIdComponent nic = engine.getMapper(NetworkIdComponent.class).get(entityId);
-            nsm.despawn(entityId, nic.networkId);
+            nsm.despawn(entityId);
         });
 
         MapGenerator.MapResult grid;

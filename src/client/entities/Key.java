@@ -31,8 +31,7 @@ public class Key extends Prefab {
     public void spawnClientInternal() {
         TextureAtlas atlas = TextureAtlas.get();
         Texture keyTexture = atlas.getRegion("key.png");
-        double currentTime = glfwGetTime();
-        
+
         entity.addComponent(new RenderComponent(keyTexture, 0.0f));
     }
 

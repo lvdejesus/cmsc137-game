@@ -11,7 +11,9 @@ import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class KeyPickupSystem extends EntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
@@ -38,15 +40,19 @@ public class KeyPickupSystem extends EntitySystem<Context> {
         List<Integer> playerEntities = engine.getFamily(TransformComponent.class, PlayerKeysComponent.class).toList();
         List<Integer> keyEntities = engine.getFamily(TransformComponent.class, KeyComponent.class).toList();
 
+        Set<Integer> collectedKeys = new HashSet<>();
+
         for (int playerEntity : playerEntities) {
             var playerBox = getWorldBox(playerEntity);
             for (int keyEntity : keyEntities) {
+                if (collectedKeys.contains(keyEntity)) continue;
+
                 var keyBox = getWorldBox(keyEntity);
                 if (keyBox.intersectsAABB(playerBox)) {
                     var playerKeys = pkcm.get(playerEntity);
                     playerKeys.addKey();
-                    NetworkIdComponent keyNic = nim.get(keyEntity);
-                    nsm.despawn(keyEntity, keyNic.networkId);
+                    nsm.despawn(keyEntity);
+                    collectedKeys.add(keyEntity);
                     break;
                 }
             }

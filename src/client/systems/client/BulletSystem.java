@@ -37,8 +37,7 @@ public class BulletSystem extends IteratingEntitySystem<Context> {
         bullet.age += ctx.deltaTime;
 
         if (bullet.age >= bullet.lifetime) {
-            NetworkIdComponent nic = nicm.get(id);
-            nsm.despawn(id, nic.networkId);
+            nsm.despawn(id);
         }
     }
 }

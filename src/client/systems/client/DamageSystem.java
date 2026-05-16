@@ -61,7 +61,6 @@ public class DamageSystem extends EntitySystem<Context> {
         for (int bulletId : bulletIterator) {
             BulletComponent bc = bulletM.get(bulletId);
             AABBf bulletBox = getWorldBox(bulletId);
-            NetworkIdComponent bulletnic = nim.get(bulletId);
             potentialTargets.clear();
             spatialHash.getPotentialColliders(bulletBox, potentialTargets);
 
@@ -76,14 +75,12 @@ public class DamageSystem extends EntitySystem<Context> {
                 if (!playerBox.intersectsAABB(bulletBox)) continue;
 
                 targetHealth.damage(bc.damage);
-                nsm.despawn(bulletId, bulletnic.networkId);
+                nsm.despawn(bulletId);
 
                 if (playerC == null) {
                     if (!targetHealth.isAlive()) {
-                        NetworkIdComponent enemynic = nim.get(targetId);
                         spatialHash.removeEntity(targetId, getWorldBox(targetId));
-
-                        nsm.despawn(targetId, enemynic.networkId);
+                        nsm.despawn(targetId);
                     }
                 }
                 break;

@@ -5,6 +5,7 @@ import framework.engine.SyncComponent;
 import java.nio.ByteBuffer;
 
 public class PlayerKeysComponent implements SyncComponent {
+    public int lastKeyCount = -1;
     public int keyCount = 0;
     public static final int MAX_KEYS = 3;
 
