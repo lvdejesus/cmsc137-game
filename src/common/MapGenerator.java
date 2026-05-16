@@ -18,6 +18,7 @@ public class MapGenerator {
         public Map<Integer, Set<Integer>> adjacencyList; // Maps area index to a set of connected area indices
         public int[] roomDepths; // Depth of each room from spawn (BFS distance)
         public int bossAreaIndex = -1; // Index of the boss room
+        public int startRoom;
 
         public MapResult(int[][] grid, int[][][] closedAreas, List<PlacedRoom> placedRooms) {
             this.grid = grid;
@@ -53,8 +54,101 @@ public class MapGenerator {
                 }
             }
 
+            startRoom = this.areaLookup[155][155];
+
             computeAdjacency();
             computeRoomDepths();
+        }
+
+        public int[] findMaxShortestPath() {
+            List<Integer> rooms = new ArrayList<>(adjacencyList.keySet());
+            int v = rooms.size();
+
+            Map<Integer, Integer> roomToIndex = new HashMap<>();
+            for (int i = 0; i < v; i++) {
+                roomToIndex.put(rooms.get(i), i);
+            }
+
+            // initialize distance matrix
+            int[][] dist = new int[v][v];
+            int INF = 100000000;
+
+            for (int[] row : dist) {
+                Arrays.fill(row, INF);
+            }
+            for (int i = 0; i < v; i++) {
+                dist[i][i] = 0;
+            }
+
+            for (Map.Entry<Integer, Set<Integer>> entry : adjacencyList.entrySet()) {
+                int u = roomToIndex.get(entry.getKey());
+                for (int neighbor : entry.getValue()) {
+                    if (roomToIndex.containsKey(neighbor)) {
+                        int w = roomToIndex.get(neighbor);
+                        dist[u][w] = 1;
+                    }
+                }
+            }
+
+            for (int k = 0; k < v; k++) {
+                for (int i = 0; i < v; i++) {
+                    for (int j = 0; j < v; j++) {
+                        if (dist[i][k] < INF && dist[k][j] < INF) {
+                            dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
+                        }
+                    }
+                }
+            }
+
+            List<Integer> candidates = new ArrayList<>();
+            for (int room : rooms) {
+                if (room != startRoom && room != bossAreaIndex) {
+                    candidates.add(roomToIndex.get(room));
+                }
+            }
+
+            int n = candidates.size();
+
+            int startIndex = roomToIndex.get(startRoom);
+            int maxPathLength = -1;
+            int[] path  = null;
+
+            for (int i = 0; i < n; i++) {
+                for (int j = i + 1; j < n; j++) {
+                    for (int k = j + 1; k < n; k++) {
+                        int a = candidates.get(i);
+                        int b = candidates.get(j);
+                        int c = candidates.get(k);
+
+                        int[][] permutations = {
+                            {a, b, c}, {a, c, b},
+                            {b, a, c}, {b, c, a},
+                            {c, a, b}, {c, b, a}
+                        };
+
+                        int minDistanceForTriplet = INF;
+
+                        int[] minTriplet = null;
+
+                        for (int[] p : permutations) {
+                            int currentDist = dist[startIndex][p[0]] + dist[p[0]][p[1]] + dist[p[1]][p[2]];
+                            if (currentDist < minDistanceForTriplet) {
+                                minTriplet = p;
+                                minDistanceForTriplet = currentDist;
+                            }
+                        }
+
+                        if (minDistanceForTriplet < INF) {
+                            if (minDistanceForTriplet > maxPathLength) {
+                                maxPathLength = minDistanceForTriplet;
+                                path = minTriplet;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return path;
         }
 
         private void computeAdjacency() {

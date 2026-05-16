@@ -25,10 +25,13 @@ public class MapKeySpawnSystem extends EntitySystem<Context> {
         int minDepth = Math.max(0, maxDepth - 2);
 
         List<Integer> roomsInRange = grid.getRoomsAtDepthRange(minDepth, maxDepth);
+        roomsInRange.removeIf(x -> x == grid.bossAreaIndex);
+
         Random random = new Random();
 
-        for (int i = 0; i < 3 && !roomsInRange.isEmpty(); i++) {
-            int roomIdx = roomsInRange.get(random.nextInt(roomsInRange.size()));
+        int[] path = grid.findMaxShortestPath();
+
+        for (int roomIdx: path) {
             int[][] area = grid.closedAreas[roomIdx];
 
             if (area.length > 0) {
@@ -36,7 +39,6 @@ public class MapKeySpawnSystem extends EntitySystem<Context> {
                 float x = pos[0] * 64.0f + 32.0f;
                 float y = pos[1] * 64.0f + 32.0f;
 
-                int networkId = Math.abs(random.nextInt());
                 nsm.spawn(Key.class, Key.serialize(x, y));
             }
         }
