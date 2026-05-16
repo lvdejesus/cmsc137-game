@@ -3,6 +3,7 @@ package client.network;
 import client.components.NetworkIdComponent;
 import client.network.messages.client.*;
 import client.systems.server.MapEnemySpawnSystem;
+import client.systems.server.MapKeySpawnSystem;
 import common.MapGenerator;
 import client.components.TransformComponent;
 import client.components.player.MovementInputComponent;
@@ -204,6 +205,7 @@ public class GameServer implements Runnable {
         EngineConfig.addServerSystems(engine, nsm);
 
         engine.addSystem(new MapEnemySpawnSystem(grid, nsm));
+        engine.addSystem(new MapKeySpawnSystem(grid, nsm));
         engine.addSystem(new SnapshotSystem(snapshotQueue, outQueue));
         engine.addSystem(new ServerNetworkOutputSystem(outQueue, connectedClients));
 

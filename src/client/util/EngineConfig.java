@@ -20,6 +20,7 @@ public class EngineConfig {
         engine.register(MovementInputComponent.class);
         engine.register(PlayerStateComponent.class);
         engine.register(HealthComponent.class);
+        engine.register(PlayerKeysComponent.class);
 
         engine.register(PlayerNetworkComponent.class);
         engine.register(NetworkIdComponent.class);
