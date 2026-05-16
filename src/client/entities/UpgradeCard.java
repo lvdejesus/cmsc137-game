@@ -1,50 +1,48 @@
-package client.entities;
+    package client.entities;
 
-import client.components.RenderComponent;
-import client.components.TransformComponent;
-import client.components.UiComponent;
-import client.rendering.*;
-import client.systems.client.*;
-import framework.engine.*;
-import org.joml.Vector2f;
-import org.joml.Vector4f;
+    import client.components.RenderComponent;
+    import client.components.TransformComponent;
+    import client.components.UiComponent;
+    import client.rendering.*;
+    import client.systems.client.*;
+    import framework.engine.*;
+    import org.joml.Vector2f;
+    import org.joml.Vector4f;
 
 
-public class UpgradeCard {
+    public class UpgradeCard {
 
-    public static Entity create(Engine<Context> engine, int idx, Vector2f startPos) {
-        String cardFrontPath = "upgrades/upgrade" + idx + ".png";
-        String cardBackPath = "upgrades/card_back.png";
-        Texture cardFrontTexture = TextureAtlas.get().getRegion(cardFrontPath);
-        Texture cardBackTexture = TextureAtlas.get().getRegion(cardBackPath);
-        Entity<Context> entity = engine.createEntity();
+        public static Entity create(Engine<Context> engine, int idx, Vector2f startPos) {
+            String cardFrontPath = "upgrades/upgrade" + idx + ".png";
+            String cardBackPath = "upgrades/card_back.png";
+            Texture cardFrontTexture = TextureAtlas.get().getRegion(cardFrontPath);
+            Texture cardBackTexture = TextureAtlas.get().getRegion(cardBackPath);
+            Entity<Context> entity = engine.createEntity();
+            
+            // Will start stacked
+            entity.addComponent(new TransformComponent(
+                new Vector2f(startPos),
+                new Vector2f(3f,3f),
+                Anchor.CENTER
+            ));
+            RenderComponent rc = new RenderComponent(
+                cardFrontTexture,
+                0.5f,
+                new Vector4f(1,1,1,1),
+                "fixed"
+            );
+            rc.visualScaleX = 1.0f;
+            entity.addComponent(rc);
         
-        // Will start stacked
-        entity.addComponent(new TransformComponent(
-            new Vector2f(startPos),
-            new Vector2f(3f,3f),
-            Anchor.CENTER
-        ));
-        RenderComponent rc = new RenderComponent(
-            cardFrontTexture,
-            0.5f,
-            new Vector4f(1,1,1,1),
-            "fixed"
-        );
-        entity.addComponent(rc);
-    
-        UiComponent ui = new UiComponent("BACK","FRONT");
-        ui.onStateChanged = (index,state) -> {
-            if(state.equals("FRONT")){
-                rc.texture = cardFrontTexture;
-            }
-            else{
-                rc.texture = cardBackTexture;
-            }
-        };
-        entity.addComponent(ui);
+            UiComponent ui = new UiComponent("BACK","FRONT");
+            ui.targetPosistion.set(startPos);
+            
+            ui.onStateChanged = (index, state) -> {
+                rc.texture = state.equals("FRONT") ? cardFrontTexture : cardBackTexture;
+            };
+            entity.addComponent(ui);
 
-        return entity;
-    }    
-        
-}
+            return entity;
+        }    
+            
+    }

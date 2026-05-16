@@ -70,12 +70,10 @@ public class UpgradeOverlay {
     private void updateSelection() {
         float centery = Window.getWindow().getHeight() / 2f;
         for (int i = 0; i < cards.size(); i++) {
-            UiComponent ui = cards.get(i).getComponent(UiComponent.class);
+            
             //Apply visuals for selected card
             if (i == selectedIndex) {
-                ui.targetPosistion.y = centery - 50f;
             } else {
-                ui.targetPosistion.y = centery + 50f;
             }
         }
     }

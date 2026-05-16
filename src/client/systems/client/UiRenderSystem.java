@@ -12,7 +12,6 @@ public class UiRenderSystem extends IteratingEntitySystem<Context>{
     private ComponentMapper<RenderComponent> rm;
     private ComponentMapper<TransformComponent> tm;
     private ComponentMapper<UiComponent> um;
-    private final Batch batch = new Batch();
     private final String targetLayer;
 
     public UiRenderSystem(String targetLayer) {
@@ -46,9 +45,6 @@ public class UiRenderSystem extends IteratingEntitySystem<Context>{
         rc.tint.lerp(ui.targetTint, ui.lerpSpeed * dt);
 
         // Managing Pinching
-        float targetVWidth = (ui.currentState == ui.targetState) ? 1.0f : 0.0f;
-        rc.visualScaleX += (targetVWidth = rc.visualScaleX) * ui.lerpSpeed * dt;
-        
 
     }
 }
