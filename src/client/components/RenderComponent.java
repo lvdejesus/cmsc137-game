@@ -2,6 +2,10 @@ package client.components;
 
 import framework.engine.Component;
 import client.rendering.Texture;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.joml.Vector4f;
 
 public class RenderComponent implements Component {
@@ -10,7 +14,8 @@ public class RenderComponent implements Component {
     public float z;
     public Vector4f tint;
     public float visualScaleX = 1.0f;
-
+    public Map<String,Float> shaderUniforms = new HashMap<>();
+    
     public RenderComponent(Texture texture, float z, Vector4f tint, String layer) {
         this.texture = texture;
         this.z = z;

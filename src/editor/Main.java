@@ -36,7 +36,8 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main {
     private long window;
-    private int shaderProgram;
+    private ShaderProgram shaderProgram;
+    private int shaderId;
     private CameraManager cameraManager;
     private Camera uiCamera;
     private Camera editorCamera;
@@ -57,7 +58,7 @@ public class Main {
         init();
         loop();
 
-        glDeleteProgram(shaderProgram);
+        glDeleteProgram(shaderId);
         glfwTerminate();
     }
 
@@ -124,7 +125,7 @@ public class Main {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         shaderProgram = ShaderProgram.getShaderProgram("res/shaders/default.vert", "res/shaders/default.frag");
-
+        shaderId = shaderProgram.getId();
         TextureAtlas.get();
 
         try {
@@ -292,7 +293,7 @@ public class Main {
             glClearColor(43.0f / 255, 43.0f / 255, 43.0f / 255, 43.0f / 255);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glUseProgram(shaderProgram);
+            glUseProgram(shaderId);
             TextureAtlas.get().bind();
 
             InputHandler.getInstance().tick();

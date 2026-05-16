@@ -4,25 +4,36 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL20.*;
 
 
 public class ShaderProgram {
-    static HashMap<StringPair, Integer> programs = new HashMap<>();
+    static HashMap<StringPair, ShaderProgram> programs = new HashMap<>();
 
-    private record StringPair(String vertPath, String fragPath) {}
+    private record StringPair(String vertPath, String fragPath) {};
+    
+    private final int id;
+    private final Map<String,Integer> uniformLocation = new HashMap<>();
+    
+    private ShaderProgram(int id) {
+        this.id = id;
+    }
 
-    public static int getShaderProgram(String vertPath, String fragPath ){
+    public static ShaderProgram getShaderProgram(String vertPath, String fragPath ){
         StringPair pair = new StringPair(vertPath, fragPath);
-        Integer program = programs.get(pair);
+        ShaderProgram program = programs.get(pair);
         if (program == null) {
-            program = loadShaderProgram(vertPath, fragPath);
+            int id = loadShaderProgram(vertPath, fragPath);
+            program = new ShaderProgram(id);
             programs.put(pair, program);
         }
         return program;
     }
+
+    public int getId(){return id;}
 
     private static int loadShaderProgram(String vertPath, String fragPath) {
         try {
@@ -57,5 +68,15 @@ public class ShaderProgram {
             System.err.println(glGetShaderInfoLog(id));
             throw new RuntimeException("Shader failed to compile!");
         }
+    }
+
+    public int getUniformLocation(String uniformName) {
+        // check cache
+        if(uniformLocation.containsKey(uniformName)){
+            return uniformLocation.get(uniformName);
+        }
+        int location = glGetUniformLocation(this.id, uniformName);
+        uniformLocation.put(uniformName,location);
+        return location;
     }
 }

@@ -26,7 +26,7 @@
                 Anchor.CENTER
             ));
             RenderComponent rc = new RenderComponent(
-                cardFrontTexture,
+                cardBackTexture,
                 0.5f,
                 new Vector4f(1,1,1,1),
                 "fixed"
@@ -35,12 +35,13 @@
             entity.addComponent(rc);
         
             UiComponent ui = new UiComponent("BACK","FRONT");
-            ui.lerpSpeed = 5f;
+            ui.lerpSpeed = 3f;
             ui.targetPosistion.set(startPos);
             
             ui.onStateChanged = (index, state) -> {
                 rc.texture = state.equals("FRONT") ? cardFrontTexture : cardBackTexture;
             };
+            ui.shaderFrag= "res/shaders/highlight.frag";
             entity.addComponent(ui);
 
             return entity;

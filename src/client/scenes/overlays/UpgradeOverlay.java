@@ -36,7 +36,7 @@ public class UpgradeOverlay {
         float centery = Window.getWindow().getHeight() / 2f;
         float spacing = 350f;
 
-        Vector2f startpos = new Vector2f(centerx, centerx);
+        Vector2f startpos = new Vector2f(centerx - 500f, centery);
         
         for (int i = 0; i < 3; i++) {
             int randomIdx = (int) (Math.random() * 2) + 1;
@@ -46,7 +46,7 @@ public class UpgradeOverlay {
             // Gets the ui component from card
             UiComponent ui = card.getComponent(UiComponent.class);
             // Animation
-            ui.targetPosistion.set(centerx + (i-1) * spacing,Window.getWindow().getHeight() / 2f);
+            ui.targetPosistion.set(centerx + (i-1) * spacing,centery);
             // To flip
             ui.targetState = 1;            
         }
@@ -68,24 +68,32 @@ public class UpgradeOverlay {
     }
 
     private void updateSelection() {
+        
         float centery = Window.getWindow().getHeight() / 2f;
+        
         for (int i = 0; i < cards.size(); i++) {
-            
+            UiComponent ui = cards.get(i).getComponent(UiComponent.class);
+            RenderComponent rc = cards.get(i).getComponent(RenderComponent.class);
             //Apply visuals for selected card
             if (i == selectedIndex) {
+                ui.targetPosistion.y = centery - 50f;
+                rc.shaderUniforms.put("u_Highlight", 1f);
             } else {
+                ui.targetPosistion.y = centery;
+                rc.shaderUniforms.put("u_Highlight", 0f);
             }
         }
     }
 
     private void confirmSelection() {
+        float centery = Window.getWindow().getHeight() / 2f;
         //TODO upgrade logic
         for (Entity<Context> entity : cards) {
-            TransformComponent tc = entity.getComponent(TransformComponent.class);
-            RenderComponent rc = entity.getComponent(RenderComponent.class);
-            tc.position.y += Window.getWindow().getHeight(); // Drop them off-screen bottom
-            rc.tint.w = 0f;
+            UiComponent ui = entity.getComponent(UiComponent.class);
+            ui.targetTint.w = 0f;
+            ui.targetPosistion.y =  centery + 2000;
         }
+        // Wont work since destroy is instant
         destroyUpgrades();
     }
 

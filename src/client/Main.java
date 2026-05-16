@@ -16,7 +16,8 @@ import static org.lwjgl.glfw.GLFW.*;
 
 
 public class Main {
-    private int shaderProgram;
+    private ShaderProgram shaderProgram;
+    private int shaderId;
     private Camera camera;
     private Camera fixedCamera;
     private Engine<Context> engine;
@@ -32,6 +33,7 @@ public class Main {
 
         // Initialize Render
         shaderProgram = ShaderProgram.getShaderProgram("res/shaders/default.vert", "res/shaders/default.frag");
+        shaderId = shaderProgram.getId();
         TextureAtlas.get();
 
         // Initialize Camera
@@ -58,7 +60,7 @@ public class Main {
         client.scenes.SceneManager.setScene(new client.scenes.MenuScene(window), engine);
 
         loop();
-        glDeleteProgram(shaderProgram);
+        glDeleteProgram(shaderId);
         glfwTerminate();
     }
 
@@ -79,7 +81,7 @@ public class Main {
             ctx.deltaTime = dt;
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glUseProgram(shaderProgram);
+            glUseProgram(shaderId);
 
             TextureAtlas.get().bind();
 

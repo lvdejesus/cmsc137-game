@@ -47,15 +47,31 @@ public class UiRenderSystem extends IteratingEntitySystem<Context>{
         // Manages Opacity Tweening
         rc.tint.lerp(ui.targetTint, ui.lerpSpeed * dt);
 
+        // To ignore this set current and target state to the same before
         // Managing Pinching
-        rc.visualScaleX = 1.0f; 
+        boolean isChangingState = ui.states.size() > 1 && ui.currentState != ui.targetState;
+        
+        // Animates tween
+        float changeAmount = ui.lerpSpeed * dt; 
 
-        // State swap
-        if (ui.currentState != ui.targetState) {
-            ui.currentState = ui.targetState;
-            if (ui.onStateChanged != null) {
-                ui.onStateChanged.onStateChanged(ui.currentState, ui.states.get(ui.currentState));
-            }
+        if (isChangingState) {
+            // Shrink at a constant speed
+            rc.visualScaleX -= changeAmount;
+            if (rc.visualScaleX < 0.0f) rc.visualScaleX = 0.0f;
+        } else {
+            // Grow at a constant speed
+            rc.visualScaleX += changeAmount;
+            if (rc.visualScaleX > 1.0f) rc.visualScaleX = 1.0f;
         }
+        
+        // Change state when going past a threshold
+        if (isChangingState && Math.abs(rc.visualScaleX) < 0.05f) {
+                ui.currentState = ui.targetState;                
+                if (ui.onStateChanged != null) {
+                    // Will trigger state changed specific code 
+                    ui.onStateChanged.onStateChanged(ui.currentState, ui.states.get(ui.currentState));
+                }
+            }
+
     }
 }
