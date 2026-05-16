@@ -36,7 +36,7 @@ public class UpgradeOverlay {
         float centery = Window.getWindow().getHeight() / 2f;
         float spacing = 350f;
 
-        Vector2f startpos = new Vector2f(centerx, 1200f);
+        Vector2f startpos = new Vector2f(centerx, centerx);
         
         for (int i = 0; i < 3; i++) {
             int randomIdx = (int) (Math.random() * 2) + 1;

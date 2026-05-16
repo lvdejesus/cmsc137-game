@@ -15,7 +15,7 @@ public class UiRenderSystem extends IteratingEntitySystem<Context>{
     private final String targetLayer;
 
     public UiRenderSystem(String targetLayer) {
-        super(RenderComponent.class,TransformComponent.class);
+        super(RenderComponent.class,TransformComponent.class, UiComponent.class);
         this.targetLayer = targetLayer;
     }
 
@@ -34,17 +34,28 @@ public class UiRenderSystem extends IteratingEntitySystem<Context>{
         UiComponent ui = um.get(id);
         float dt = ctx.deltaTime;
 
+        
         // Only renders if entity is in target layer
+        if (ui == null) return;
+
         if(!rc.layer.equals(targetLayer)) return;
 
         // Manages Position Tweening
-        tc.position.lerp(ui.targetPosistion, ui.lerpSpeed*dt);
-        tc.rotation += (ui.targetRotation - tc.rotation * ui.lerpSpeed * dt);
+        tc.position.lerp(ui.targetPosistion, ui.lerpSpeed * dt);
+        tc.rotation += (ui.targetRotation - tc.rotation) * ui.lerpSpeed * dt;
         
         // Manages Opacity Tweening
         rc.tint.lerp(ui.targetTint, ui.lerpSpeed * dt);
 
         // Managing Pinching
+        rc.visualScaleX = 1.0f; 
 
+        // State swap
+        if (ui.currentState != ui.targetState) {
+            ui.currentState = ui.targetState;
+            if (ui.onStateChanged != null) {
+                ui.onStateChanged.onStateChanged(ui.currentState, ui.states.get(ui.currentState));
+            }
+        }
     }
 }

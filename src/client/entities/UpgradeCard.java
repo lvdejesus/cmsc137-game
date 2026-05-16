@@ -35,6 +35,7 @@
             entity.addComponent(rc);
         
             UiComponent ui = new UiComponent("BACK","FRONT");
+            ui.lerpSpeed = 5f;
             ui.targetPosistion.set(startPos);
             
             ui.onStateChanged = (index, state) -> {
