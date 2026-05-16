@@ -28,15 +28,12 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static client.entities.Tile.placeTile;
-
 public class GameServer implements Runnable {
-    private static final int TCP_PORT = 12345;
+    private static final int TCP_PORT = 7650;
 
     private final ClientRegistry clientRegistry = new ClientRegistry();
     private final ServerRegistry serverRegistry = new ServerRegistry();

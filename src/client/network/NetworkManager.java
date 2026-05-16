@@ -20,7 +20,7 @@ import org.joml.Vector3f;
 
 public class NetworkManager {
     private static NetworkManager instance;
-    private static final int TCP_PORT = 12345;
+    private static final int TCP_PORT = 7650;
 
     private final GameClient client;
 
