@@ -21,12 +21,17 @@ import java.util.Random;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class Enemy extends Prefab {
+    public enum EnemyType {
+        Regular,
+        Boss,
+    }
+
     private final int networkId;
     private final float x;
     private final float y;
-    private final int type;
+    private final EnemyType type;
 
-    public Enemy(Engine<Context> engine, int networkId, float x, float y, int type) {
+    public Enemy(Engine<Context> engine, int networkId, float x, float y, EnemyType type) {
         super(engine);
 
         this.networkId = networkId;
@@ -49,14 +54,24 @@ public class Enemy extends Prefab {
 
     @Override
     public void spawnCommon() {
-        this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.0f, 2.0f)));
         this.entity.addComponent(new MovementComponent(50.0f, 20.0f, 10.0f, new Vector2f(0.0f, 0.0f)));
-        this.entity.addComponent(new EnemyComponent());
-        this.entity.addComponent(new CollisionComponent(new AABBf(
-            new Vector3f(-16.0f, -16.0f, 0.0f),
-            new Vector3f(16.0f, 16.0f, 0.1f)
-        )));
-        this.entity.addComponent(new HealthComponent(2.0f)); // Enemy health
+        if (type == EnemyType.Regular) {
+            this.entity.addComponent(new HealthComponent(25.0f)); // Enemy health
+            this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.0f, 2.0f)));
+            this.entity.addComponent(new CollisionComponent(new AABBf(
+                new Vector3f(-16.0f, -16.0f, 0.0f),
+                new Vector3f(16.0f, 16.0f, 0.1f)
+            )));
+            this.entity.addComponent(new EnemyComponent(1.2f, 0.8f));
+        } else if (type == EnemyType.Boss) {
+            this.entity.addComponent(new HealthComponent(12500.0f)); // Enemy health
+            this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(5.0f, 5.0f)));
+            this.entity.addComponent(new CollisionComponent(new AABBf(
+                new Vector3f(-40.0f, -40.0f, 0.0f),
+                new Vector3f(40.0f, 40.0f, 0.1f)
+            )));
+            this.entity.addComponent(new EnemyComponent(0.2f, 0.1f));
+        }
         this.entity.addComponent(new NetworkIdComponent(networkId));
         this.entity.addComponent(new NetworkDuplicateComponent(TransformComponent.class, HealthComponent.class));
     }
@@ -64,16 +79,16 @@ public class Enemy extends Prefab {
     public static Enemy deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
         float x = bytes.getFloat();
         float y = bytes.getFloat();
-        int type = bytes.getInt();
+        EnemyType type = EnemyType.values()[bytes.getInt()];
 
         return new Enemy(engine, networkId, x, y, type);
     }
 
-    public static byte[] serialize(float x, float y, int type) {
+    public static byte[] serialize(float x, float y, EnemyType type) {
         ByteBuffer buf = ByteBuffer.allocate(12);
         buf.putFloat(x);
         buf.putFloat(y);
-        buf.putInt(type);
+        buf.putInt(type.ordinal());
         return buf.array();
     }
 

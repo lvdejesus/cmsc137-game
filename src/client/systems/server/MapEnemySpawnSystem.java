@@ -69,13 +69,24 @@ public class MapEnemySpawnSystem  extends EntitySystem<Context> {
         }
 
         for (var v: toSpawn) {
-            var closedAreas = grid.closedAreas[v];
-            for (int i = 0; i < 5; i++) {
-                var pos = closedAreas[random.nextInt(closedAreas.length)];
-                nsm.spawn(Enemy.class, Enemy.serialize(pos[0] * 64.0f, pos[1] * 64.0f, 0));
-            }
+            spawn(v);
         }
 
         toSpawn.clear();
+    }
+
+    private void spawn(int areaIndex) {
+        if (areaIndex == grid.bossRoomIndex) {
+            var closedAreas = grid.closedAreas[areaIndex];
+            var pos = closedAreas[random.nextInt(closedAreas.length)];
+            nsm.spawn(Enemy.class, Enemy.serialize(pos[0] * 64.0f, pos[1] * 64.0f, Enemy.EnemyType.Boss));
+        } else {
+            var closedAreas = grid.closedAreas[areaIndex];
+            int numEnemies = Math.max(5, (int) Math.floor(Math.sqrt(closedAreas.length)));
+            for (int i = 0; i < numEnemies; i++) {
+                var pos = closedAreas[random.nextInt(closedAreas.length)];
+                nsm.spawn(Enemy.class, Enemy.serialize(pos[0] * 64.0f, pos[1] * 64.0f, Enemy.EnemyType.Regular));
+            }
+        }
     }
 }

@@ -216,7 +216,6 @@ public class GameServer implements Runnable {
         for (var bossDoor : bossDoors.tiles) {
             int x = bossRoom.offsetX + bossDoors.originX + bossDoor.dx;
             int y = bossRoom.offsetY + bossDoors.originY + bossDoor.dy;
-            System.out.printf("%d %d%n", x, y);
             long hash = ((long) x << 32) | (y & 0xFFFFFFFFL);
             bossDoorSet.add(hash);
         }
