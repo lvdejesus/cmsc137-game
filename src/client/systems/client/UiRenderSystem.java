@@ -45,7 +45,7 @@ public class UiRenderSystem extends IteratingEntitySystem<Context>{
         tc.rotation += (ui.targetRotation - tc.rotation) * ui.lerpSpeed * dt;
         
         // Manages Opacity Tweening
-        rc.tint.lerp(ui.targetTint, ui.lerpSpeed * dt);
+        rc.tint.lerp(ui.targetTint, ui.lerpSpeed * 3f * dt);
 
         // To ignore this set current and target state to the same before
         // Managing Pinching

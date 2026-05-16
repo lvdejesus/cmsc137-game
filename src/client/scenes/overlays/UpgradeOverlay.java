@@ -1,5 +1,6 @@
 package client.scenes.overlays;
 
+import client.components.DespawnTimerComponent;
 import client.components.RenderComponent;
 import client.components.TransformComponent;
 import client.components.UiComponent;
@@ -46,6 +47,7 @@ public class UpgradeOverlay {
             // Gets the ui component from card
             UiComponent ui = card.getComponent(UiComponent.class);
             // Animation
+            ui.lerpSpeed = 5f;
             ui.targetPosistion.set(centerx + (i-1) * spacing,centery);
             // To flip
             ui.targetState = 1;            
@@ -75,6 +77,7 @@ public class UpgradeOverlay {
             UiComponent ui = cards.get(i).getComponent(UiComponent.class);
             RenderComponent rc = cards.get(i).getComponent(RenderComponent.class);
             //Apply visuals for selected card
+            ui.lerpSpeed = 5f;
             if (i == selectedIndex) {
                 ui.targetPosistion.y = centery - 50f;
                 rc.shaderUniforms.put("u_Highlight", 1f);
@@ -86,15 +89,17 @@ public class UpgradeOverlay {
     }
 
     private void confirmSelection() {
+        float despawnTime = 2f;
         float centery = Window.getWindow().getHeight() / 2f;
         //TODO upgrade logic
         for (Entity<Context> entity : cards) {
             UiComponent ui = entity.getComponent(UiComponent.class);
+            ui.lerpSpeed = 1f;
             ui.targetTint.w = 0f;
             ui.targetPosistion.y =  centery + 2000;
+            entity.addComponent(new DespawnTimerComponent(despawnTime));
         }
-        // Wont work since destroy is instant
-        destroyUpgrades();
+        cards.clear();
     }
 
     public void destroyUpgrades() {

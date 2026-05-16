@@ -22,6 +22,8 @@ import java.nio.file.Paths;
 import static client.entities.Tile.placeTile;
 import static org.lwjgl.glfw.GLFW.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -120,7 +122,23 @@ public class LevelScene extends Scene {
             upgrade.splay();
         }
         upgrade.handleInput(input);
-
+        
+        double currentTime = glfwGetTime();
+        // Handle despawn of ui components
+        var timerMapper = engine.getMapper(DespawnTimerComponent.class);
+        List<Integer> destroyEntities = new ArrayList<>();
+        
+        // Gets all entities
+        for(int id =0; id < engine.getEntityMax(); id++){
+            DespawnTimerComponent timer = timerMapper.get(id);
+            if(timer !=null && currentTime >= timer.time) {
+                destroyEntities.add(id);
+            }
+        }
+        // Destroy client entities that have timer thats up
+        for (int id: destroyEntities){
+            engine.destroyEntity(id);
+        }
         NetworkManager nm = NetworkManager.getInstance();
 
         Message msg;
