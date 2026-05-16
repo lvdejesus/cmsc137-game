@@ -56,7 +56,9 @@ public class Bullet extends Prefab {
         float vx = dir.x * speed + pvx;
         float vy = dir.y * speed + pvy;
 
-        entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(0.5f, 0.5f)));
+        TransformComponent transform = new TransformComponent(new Vector2f(x, y), new Vector2f(0.5f, 0.5f));
+        transform.rotation = (float) Math.toDegrees(Math.atan2(dir.y, dir.x)) + 90.0f;
+        entity.addComponent(transform);
         entity.addComponent(new MovementComponent(0, 0, 0, new Vector2f(vx, vy)));
 
         BulletComponent bulletComp = new BulletComponent();
