@@ -50,7 +50,7 @@ public class UpgradeOverlay {
             ui.lerpSpeed = 5f;
             ui.targetPosistion.set(centerx + (i-1) * spacing,centery);
             // To flip
-            ui.targetState = 1;            
+            ui.targetState = 1;     
         }
         selectedIndex = 1;
     }
@@ -80,7 +80,7 @@ public class UpgradeOverlay {
             ui.lerpSpeed = 5f;
             if (i == selectedIndex) {
                 ui.targetPosistion.y = centery - 50f;
-                rc.shaderUniforms.put("u_Highlight", 1f);
+                rc.shaderUniforms.put("u_Highlight", 0.3f);
             } else {
                 ui.targetPosistion.y = centery;
                 rc.shaderUniforms.put("u_Highlight", 0f);
