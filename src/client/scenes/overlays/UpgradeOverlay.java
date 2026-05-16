@@ -2,6 +2,7 @@ package client.scenes.overlays;
 
 import client.components.RenderComponent;
 import client.components.TransformComponent;
+import client.components.UiComponent;
 import client.entities.UpgradeCard;
 import client.rendering.*;
 import client.systems.client.*;
@@ -34,15 +35,20 @@ public class UpgradeOverlay {
         float centerx = Window.getWindow().getWidth() / 2f;
         float centery = Window.getWindow().getHeight() / 2f;
         float spacing = 350f;
-        Vector2f startpos = new Vector2f(centerx, 1200f);
+
+        Vector2f startpos = new Vector2f(centerx, centerx);
+        
         for (int i = 0; i < 3; i++) {
             int randomIdx = (int) (Math.random() * 2) + 1;
             Entity<Context> card = UpgradeCard.create(engine, randomIdx, startpos);
             cards.add(card);
 
-            TransformComponent tc = card.getComponent(TransformComponent.class);
-            RenderComponent rc = card.getComponent(RenderComponent.class);
-            tc.position.set(centerx + (i - 1) * spacing, centery);
+            // Gets the ui component from card
+            UiComponent ui = card.getComponent(UiComponent.class);
+            // Animation
+            ui.targetPosistion.set(centerx + (i-1) * spacing,Window.getWindow().getHeight() / 2f);
+            // To flip
+            ui.targetState = 1;            
         }
         selectedIndex = 1;
     }
@@ -64,14 +70,10 @@ public class UpgradeOverlay {
     private void updateSelection() {
         float centery = Window.getWindow().getHeight() / 2f;
         for (int i = 0; i < cards.size(); i++) {
-            TransformComponent tc = cards.get(i).getComponent(TransformComponent.class);
-            RenderComponent rc = cards.get(i).getComponent(RenderComponent.class);
-
+            
             //Apply visuals for selected card
             if (i == selectedIndex) {
-                tc.position.y = centery - 50f;
             } else {
-                tc.position.y = centery + 50f;
             }
         }
     }

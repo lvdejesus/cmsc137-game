@@ -12,8 +12,6 @@ import client.systems.client.player.PlayerRotationSystem;
 import client.components.*;
 import client.components.bullet.BulletComponent;
 import client.components.player.*;
-import client.systems.client.BulletWallTileCollisionSystem;
-import client.systems.client.WallTileCollisionSystem;
 
 
 public class EngineConfig {
@@ -42,6 +40,7 @@ public class EngineConfig {
         engine.register(RenderComponent.class);
         engine.register(AnimationComponent.class);
         engine.register(TextComponent.class);
+        engine.register(UiComponent.class);
 
         //tags
         engine.register(PlayerTagComponent.class);
@@ -60,6 +59,7 @@ public class EngineConfig {
         engine.addSystem(new PlayerTiltSystem());
         engine.addSystem(new CameraSystem(camera));
         engine.addSystem(new RenderSystem(camera, "default"));
+        engine.addSystem(new UiRenderSystem("fixed"));
         engine.addSystem(new RenderSystem(fixedCamera, "fixed"));
 
         engine.addSystem(new TextRenderingSystem(camera, "default"));
