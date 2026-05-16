@@ -14,6 +14,9 @@ public class TransformComponent implements SyncComponent {
     public Anchor anchor;
     public float rotation = 0.0f;
 
+    // hidden, use only for UI elements
+    public boolean globalAnchor = false;
+
     public TransformComponent(Vector2f position, Vector2f scale, Anchor anchor) {
         this.position = position;
         this.scale = scale;

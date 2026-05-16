@@ -16,8 +16,8 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 
 public class Window {
-    private final int width;
-    private final int height;
+    private int width;
+    private int height;
     private static Window window = null;
     private final String title;
     private long windowHandle;
@@ -34,6 +34,11 @@ public class Window {
             Window.window = new Window();
         }
         return Window.window;
+    }
+
+    public void setSize(int x, int y) {
+        this.width = x;
+        this.height = y;
     }
 
     public void init() {

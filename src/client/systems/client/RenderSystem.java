@@ -9,7 +9,9 @@ import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
 import client.rendering.Batch;
 import client.rendering.Texture;
+import framework.engine.Window;
 import framework.rendering.ShaderProgram;
+import org.joml.Vector2f;
 
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL20.*;
@@ -100,12 +102,19 @@ public class RenderSystem extends IteratingEntitySystem<Context> {
             }
         }
 
+        Vector2f pos;
+        if (tc.globalAnchor) {
+            pos = new Vector2f(tc.position).add(new Vector2f(tc.anchor.getXOffset(), tc.anchor.getYOffset()).mul(Window.getWindow().getWidth(), Window.getWindow().getHeight()));
+        } else {
+            pos = tc.position;
+        }
+
         
         if (tex != null) {
             batch.draw(
                 tex, 
-                tc.position.x, 
-                tc.position.y, 
+                pos.x,
+                pos.y,
                 rc.z,
                 tc.rotation, 
                 tex.width * tc.scale.x * rc.visualScaleX, 

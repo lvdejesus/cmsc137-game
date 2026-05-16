@@ -1,6 +1,7 @@
 package client.scenes;
 
 import client.components.*;
+import client.components.player.PlayerTagComponent;
 import client.entities.*;
 import client.network.NetworkManager;
 import client.network.messages.Message;
@@ -85,6 +86,7 @@ public class LevelScene extends Scene {
         engine.addSystem(new DespawnSystem());
         engine.addSystem(new HealthBarUpdateSystem(healthBar));
         engine.addSystem(new KeyUISystem());
+        engine.addSystem(new UpgradeUISystem());
 
         engine.addSystem(new ClientNetworkOutputSystem(outQueue));
     }
@@ -109,7 +111,8 @@ public class LevelScene extends Scene {
             menu.handlePauseMenuInput(input);
         }
 
-        if (input.keyDown(GLFW_KEY_V)) {
+        var xpc = player.getEntity().getComponent(ExperienceComponent.class);
+        if (input.keyDown(GLFW_KEY_V) && xpc.getRemainingUpgrades() > 0 && !upgrade.visible) {
             upgrade.splay();
         }
         upgrade.handleInput(input);

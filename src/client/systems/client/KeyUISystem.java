@@ -4,10 +4,10 @@ import client.components.FollowComponent;
 import client.components.PlayerKeysComponent;
 import client.components.RenderComponent;
 import client.components.TransformComponent;
+import client.rendering.Anchor;
 import client.rendering.Texture;
 import client.rendering.TextureAtlas;
 import framework.engine.Entity;
-import framework.engine.EntitySystem;
 import framework.engine.IteratingEntitySystem;
 import framework.engine.Window;
 import org.joml.Vector2f;
@@ -40,7 +40,9 @@ public class KeyUISystem extends IteratingEntitySystem<Context> {
         for (int i = 0; i < 3; i++) {
             Entity<Context> entity = engine.createEntity();
 
-            entity.addComponent(new TransformComponent(new Vector2f(Window.getWindow().getWidth() - 112.0f + i * 40.0f, 32.0f), new Vector2f(2.0f, 2.0f)));
+            TransformComponent tc = new TransformComponent(new Vector2f(- 96.0f + i * 40.0f, 16.0f), new Vector2f(2.0f, 2.0f), Anchor.TOP_RIGHT);
+            tc.globalAnchor = true;
+            entity.addComponent(tc);
             Texture texture;
             if (i < keyCount) {
                 texture = TextureAtlas.get().getRegion("key.png");

@@ -14,17 +14,17 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class Bullet extends Prefab {
-    int networkId;
-    float x;
-    float y;
-    float px;
-    float py;
-    float pvx;
-    float pvy;
-    float speed;
-    boolean isEnemy;
+    private final int networkId;
+    private final float x;
+    private final float y;
+    private final float px;
+    private final float py;
+    private final float pvx;
+    private final float pvy;
+    private final float speed;
+    private final int origin;
 
-    public Bullet(Engine<Context> engine, int networkId, float x, float y, float px, float py, float pvx, float pvy, float speed, boolean isEnemy) {
+    public Bullet(Engine<Context> engine, int networkId, float x, float y, float px, float py, float pvx, float pvy, float speed, int origin) {
         super(engine);
 
         this.networkId = networkId;
@@ -35,13 +35,13 @@ public class Bullet extends Prefab {
         this.pvx = pvx;
         this.pvy = pvy;
         this.speed = speed;
-        this.isEnemy = isEnemy;
+        this.origin = origin;
     }
 
     @Override
     public void spawnClientInternal() {
         TextureAtlas atlas = TextureAtlas.get();
-        String textureName = isEnemy ? "bullets/enemy_bullets.png" : "bullets/friend_bullets.png";
+        String textureName = isEnemy() ? "bullets/enemy_bullets.png" : "bullets/friend_bullets.png";
         Texture bulletTexture = atlas.getRegion(textureName);
         entity.addComponent(new RenderComponent(bulletTexture));
     }
@@ -63,8 +63,8 @@ public class Bullet extends Prefab {
         entity.addComponent(new MovementComponent(0, 0, 0, new Vector2f(vx, vy)));
 
         BulletComponent bulletComp = new BulletComponent();
-        bulletComp.isEnemy = isEnemy;
-        bulletComp.lifetime = isEnemy ? 4.0f : 2.0f;
+        bulletComp.origin = origin;
+        bulletComp.lifetime = isEnemy() ? 3.0f : 0.8f;
         entity.addComponent(bulletComp);
 
         entity.addComponent(new CollisionComponent(new AABBf(
@@ -81,13 +81,13 @@ public class Bullet extends Prefab {
         float pvx = bytes.getFloat();
         float pvy = bytes.getFloat();
         float speed = bytes.getFloat();
-        boolean isEnemy = bytes.get() == 1;
+        int origin = bytes.getInt();
 
-        return new Bullet(engine, networkId, x, y, px, py, pvx, pvy, speed, isEnemy);
+        return new Bullet(engine, networkId, x, y, px, py, pvx, pvy, speed, origin);
     }
 
-    public static byte[] serialize(float x, float y, float px, float py, float pvx, float pvy, float speed, boolean isEnemy) {
-        ByteBuffer bytes = ByteBuffer.allocate(29);
+    public static byte[] serialize(float x, float y, float px, float py, float pvx, float pvy, float speed, int origin) {
+        ByteBuffer bytes = ByteBuffer.allocate(32);
 
         bytes.putFloat(x);
         bytes.putFloat(y);
@@ -96,8 +96,12 @@ public class Bullet extends Prefab {
         bytes.putFloat(pvx);
         bytes.putFloat(pvy);
         bytes.putFloat(speed);
-        bytes.put((byte) (isEnemy ? 1 : 0));
+        bytes.putInt(origin);
 
         return bytes.array();
+    }
+
+    public boolean isEnemy() {
+        return origin == -1;
     }
 }

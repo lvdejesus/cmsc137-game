@@ -22,6 +22,7 @@ public class EngineConfig {
         engine.register(HealthComponent.class);
         engine.register(PlayerKeysComponent.class);
         engine.register(PlayerUpgradeComponent.class);
+        engine.register(ExperienceComponent.class);
 
         engine.register(BossDoorComponent.class);
         engine.register(BossComponent.class);
@@ -63,13 +64,7 @@ public class EngineConfig {
         engine.addSystem(new TextRenderingSystem(fixedCamera, "fixed"), 1000);
     }
 
-    public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm) {
+    public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm, Statistics statistics) {
 //        engine.addSystem(new PhysicsSystem());
-        engine.addSystem(new EnemySystem(nsm));
-        engine.addSystem(new BossSystem(nsm));
-        engine.addSystem(new BulletSystem(nsm));
-        engine.addSystem(new DamageSystem(nsm));
-        engine.addSystem(new BulletWallTileCollisionSystem(nsm));
-        engine.addSystem(new WallTileCollisionSystem());
     }
 }

@@ -46,6 +46,7 @@ public class Main {
         glfwSetFramebufferSizeCallback(window.getHandle(), (handle, width, height) -> {
             camera.setSize(width, height);
             fixedCamera.setSize(width, height);
+            Window.getWindow().setSize(width, height);
             glViewport(0, 0, width, height);
         });
 

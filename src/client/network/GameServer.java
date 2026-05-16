@@ -1,10 +1,12 @@
 package client.network;
 
+import client.components.ExperienceComponent;
 import client.components.MovementComponent;
 import client.components.PlayerUpgradeComponent;
 import client.network.messages.client.*;
-import client.systems.client.PlayerUpdateSystem;
+import client.systems.client.*;
 import client.systems.server.*;
+import client.util.Statistics;
 import common.MapGenerator;
 import client.components.TransformComponent;
 import client.components.player.MovementInputComponent;
@@ -12,7 +14,6 @@ import client.components.player.PlayerStateComponent;
 import client.entities.*;
 import client.network.messages.Message;
 import client.network.messages.server.*;
-import client.systems.client.Context;
 import client.util.EngineConfig;
 import common.TileLoader;
 import framework.engine.ComponentMapper;
@@ -179,7 +180,9 @@ public class GameServer implements Runnable {
 
             int entityId = playerToEntityMap.get(id);
             PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
+            ExperienceComponent xpc = engine.getMapper(ExperienceComponent.class).get(entityId);
             puc.applyActual(pp.index);
+            xpc.usedLevels++;
         });
 
         handlers.put(C_Shoot.class, (id, message) -> {
@@ -189,7 +192,7 @@ public class GameServer implements Runnable {
             TransformComponent tc = tm.get(entityId);
             PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
 
-            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, false));
+            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, id));
         });
 
         handlers.put(C_RequestStartGame.class, (id, message) -> {
@@ -211,10 +214,15 @@ public class GameServer implements Runnable {
             throw new RuntimeException(e);
         }
 
+        Statistics statistics = new Statistics();
+
         engine.addSystem(new ServerNetworkInputSystem(inQueue, handlers));
-
-        EngineConfig.addServerSystems(engine, nsm);
-
+        engine.addSystem(new EnemySystem(nsm));
+        engine.addSystem(new BossSystem(nsm));
+        engine.addSystem(new BulletSystem(nsm));
+        engine.addSystem(new DamageSystem(nsm,playerToEntityMap, statistics));
+        engine.addSystem(new BulletWallTileCollisionSystem(nsm));
+        engine.addSystem(new WallTileCollisionSystem());
         engine.addSystem(new MapEnemySpawnSystem(grid, nsm));
         engine.addSystem(new MapKeySpawnSystem(grid, nsm));
         engine.addSystem(new KeyPickupSystem(nsm));

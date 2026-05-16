@@ -105,6 +105,6 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
 
         float dx = random.nextFloat() * variance * 2 - variance;
         float dy = random.nextFloat() * variance * 2 - variance;
-        nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, minPosition.x + dx, minPosition.y + dy, enemyMovement.velocity.x, enemyMovement.velocity.y, ec.bulletSpeed, true));
+        nsm.spawn(Bullet.class, Bullet.serialize(enemyTransform.position.x, enemyTransform.position.y, minPosition.x + dx, minPosition.y + dy, enemyMovement.velocity.x, enemyMovement.velocity.y, ec.bulletSpeed, -1));
     }
 }

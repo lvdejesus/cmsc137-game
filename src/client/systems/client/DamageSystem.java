@@ -1,23 +1,19 @@
 package client.systems.client;
 
-import client.components.NetworkIdComponent;
-import client.components.player.PlayerNetworkComponent;
+import client.components.*;
 import client.components.player.PlayerStateComponent;
-import client.entities.Bullet;
 import client.network.NetworkSpawnManager;
+import client.util.Statistics;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.EntitySystem;
-import client.components.HealthComponent;
 import client.components.bullet.BulletComponent;
-import client.components.enemy.EnemyComponent;
-import client.components.TransformComponent;
-import client.components.CollisionComponent;
 import client.util.SpatialHashGrid;
 import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class DamageSystem extends EntitySystem<Context> {
@@ -32,8 +28,13 @@ public class DamageSystem extends EntitySystem<Context> {
     private final SpatialHashGrid spatialHash = new SpatialHashGrid(64);
     private final Set<Integer> potentialTargets = new HashSet<>();
 
-    public DamageSystem(NetworkSpawnManager nsm) {
+    private Map<Integer, Integer> playerEntityMap;
+    private Statistics statistics;
+
+    public DamageSystem(NetworkSpawnManager nsm, Map<Integer, Integer> playerEntityMap, Statistics statistics) {
         this.nsm = nsm;
+        this.playerEntityMap = playerEntityMap;
+        this.statistics = statistics;
     }
 
     @Override
@@ -66,7 +67,7 @@ public class DamageSystem extends EntitySystem<Context> {
 
             for (int targetId : potentialTargets) {
                 PlayerStateComponent playerC = playerM.get(targetId);
-                if (bc.isEnemy == (playerC == null)) continue;
+                if (bc.isEnemy() == (playerC == null)) continue;
 
                 HealthComponent targetHealth = healthM.get(targetId);
                 if (!targetHealth.isAlive()) continue;
@@ -79,6 +80,11 @@ public class DamageSystem extends EntitySystem<Context> {
 
                 if (playerC == null) {
                     if (!targetHealth.isAlive()) {
+                        statistics.addKill(bc.origin);
+                        var originEntityId = playerEntityMap.get(bc.origin);
+                        var xpc = engine.getMapper(ExperienceComponent.class).get(originEntityId);
+                        xpc.exp += 5;
+
                         spatialHash.removeEntity(targetId, getWorldBox(targetId));
                         nsm.despawn(targetId);
                     }
