@@ -59,7 +59,8 @@ public class VictoryOverlay {
 
         Entity<Context> title = engine.createEntity();
         title.addComponent(new TransformComponent(new Vector2f(centerX, centerY - 200), new Vector2f(1, 1), Anchor.CENTER));
-        title.addComponent(new TextComponent(font, "VICTORY!", new Vector4f(1, 1, 0, 1), 1.0f, 0.8f, "fixed"));
+        Texture winTex = TextureAtlas.get().getRegion("you_win.png");
+        title.addComponent(new RenderComponent(winTex, 0.7f, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f), "fixed"));
         entities.add(title);
 
         Entity<Context> statsBorder = engine.createEntity();
