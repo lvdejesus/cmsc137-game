@@ -30,6 +30,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static client.components.PlayerUpgradeComponent.BASE_BULLET_DISTANCE;
+
 public class GameServer implements Runnable {
     public static final int TCP_PORT = 7650;
 
@@ -221,7 +223,7 @@ public class GameServer implements Runnable {
             TransformComponent tc = tm.get(entityId);
             PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
 
-            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, id, puc.splatter, 0.8f));
+            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, id, puc.splatter, BASE_BULLET_DISTANCE / puc.bulletSpeed));
         });
 
         handlers.put(C_RequestStartGame.class, (id, message) -> {

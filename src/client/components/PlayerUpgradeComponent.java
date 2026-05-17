@@ -10,6 +10,8 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 public class PlayerUpgradeComponent implements SyncComponent {
+    public static float BASE_BULLET_DISTANCE = 560.0f;
+
     public float bulletSpeed = 700.0f;
     public float fireRate = 10.0f;
     public int splatter = 1;
