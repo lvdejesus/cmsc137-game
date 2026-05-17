@@ -1,8 +1,10 @@
 package client.systems.client;
 
 import client.components.*;
+import client.components.enemy.EnemyComponent;
 import client.components.player.PlayerStateComponent;
 import client.entities.Bullet;
+import client.entities.Enemy;
 import client.network.NetworkSpawnManager;
 import client.network.messages.server.S_BossDefeated;
 import client.util.Statistics;
@@ -119,7 +121,16 @@ public class DamageSystem extends EntitySystem<Context> {
                         var originEntityId = playerEntityMap.get(bc.origin);
                         if (originEntityId != null) {
                             var xpc = engine.getMapper(ExperienceComponent.class).get(originEntityId);
-                            if (xpc != null) xpc.exp += 5;
+                            var ec = engine.getMapper(EnemyComponent.class).get(targetId);
+                            if (ec != null)  {
+                                if (xpc != null) {
+                                    if (ec.type == Enemy.EnemyType.Regular) {
+                                        xpc.exp += 5;
+                                    } else if (ec.type == Enemy.EnemyType.Advanced) {
+                                        xpc.exp += 8;
+                                    }
+                                }
+                            }
                         }
 
                         spatialHash.removeEntity(targetId, getWorldBox(targetId));
