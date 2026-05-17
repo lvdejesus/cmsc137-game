@@ -56,6 +56,7 @@ public class GameServer implements Runnable {
     Map<Integer, Integer> playerToEntityMap;
 
     private static final double NANO_TO_SECOND = 1_000_000_000.0;
+    private static final long TICK_INTERVAL_NS = 50_000_000L; // 20Hz = 50ms per tick
 
     public GameServer(String localIP) {
         this.localIP = localIP;
@@ -286,7 +287,9 @@ public class GameServer implements Runnable {
         }
 
         while (running) {
-            double currentTime = System.nanoTime() / NANO_TO_SECOND;
+            long tickStart = System.nanoTime();
+
+            double currentTime = tickStart / NANO_TO_SECOND;
             float dt = (float) (currentTime - lastTime);
             lastTime = currentTime;
 
@@ -307,6 +310,16 @@ public class GameServer implements Runnable {
                 if (allDead && !playerToEntityMap.isEmpty()) {
                     outQueue.add(new MessagePair(-1, new S_GameOver(statistics)));
                     gameEnded = true;
+                }
+            }
+
+            long elapsed = System.nanoTime() - tickStart;
+            long sleepNs = TICK_INTERVAL_NS - elapsed;
+            if (sleepNs > 0) {
+                try {
+                    Thread.sleep(sleepNs / 1_000_000, (int) (sleepNs % 1_000_000));
+                } catch (InterruptedException e) {
+                    running = false;
                 }
             }
         }
