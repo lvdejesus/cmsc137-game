@@ -56,7 +56,7 @@ public class GameServer implements Runnable {
     Map<Integer, Integer> playerToEntityMap;
 
     private static final double NANO_TO_SECOND = 1_000_000_000.0;
-    private static final long TICK_INTERVAL_NS = 50_000_000L; // 20Hz = 50ms per tick
+    private static final long TICK_INTERVAL_NS = 20_000_000L; // 50Hz = 20ms per tick
 
     public GameServer(String localIP) {
         this.localIP = localIP;
