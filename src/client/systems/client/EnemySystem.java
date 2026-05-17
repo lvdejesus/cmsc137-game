@@ -51,7 +51,7 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
 
         ec.shootTimer -= ctx.deltaTime;
 
-        if (ec.type == Enemy.EnemyType.Regular) {
+        if (ec.type == Enemy.EnemyType.Regular || ec.type == Enemy.EnemyType.Advanced) {
             transform.rotation += 45.0f * ctx.deltaTime;
             transform.rotation %= 360.0f;
 

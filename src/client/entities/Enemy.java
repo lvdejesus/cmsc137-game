@@ -23,6 +23,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 public class Enemy extends Prefab {
     public enum EnemyType {
         Regular,
+        Advanced,
         Boss,
     }
 
@@ -60,7 +61,7 @@ public class Enemy extends Prefab {
         Texture enemyTexture;
         double currentTime = glfwGetTime();
 
-        String spritePath = "enemy.png";
+        String spritePath = type == EnemyType.Regular ? "enemy.png" : "advanced.png";
         this.entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 8, 0.1f), (float) currentTime, true));
         this.entity.addComponent(new RenderComponent());
     }
@@ -70,15 +71,23 @@ public class Enemy extends Prefab {
     public void spawnCommon() {
         this.entity.addComponent(new MovementComponent(50.0f, 20.0f, 10.0f));
         if (type == EnemyType.Regular) {
-            this.entity.addComponent(new HealthComponent(25.0f)); // Enemy health
+            this.entity.addComponent(new HealthComponent(75.0f)); // Enemy health
             this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.0f, 2.0f)));
             this.entity.addComponent(new CollisionComponent(new AABBf(
                 new Vector3f(-16.0f, -16.0f, 0.0f),
                 new Vector3f(16.0f, 16.0f, 0.1f)
             )));
             this.entity.addComponent(new EnemyComponent(type, 1.2f, 0.8f));
+        } else if (type == EnemyType.Advanced) {
+                this.entity.addComponent(new HealthComponent(150.0f)); // Enemy health
+                this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.5f, 2.5f)));
+                this.entity.addComponent(new CollisionComponent(new AABBf(
+                    new Vector3f(-24.0f, -24.0f, 0.0f),
+                    new Vector3f(24.0f, 24.0f, 0.1f)
+                )));
+                this.entity.addComponent(new EnemyComponent(type, 0.8f, 0.6f));
         } else if (type == EnemyType.Boss) {
-            this.entity.addComponent(new HealthComponent(1250.0f)); // Enemy health
+            this.entity.addComponent(new HealthComponent(3000.0f)); // Enemy health
             this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(5.0f, 5.0f)));
             this.entity.addComponent(new CollisionComponent(new AABBf(
                 new Vector3f(-40.0f, -40.0f, 0.0f),

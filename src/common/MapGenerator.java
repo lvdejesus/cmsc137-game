@@ -18,6 +18,7 @@ public class MapGenerator {
         public int[][][] closedAreas; // Array of closed areas, each area is an array of [x, y] coordinates
         public int[][] areaLookup;    // [y][x] mapping to the index in closedAreas (-1 if not in a closed area)
         public Map<Integer, Set<Integer>> adjacencyList; // Maps area index to a set of connected area indices
+        public Map<Integer, Integer> depths;
         public int bossRoomIndex = -1; // Index of the boss room
         public PlacedRoom bossRoom;
         public int startRoom;
@@ -60,6 +61,7 @@ public class MapGenerator {
             startRoom = this.areaLookup[155][155];
 
             computeAdjacency();
+            depths = getDepths();
         }
 
         public int[] findMaxShortestPath() {
@@ -179,6 +181,31 @@ public class MapGenerator {
                     }
                 }
             }
+        }
+
+        public Map<Integer, Integer> getDepths() {
+            Map<Integer, Integer> depths = new HashMap<>();
+            Queue<Integer> queue = new ArrayDeque<>();
+
+            queue.add(startRoom);
+            depths.put(startRoom, 0);
+
+            while (!queue.isEmpty()) {
+                int currentNode = queue.poll();
+                int currentDepth = depths.get(currentNode);
+
+                Set<Integer> neighbors = adjacencyList.get(currentNode);
+                if (neighbors != null) {
+                    for (int neighbor : neighbors) {
+                        if (!depths.containsKey(neighbor)) {
+                            depths.put(neighbor, currentDepth + 1);
+                            queue.add(neighbor);
+                        }
+                    }
+                }
+            }
+
+            return depths;
         }
 
         /**

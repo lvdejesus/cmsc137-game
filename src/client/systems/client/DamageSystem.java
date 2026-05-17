@@ -75,10 +75,19 @@ public class DamageSystem extends EntitySystem<Context> {
                 AABBf playerBox = getWorldBox(targetId);
                 if (!playerBox.intersectsAABB(bulletBox)) continue;
 
-                targetHealth.damage(bc.damage);
-                nsm.despawn(bulletId);
+                var bulletVelocity = engine.getMapper(MovementComponent.class).get(bulletId).velocity;
+                var targetMc = engine.getMapper(MovementComponent.class).get(targetId);
+
+                float multiplier;
+                if (targetMc != null) {
+                    var targetVelocity = targetMc.velocity;
+                    multiplier = bulletVelocity.distance(targetVelocity) / 700.0f;
+                } else {
+                    multiplier = bulletVelocity.length() / 700.0f;
+                }
 
                 if (playerC == null) {
+                    targetHealth.damage(bc.damage * multiplier);
                     if (!targetHealth.isAlive()) {
                         statistics.addKill(bc.origin);
                         var originEntityId = playerEntityMap.get(bc.origin);
@@ -88,7 +97,11 @@ public class DamageSystem extends EntitySystem<Context> {
                         spatialHash.removeEntity(targetId, getWorldBox(targetId));
                         nsm.despawn(targetId);
                     }
+                } else {
+                    targetHealth.damage(bc.damage);
                 }
+
+                nsm.despawn(bulletId);
                 break;
             }
         }

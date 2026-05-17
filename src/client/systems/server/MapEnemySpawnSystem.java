@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-public class MapEnemySpawnSystem  extends EntitySystem<Context> {
+public class MapEnemySpawnSystem extends EntitySystem<Context> {
     private MapGenerator.MapResult grid;
     private NetworkSpawnManager nsm;
     private Set<Integer> visited = new HashSet<>();
@@ -68,7 +68,7 @@ public class MapEnemySpawnSystem  extends EntitySystem<Context> {
             visit(index);
         }
 
-        for (var v: toSpawn) {
+        for (var v : toSpawn) {
             spawn(v);
         }
 
@@ -84,8 +84,9 @@ public class MapEnemySpawnSystem  extends EntitySystem<Context> {
             var closedAreas = grid.closedAreas[areaIndex];
             int numEnemies = Math.max(5, (int) Math.floor(Math.sqrt(closedAreas.length)));
             for (int i = 0; i < numEnemies; i++) {
+                float pAdvanced = 1.0f - 1.0f / (float) Math.pow(grid.depths.get(areaIndex), 0.2f);
                 var pos = closedAreas[random.nextInt(closedAreas.length)];
-                nsm.spawn(Enemy.class, Enemy.serialize(pos[0] * 64.0f, pos[1] * 64.0f, Enemy.EnemyType.Regular));
+                nsm.spawn(Enemy.class, Enemy.serialize(pos[0] * 64.0f, pos[1] * 64.0f, random.nextFloat() < pAdvanced ? Enemy.EnemyType.Advanced : Enemy.EnemyType.Regular));
             }
         }
     }

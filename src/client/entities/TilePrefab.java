@@ -73,11 +73,32 @@ public class TilePrefab extends Prefab {
 
     @Override
     public void spawnCommon() {
+        List<Integer> tgcs = engine.getFamily(TileGridComponent.class).toList();
+        TileGridComponent tgc;
+
+        // TODO: this is inefficient, keep a reference somewhere for the tgc to be passed.
+        if (tgcs.isEmpty()) {
+            Entity<Context> e = engine.createEntity();
+            tgc = new TileGridComponent();
+            try {
+                tgc.tileDefs = TileLoader.loadTiles();
+                tgc.tiles = TileLoader.loadTileTextures(tgc.tileDefs);
+            } catch (IOException err) {
+                throw new RuntimeException(err);
+            }
+            e.addComponent(tgc);
+        } else {
+            tgc = engine.getMapper(TileGridComponent.class).get(tgcs.getFirst());
+
+        }
+
         entity.addComponent(new CollisionComponent(new AABBf(0.0f, 0.0f, 0.0f, 64.0f, 64.0f, 0.1f)));
-        entity.addComponent(new WallComponent());
+        if (tgc.tileDefs.get(tileIndex).solid) {
+            entity.addComponent(new WallComponent());
+        }
         entity.addComponent(new TransformComponent(new Vector2f(x * 64.0f, y * 64.0f),
             new Vector2f(4.0f, 4.0f), Anchor.TOP_LEFT));
-        if (MapGenerator.isDoorTile(tileIndex + 1)) {
+        if (tgc.tileDefs.get(tileIndex).door) {
             if (!isBoss) {
                 entity.addComponent(new HealthComponent(5));
                 entity.addComponent(new NetworkDuplicateComponent(HealthComponent.class));
@@ -95,7 +116,7 @@ public class TilePrefab extends Prefab {
 
     public static TilePrefab deserialize(Engine<Context> engine, int networkId, ByteBuffer bytes) throws IOException {
         int x = bytes.getInt();
-        int y= bytes.getInt();
+        int y = bytes.getInt();
         int tileIndex = bytes.getInt();
         boolean isBoss = bytes.get() == 1;
 
