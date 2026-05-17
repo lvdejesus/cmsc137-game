@@ -309,7 +309,7 @@ public class GameServer implements Runnable {
             while ((disconnectedId = disconnectQueue.poll()) != null) {
                 Integer entityId = playerToEntityMap.remove(disconnectedId);
                 if (entityId != null) nsm.despawn(entityId);
-                if (disconnectedId == 1 && !gameEnded) {
+                if (disconnectedId == 1 && gameEnded) {
                     outQueue.add(new MessagePair(-1, new S_GameOver(statistics)));
                     running = false;
                 }
