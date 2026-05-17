@@ -133,8 +133,9 @@ public class LevelScene extends Scene {
 
         var xpc = player.getEntity().getComponent(ExperienceComponent.class);
         if (xpc.getRemainingUpgrades() > 0){
-            if (!upgradeNotification.isActive()){
+            if (xpc.lastLevelNotifShown != xpc.getLevels()){
                 upgradeNotification.toggle();
+                xpc.lastLevelNotifShown = xpc.getLevels();
             }
         }
 
