@@ -1,6 +1,7 @@
 package client.network;
 
 import client.components.ExperienceComponent;
+import client.components.HealthComponent;
 import client.components.MovementComponent;
 import client.components.PlayerUpgradeComponent;
 import client.network.messages.client.*;
@@ -43,6 +44,7 @@ public class GameServer implements Runnable {
 
     private ServerSocket serverSocket;
     private volatile boolean gameStarted = false;
+    private volatile boolean running = true;
 
     private String localIP;
 
@@ -85,7 +87,7 @@ public class GameServer implements Runnable {
     public void stop() {
         discoveryService.stop();
         try {
-            if (serverSocket != null) serverSocket.close();
+            if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
             for (ClientConnection c : connectedClients.values()) c.close();
             connectedClients.clear();
         } catch (IOException e) {
@@ -99,10 +101,23 @@ public class GameServer implements Runnable {
             serverSocket = new ServerSocket();
             serverSocket.setSoTimeout(100);
             serverSocket.setReuseAddress(true);
-            serverSocket.bind(new InetSocketAddress(TCP_PORT));
+            int retries = 0;
+            while (true) {
+                try {
+                    serverSocket.bind(new InetSocketAddress(TCP_PORT));
+                    break;
+                } catch (IOException e) {
+                    retries++;
+                    if (retries >= 50) throw e;
+                    Thread.sleep(100);
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Server failed to start.");
+            return;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             return;
         }
 
@@ -204,6 +219,10 @@ public class GameServer implements Runnable {
         handlers.put(C_Disconnect.class, (id, message) -> {
             int entityId = playerToEntityMap.get(id);
             nsm.despawn(entityId);
+            if (id == 1) {
+                stop();
+                running = false;
+            }
         });
 
         MapGenerator.MapResult grid;
@@ -232,6 +251,8 @@ public class GameServer implements Runnable {
 
         double lastTime = System.nanoTime() / NANO_TO_SECOND;
         Context ctx = new Context();
+        boolean gameEnded = false;
+        var healthMapper = engine.getMapper(HealthComponent.class);
 
         Set<Long> bossDoorSet = new HashSet<>();
 
@@ -264,7 +285,7 @@ public class GameServer implements Runnable {
             }
         }
 
-        while (true) {
+        while (running) {
             double currentTime = System.nanoTime() / NANO_TO_SECOND;
             float dt = (float) (currentTime - lastTime);
             lastTime = currentTime;
@@ -273,7 +294,24 @@ public class GameServer implements Runnable {
             ctx.deltaTime = dt;
 
             engine.update(ctx);
+
+            if (!gameEnded) {
+                boolean allDead = true;
+                for (int entityId : playerToEntityMap.values()) {
+                    HealthComponent hc = healthMapper.get(entityId);
+                    if (hc != null && hc.isAlive()) {
+                        allDead = false;
+                        break;
+                    }
+                }
+                if (allDead && !playerToEntityMap.isEmpty()) {
+                    outQueue.add(new MessagePair(-1, new S_GameOver(statistics)));
+                    gameEnded = true;
+                }
+            }
         }
+
+        stop();
     }
 
     public class ClientConnection {

@@ -38,12 +38,22 @@ public class GameClient {
 
     public void connect(String ip, int port) {
         new Thread(() -> {
-            try {
-                socket = new Socket();
-                socket.connect(new InetSocketAddress(ip, port), 10000);
-                connected = true;
-                out = new DataOutputStream(socket.getOutputStream());
-                System.out.println("Client connected to " + ip);
+            for (int attempts = 0; attempts < 30; attempts++) {
+                try {
+                    socket = new Socket();
+                    socket.connect(new InetSocketAddress(ip, port), 5000);
+                    connected = true;
+                    out = new DataOutputStream(socket.getOutputStream());
+                    System.out.println("Client connected to " + ip);
+                    break;
+                } catch (IOException e) {
+                    try { Thread.sleep(200); } catch (InterruptedException ie) { return; }
+                }
+            }
+            if (!connected) {
+                System.out.println("Failed to connect to server after retries.");
+                return;
+            }
 
                 Thread listenerThread = new Thread(() -> {
                     try (DataInputStream in = new DataInputStream(socket.getInputStream())) {
@@ -62,9 +72,6 @@ public class GameClient {
                     }
                 });
                 listenerThread.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }).start();
     }
 

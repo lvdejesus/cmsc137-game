@@ -6,6 +6,7 @@ import client.components.TransformComponent;
 import client.components.player.PlayerStateComponent;
 import client.network.messages.Message;
 import client.network.messages.server.*;
+import client.util.Statistics;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,10 @@ public class NetworkManager {
     public int networkId;
     private volatile int playerCount = 0;
     private volatile boolean gameStarted = false;
+    private volatile boolean bossDefeated = false;
+    private volatile boolean gameOver = false;
+    private S_BossDefeated victoryStats = null;
+    private S_GameOver gameOverStats = null;
 
     public ConcurrentLinkedQueue<Message> inQueue = new ConcurrentLinkedQueue<>();
 
@@ -55,6 +60,16 @@ public class NetworkManager {
         registerHandler(S_StartGame.class, (m) -> {
             gameStarted = true;
         });
+
+        registerHandler(S_BossDefeated.class, (m) -> {
+            bossDefeated = true;
+            victoryStats = m;
+        });
+
+        registerHandler(S_GameOver.class, (m) -> {
+            gameOver = true;
+            gameOverStats = m;
+        });
     }
 
     public static NetworkManager getInstance() {
@@ -82,6 +97,22 @@ public class NetworkManager {
         return gameStarted;
     }
 
+    public boolean isBossDefeated() {
+        return bossDefeated;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public S_BossDefeated getVictoryStats() {
+        return victoryStats;
+    }
+
+    public S_GameOver getGameOverStats() {
+        return gameOverStats;
+    }
+
     public java.util.List<String> discoverHosts() {
         return new DiscoveryService().discoverHosts();
     }
@@ -96,5 +127,14 @@ public class NetworkManager {
 
     public void stop() {
         client.stop();
+        playerIndex = 0;
+        networkId = 0;
+        playerCount = 0;
+        gameStarted = false;
+        bossDefeated = false;
+        gameOver = false;
+        victoryStats = null;
+        gameOverStats = null;
+        inQueue.clear();
     }
 }

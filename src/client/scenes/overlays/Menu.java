@@ -117,7 +117,8 @@ public class Menu {
                 toggleMenu();
             } else if (selectedOption == 1) {
                 // Restart
-                SceneManager.setScene(new LevelScene(), engine);
+                NetworkManager.getInstance().stop();
+                SceneManager.setScene(new MenuScene(Window.getWindow()), engine);
             } else {
                 // Back to Title
                 NetworkManager.getInstance().stop();

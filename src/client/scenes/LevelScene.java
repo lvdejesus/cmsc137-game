@@ -30,6 +30,7 @@ public class LevelScene extends Scene {
     private Menu menu;
     private UpgradeOverlay upgrade;
     private GameOverOverlay gameOverOverlay;
+    private VictoryOverlay victoryOverlay;
 
     private Font pauseFont;
 
@@ -56,6 +57,7 @@ public class LevelScene extends Scene {
 
         upgrade = new UpgradeOverlay(engine, player);
         gameOverOverlay = new GameOverOverlay(engine, pauseFont);
+        victoryOverlay = new VictoryOverlay(engine, pauseFont);
         healthBar = new HealthBar(engine);
         healthBar.updateHealth(player.getHealth()); // Set initial health
         healthBar.createHealthBar();
@@ -112,7 +114,15 @@ public class LevelScene extends Scene {
             menu.handlePauseMenuInput(input);
         }
 
-        if (player.getHealth() <= 0) {
+        if (NetworkManager.getInstance().isBossDefeated()) {
+            if (!victoryOverlay.isVisible()) {
+                victoryOverlay.show();
+            }
+            victoryOverlay.handleInput(input);
+            return;
+        }
+
+        if (NetworkManager.getInstance().isGameOver()) {
             if (!gameOverOverlay.isVisible()) {
                 gameOverOverlay.show();
             }

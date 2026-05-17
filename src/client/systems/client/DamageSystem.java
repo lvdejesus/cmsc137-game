@@ -3,6 +3,7 @@ package client.systems.client;
 import client.components.*;
 import client.components.player.PlayerStateComponent;
 import client.network.NetworkSpawnManager;
+import client.network.messages.server.S_BossDefeated;
 import client.util.Statistics;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -90,9 +91,18 @@ public class DamageSystem extends EntitySystem<Context> {
                     targetHealth.damage(bc.damage * multiplier);
                     if (!targetHealth.isAlive()) {
                         statistics.addKill(bc.origin);
+
+                        BossComponent bossC = engine.getMapper(BossComponent.class).get(targetId);
+                        if (bossC != null) {
+                            statistics.addBossKill();
+                            nsm.broadcastMessage(new S_BossDefeated(statistics));
+                        }
+
                         var originEntityId = playerEntityMap.get(bc.origin);
-                        var xpc = engine.getMapper(ExperienceComponent.class).get(originEntityId);
-                        xpc.exp += 5;
+                        if (originEntityId != null) {
+                            var xpc = engine.getMapper(ExperienceComponent.class).get(originEntityId);
+                            if (xpc != null) xpc.exp += 5;
+                        }
 
                         spatialHash.removeEntity(targetId, getWorldBox(targetId));
                         nsm.despawn(targetId);

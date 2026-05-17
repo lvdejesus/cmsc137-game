@@ -48,4 +48,8 @@ public class NetworkSpawnManager {
         outQueue.add(new MessagePair(-1, msg));
         engine.destroyEntity(entityId);
     }
+
+    public void broadcastMessage(Message message) {
+        outQueue.add(new MessagePair(-1, message));
+    }
 }

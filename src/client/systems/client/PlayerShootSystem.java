@@ -64,8 +64,8 @@ public class PlayerShootSystem extends IteratingEntitySystem<Context> {
                     float increment = (float) (Math.PI * 2.0f / puc.splatter);
                     for (int i = 0; i < puc.splatter; i++) {
                         float finalAngle = angle + increment * i;
-                        float nx = (float) (tc.position.x + Math.cos(finalAngle));
-                        float ny = (float) (tc.position.y + Math.sin(finalAngle));
+                        float nx = (float) (tc.position.x + 300.0f * Math.cos(finalAngle));
+                        float ny = (float) (tc.position.y + 300.0f * Math.sin(finalAngle));
                         outQueue.offer(new C_Shoot(nx, ny, pvx, pvy));
                     }
                 } else {
