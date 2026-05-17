@@ -38,6 +38,7 @@ public class EngineConfig {
         engine.register(WallComponent.class);
         engine.register(NetworkDuplicateComponent.class);
         engine.register(UpgradeKindComponent.class);
+        engine.register(TimerComponent.class);
     }
 
     public static void registerComponents(Engine<Context> engine) {

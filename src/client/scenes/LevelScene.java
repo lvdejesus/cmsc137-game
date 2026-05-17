@@ -9,7 +9,6 @@ import client.rendering.*;
 import client.systems.client.*;
 import client.systems.client.player.PlayerRotationSystem;
 import client.systems.client.player.PlayerTiltSystem;
-import client.systems.client.DeathSystem;
 import framework.engine.*;
 import common.ResourceLoader;
 import org.lwjgl.BufferUtils;
@@ -26,6 +25,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import client.scenes.overlays.*;
 
 public class LevelScene extends Scene {
+    private UpgradeNotification upgradeNotification;
     private Player player;
     private Menu menu;
     private UpgradeOverlay upgrade;
@@ -56,6 +56,7 @@ public class LevelScene extends Scene {
         }
 
         upgrade = new UpgradeOverlay(engine, player);
+        upgradeNotification = new UpgradeNotification(engine);
         gameOverOverlay = new GameOverOverlay(engine, pauseFont);
         victoryOverlay = new VictoryOverlay(engine, pauseFont);
         healthBar = new HealthBar(engine);
@@ -90,7 +91,7 @@ public class LevelScene extends Scene {
         engine.addSystem(new HealthBarUpdateSystem(healthBar));
         engine.addSystem(new KeyUISystem());
         engine.addSystem(new UpgradeUISystem());
-
+        engine.addSystem(new TimerSystem());
         engine.addSystem(new ClientNetworkOutputSystem(outQueue));
     }
 
@@ -131,6 +132,12 @@ public class LevelScene extends Scene {
         }
 
         var xpc = player.getEntity().getComponent(ExperienceComponent.class);
+        if (xpc.getRemainingUpgrades() > 0){
+            if (!upgradeNotification.isActive()){
+                upgradeNotification.toggle();
+            }
+        }
+
         if (input.keyDown(GLFW_KEY_V) && xpc.getRemainingUpgrades() > 0 && !upgrade.visible) {
             upgrade.splay();
         }
