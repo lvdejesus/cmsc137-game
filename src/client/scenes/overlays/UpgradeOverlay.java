@@ -103,7 +103,7 @@ public class UpgradeOverlay {
 
         System.out.println(upgradeKind);
         player.getEntity().getComponent(PlayerUpgradeComponent.class).queueApply(upgradeKind);
-        //TODO upgrade logic
+
         for (Entity<Context> entity : cards) {
             UiComponent ui = entity.getComponent(UiComponent.class);
             ui.lerpSpeed = 1f;
