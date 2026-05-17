@@ -112,7 +112,9 @@ public class LevelScene extends Scene {
         }
 
         if (menu.isVisible()) {
-            menu.handlePauseMenuInput(input);
+            if (menu.handlePauseMenuInput(input)) {
+                return;
+            }
         }
 
         if (NetworkManager.getInstance().isBossDefeated()) {

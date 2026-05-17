@@ -101,7 +101,7 @@ public class Menu {
         isPaused = false;
     }
 
-    public void handlePauseMenuInput(InputHandler input) {
+    public boolean handlePauseMenuInput(InputHandler input) {
         if (input.keyDown(GLFW_KEY_UP) || input.keyDown(GLFW_KEY_W)) {
             selectedOption = (selectedOption - 1 + 3) % 3;
             updateSelector();
@@ -119,12 +119,16 @@ public class Menu {
                 // Restart
                 NetworkManager.getInstance().stop();
                 SceneManager.setScene(new MenuScene(Window.getWindow()), engine);
+                return true;
             } else {
                 // Back to Title
                 NetworkManager.getInstance().stop();
                 SceneManager.setScene(new MenuScene(Window.getWindow()), engine);
+                return true;
             }
         }
+
+        return false;
     }
 
     private void updateSelector() {
