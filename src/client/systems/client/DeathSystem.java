@@ -19,7 +19,7 @@ public class DeathSystem extends IteratingEntitySystem<Context> {
         var ac = engine.getMapper(AnimationComponent.class).get(entityId);
         if (!hc.isAlive()) {
             if (ac == null) {
-            } else if (ac.animation.numFrames != 12) {
+            } else if (ac.animation.numFrames != 8) {
                 engine.removeComponent(entityId, AnimationComponent.class);
                 var mc = engine.getMapper(MovementComponent.class).get(entityId);
                 mc.velocity.set(0.0f, 0.0f);
@@ -28,9 +28,9 @@ public class DeathSystem extends IteratingEntitySystem<Context> {
                 mic.y = 0.0f;
 
                 double currentTime = glfwGetTime();
-                String spritePath = "enemyExplosion.png";
-                engine.addComponent(entityId, new AnimationComponent(Animation.fromFile(spritePath, 12, 0.1f), (float) currentTime, false));
-            } else if (ac.currentFrameIndex == 11) {
+                String spritePath = "players/playerDeath.png";
+                engine.addComponent(entityId, new AnimationComponent(Animation.fromFile(spritePath, 8, 0.1f), (float) currentTime, false));
+            } else if (ac.currentFrameIndex == 7) {
                 engine.removeComponent(entityId, AnimationComponent.class);
                 engine.removeComponent(entityId, RenderComponent.class);
 

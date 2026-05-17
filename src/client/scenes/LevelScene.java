@@ -33,6 +33,8 @@ public class LevelScene extends Scene {
     private VictoryOverlay victoryOverlay;
 
     private Font pauseFont;
+    private double gameOverTime = -1;
+    private static final double GAME_OVER_DELAY = 3.0;
 
     //Debug text
     private DebugText debugText;
@@ -126,6 +128,8 @@ public class LevelScene extends Scene {
         }
 
         if (NetworkManager.getInstance().isGameOver()) {
+            if (gameOverTime < 0) gameOverTime = glfwGetTime();
+            if (glfwGetTime() - gameOverTime < GAME_OVER_DELAY) return;
             if (!gameOverOverlay.isVisible()) {
                 gameOverOverlay.show();
             }

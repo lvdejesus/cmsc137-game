@@ -34,7 +34,7 @@ public class UpgradeNotification {
         float centery = Window.getWindow().getHeight() / 2f;
         
         popup.addComponent(new TransformComponent(new Vector2f(centerx, centery), new Vector2f(1, 1), Anchor.CENTER));
-        popup.addComponent(new RenderComponent(TextureAtlas.get().getRegion("upgradeOverlay.png"), 0.5f, new Vector4f(1, 1, 1, 0f), "fixed"));
+        popup.addComponent(new RenderComponent(TextureAtlas.get().getRegion("upgrade_avail.png"), 0.5f, new Vector4f(1, 1, 1, 0f), "fixed"));
         
         UiComponent ui = new UiComponent("default");
         ui.lerpSpeed = 4f; 
