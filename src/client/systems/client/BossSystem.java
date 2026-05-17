@@ -171,7 +171,7 @@ public class BossSystem extends IteratingEntitySystem<Context> {
         distanceStats.sort((x, y) -> Float.compare(x.distance, y.distance));
         var targets = distanceStats.subList(0, Math.min(distanceStats.size(), 3));
         for (var target : targets) {
-            float variance = target.distance * 0.3f;
+            float variance = target.distance * 0.1f;
 
             float dx = random.nextFloat() * variance * 2 - variance;
             float dy = random.nextFloat() * variance * 2 - variance;
