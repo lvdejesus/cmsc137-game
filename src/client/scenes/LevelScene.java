@@ -82,6 +82,7 @@ public class LevelScene extends Scene {
         engine.addSystem(new PlayerUpdateSystem(outQueue));
         engine.addSystem(new PlayerUpgradeUpdateSystem(outQueue));
         engine.addSystem(new MovementInputSystem());
+        engine.addSystem(new PlayerTiltSystem());
         engine.addSystem(new MovementSystem());
         engine.addSystem(new WallTileCollisionSystem());
         engine.addSystem(new PlayerFollowSystem(camera));
