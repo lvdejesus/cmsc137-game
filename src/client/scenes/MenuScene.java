@@ -106,6 +106,7 @@ public class MenuScene extends Scene {
             if (selectedOption == 0) {
                 // Start Game (Host) - start server first, then join
                 GameServer server = new GameServer("0.0.0.0");
+                GameServer.hostServer = server;
                 Thread serverThread = new Thread(server);
                 serverThread.setDaemon(true);
                 serverThread.start();

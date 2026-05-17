@@ -39,6 +39,8 @@ public class GameServer implements Runnable {
 
     private final DiscoveryService discoveryService = new DiscoveryService();
 
+    public static volatile GameServer hostServer;
+
     private int lastId = 1;
     private final Map<Integer, ClientConnection> connectedClients = new ConcurrentHashMap<>();
 
@@ -51,6 +53,7 @@ public class GameServer implements Runnable {
     private final ConcurrentLinkedQueue<MessagePair> inQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<MessagePair> outQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<EntitySnapshot> snapshotQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Integer> disconnectQueue = new ConcurrentLinkedQueue<>();
 
     NetworkSpawnManager nsm;
     Map<Integer, Integer> playerToEntityMap;
@@ -86,6 +89,7 @@ public class GameServer implements Runnable {
     }
 
     public void stop() {
+        running = false;
         discoveryService.stop();
         try {
             if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
@@ -142,7 +146,7 @@ public class GameServer implements Runnable {
 
                 ClientConnection client = new ClientConnection(inQueue, socket, playerId, networkId);
 
-                connectedClients.put(lastId, client);
+                connectedClients.put(playerId, client);
                 broadcastPlayerCount();
 
                 playerToEntityMap.put(playerId, res.prefab.getEntity().getId());
@@ -152,6 +156,12 @@ public class GameServer implements Runnable {
                 MessagePair msg = inQueue.poll();
                 if (msg != null && msg.getMessage() instanceof C_RequestStartGame && msg.getPlayerId() == 1) {
                     startGame();
+                }
+
+                Integer disconnectedId;
+                while ((disconnectedId = disconnectQueue.poll()) != null) {
+                    Integer entityId = playerToEntityMap.remove(disconnectedId);
+                    if (entityId != null) nsm.despawn(entityId);
                 }
             } catch (IOException e) {
                 if (!serverSocket.isClosed()) e.printStackTrace();
@@ -167,7 +177,8 @@ public class GameServer implements Runnable {
         handlers.put(C_PlayerState.class, (id, message) -> {
             if (!(message instanceof C_PlayerState pp)) return;
 
-            int entityId = playerToEntityMap.get(id);
+            Integer entityId = playerToEntityMap.get(id);
+            if (entityId == null) return;
 
             TransformComponent tc = tm.get(entityId);
 
@@ -194,7 +205,8 @@ public class GameServer implements Runnable {
         handlers.put(C_ApplyUpgrade.class, (id, message) -> {
             if (!(message instanceof C_ApplyUpgrade pp)) return;
 
-            int entityId = playerToEntityMap.get(id);
+            Integer entityId = playerToEntityMap.get(id);
+            if (entityId == null) return;
             PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
             ExperienceComponent xpc = engine.getMapper(ExperienceComponent.class).get(entityId);
             puc.applyActual(pp.index);
@@ -204,7 +216,8 @@ public class GameServer implements Runnable {
         handlers.put(C_Shoot.class, (id, message) -> {
             if (!(message instanceof C_Shoot pp)) return;
 
-            int entityId = playerToEntityMap.get(id);
+            Integer entityId = playerToEntityMap.get(id);
+            if (entityId == null) return;
             TransformComponent tc = tm.get(entityId);
             PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
 
@@ -217,14 +230,7 @@ public class GameServer implements Runnable {
             }
         });
 
-        handlers.put(C_Disconnect.class, (id, message) -> {
-            int entityId = playerToEntityMap.get(id);
-            nsm.despawn(entityId);
-            if (id == 1) {
-                stop();
-                running = false;
-            }
-        });
+
 
         MapGenerator.MapResult grid;
         try {
@@ -297,6 +303,18 @@ public class GameServer implements Runnable {
             ctx.currentTime = (float) currentTime;
             ctx.deltaTime = dt;
 
+            Integer disconnectedId;
+            while ((disconnectedId = disconnectQueue.poll()) != null) {
+                Integer entityId = playerToEntityMap.remove(disconnectedId);
+                if (entityId != null) nsm.despawn(entityId);
+                if (disconnectedId == 1 && !gameEnded) {
+                    outQueue.add(new MessagePair(-1, new S_GameOver(statistics)));
+                    running = false;
+                }
+            }
+
+            if (!running) break;
+
             engine.update(ctx);
 
             if (!gameEnded) {
@@ -359,11 +377,8 @@ public class GameServer implements Runnable {
             connectedClients.remove(this.playerId);
             broadcastPlayerCount();
             broadcastDisconnect(this.networkId);
-            inQueue.add(new MessagePair(this.playerId, new C_Disconnect()));
-            try {
-                socket.close();
-            } catch (IOException ignored) {
-            }
+            disconnectQueue.offer(this.playerId);
+            try { socket.close(); } catch (IOException ignored) {}
         }
 
         public void send(Message msg) {

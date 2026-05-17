@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.components.TextComponent;
 import client.components.TransformComponent;
+import client.network.GameServer;
 import client.network.NetworkManager;
 import client.network.messages.client.C_RequestStartGame;
 import client.rendering.Anchor;
@@ -108,6 +109,10 @@ public class LobbyScene extends Scene {
         }
 
         if (InputHandler.getInstance().keyDown(GLFW_KEY_ESCAPE)) {
+            if (isHost && GameServer.hostServer != null) {
+                GameServer.hostServer.stop();
+                GameServer.hostServer = null;
+            }
             nm.stop();
             SceneManager.setScene(new MenuScene(Window.getWindow()), engine);
         }
