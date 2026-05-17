@@ -7,6 +7,8 @@ import client.network.messages.client.C_Shoot;
 import client.network.messages.client.ClientRegistry;
 import client.network.messages.server.ServerRegistry;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -43,7 +45,7 @@ public class GameClient {
                     socket = new Socket();
                     socket.connect(new InetSocketAddress(ip, port), 5000);
                     connected = true;
-                    out = new DataOutputStream(socket.getOutputStream());
+                    out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
                     System.out.println("Client connected to " + ip);
                     break;
                 } catch (IOException e) {
@@ -56,7 +58,7 @@ public class GameClient {
             }
 
                 Thread listenerThread = new Thread(() -> {
-                    try (DataInputStream in = new DataInputStream(socket.getInputStream())) {
+                    try (DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()))) {
                         while (!socket.isClosed()) {
                             Message msg = serverRegistry.receive(in);
                             var handler = handlers.get(msg.getClass());

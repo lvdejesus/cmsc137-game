@@ -9,14 +9,15 @@ import java.util.Queue;
 import java.util.stream.Stream;
 
 class ComponentRegistry {
+    private static final int MAX_COMPONENTS = 64;
     private int componentCount = 0;
     private final Map<Class<? extends Component>, Integer> componentIndex = new HashMap<>();
-    private final Map<Integer, Class<? extends Component>> invertedIndex = new HashMap<>();
+    private final Class<? extends Component>[] invertedIndex = (Class<? extends Component>[]) new Class<?>[MAX_COMPONENTS];
 
     int register(Class<? extends Component> type) {
         int id = componentCount++;
         componentIndex.put(type, id);
-        invertedIndex.put(id, type);
+        invertedIndex[id] = type;
         return id;
     }
 
@@ -29,11 +30,18 @@ class ComponentRegistry {
     }
 
     Class<? extends Component> index(int index) {
-        return invertedIndex.get(index);
+        if (index < 0 || index >= invertedIndex.length) {
+            throw new ArrayIndexOutOfBoundsException("Invalid component index: " + index);
+        }
+        return invertedIndex[index];
     }
 
     public Iterable<Class<? extends Component>> getComponentClasses() {
-        return invertedIndex.values();
+        List<Class<? extends Component>> list = new ArrayList<>(componentCount);
+        for (int i = 0; i < componentCount; i++) {
+            list.add(invertedIndex[i]);
+        }
+        return list;
     }
 }
 
