@@ -1,8 +1,12 @@
 package framework.engine;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class IteratingEntitySystem<T> extends EntitySystem<T> {
     private final Class<? extends Component>[] componentTypes;
     private long familyMask;
+    private final List<Integer> entityBuffer = new ArrayList<>();
 
     @SafeVarargs
     public IteratingEntitySystem(Class<? extends Component>... types) {
@@ -22,11 +26,14 @@ public abstract class IteratingEntitySystem<T> extends EntitySystem<T> {
     }
 
     public void update(T ctx) {
-        for (int i = 0; i < engine.getEntityMax(); i++) {
-            long[] bitsets = engine.getBitsets();
-            if ((bitsets[i] & familyMask) == familyMask) {
-                processEntity(i, ctx);
+        entityBuffer.clear();
+        for (var entry : engine.getArchetypes().entrySet()) {
+            if ((entry.getKey() & familyMask) == familyMask) {
+                entityBuffer.addAll(entry.getValue());
             }
+        }
+        for (int entityId : entityBuffer) {
+            processEntity(entityId, ctx);
         }
     }
 

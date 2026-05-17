@@ -3,10 +3,9 @@ package framework.engine;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 class ComponentRegistry {
@@ -50,6 +49,7 @@ public class Engine<T> {
     private final Map<Class<? extends Component>, ComponentMapper<? extends Component>> mappers = new HashMap<>();
     private final ComponentRegistry componentRegistry = new ComponentRegistry();
     private final Map<Integer, ArrayList<EntitySystem<T>>> systems = new HashMap<>();
+    private final Map<Long, List<Integer>> archetypes = new HashMap<>();
 
     public Entity<T> createEntity() {
         int index;
@@ -63,6 +63,7 @@ public class Engine<T> {
 
         isAlive[index] = true;
         componentBitset[index] = 0L;
+        archetypes.computeIfAbsent(0L, k -> new ArrayList<>()).add(index);
         return new Entity<>(this, index, entityVersions[index]);
     }
 
@@ -74,14 +75,28 @@ public class Engine<T> {
     @SuppressWarnings("unchecked")
     public void addComponent(int id, Component component) {
         ComponentMapper<Component> mapper = (ComponentMapper<Component>) mappers.get(component.getClass());
+        long oldSig = componentBitset[id];
         componentBitset[id] |= 1L << mapper.getIndex();
         mapper.set(id, component);
+        moveArchetype(id, oldSig, componentBitset[id]);
     }
 
     public void removeComponent(int id, Class<? extends Component> component) {
         var mapper = mappers.get(component);
-        componentBitset[id] ^= 1L << mapper.getIndex();
+        long oldSig = componentBitset[id];
+        componentBitset[id] &= ~(1L << mapper.getIndex());
         mapper.set(id, null);
+        moveArchetype(id, oldSig, componentBitset[id]);
+    }
+
+    private void moveArchetype(int entityId, long oldSig, long newSig) {
+        if (oldSig == newSig) return;
+        List<Integer> oldList = archetypes.get(oldSig);
+        if (oldList != null) {
+            oldList.remove((Integer) entityId);
+            if (oldList.isEmpty()) archetypes.remove(oldSig);
+        }
+        archetypes.computeIfAbsent(newSig, k -> new ArrayList<>()).add(entityId);
     }
 
     public void destroyEntity(int id) {
@@ -95,6 +110,11 @@ public class Engine<T> {
             if ((bitset & (1L << mapper.getIndex())) != 0) {
                 mapper.set(id, null);
             }
+        }
+        List<Integer> list = archetypes.get(bitset);
+        if (list != null) {
+            list.remove((Integer) id);
+            if (list.isEmpty()) archetypes.remove(bitset);
         }
         componentBitset[id] = 0L;
         entityReuse.add(id);
@@ -149,11 +169,16 @@ public class Engine<T> {
     }
 
     public void clearEntities() {
+        archetypes.clear();
         for (int i = 0; i < entityMax; i++) {
             if (componentBitset[i] != 0L) {
                 destroyEntity(i);
             }
         }
+    }
+
+    Map<Long, List<Integer>> getArchetypes() {
+        return archetypes;
     }
 
     public void removeSystems(int priority) {
@@ -188,8 +213,12 @@ public class Engine<T> {
         }
 
         final long finalMask = familyMask;
-        return IntStream.range(0, getEntityMax())
-            .filter(i -> (getBitsets()[i] & finalMask) == finalMask)
-            .boxed();
+        List<Integer> result = new ArrayList<>();
+        for (var entry : archetypes.entrySet()) {
+            if ((entry.getKey() & finalMask) == finalMask) {
+                result.addAll(entry.getValue());
+            }
+        }
+        return result.stream();
     }
 }
