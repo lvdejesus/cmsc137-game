@@ -175,6 +175,7 @@ public class Main {
         engine.register(ButtonComponent.class);
         engine.register(BooleanComponent.class);
         engine.register(TileComponent.class);
+        engine.register(UiComponent.class);
 
         List<TileDefinition> tiles;
         // Load tile definitions

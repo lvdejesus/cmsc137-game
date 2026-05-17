@@ -63,8 +63,4 @@ public class EngineConfig {
         engine.addSystem(new TextRenderingSystem(camera, "default"), 1000);
         engine.addSystem(new TextRenderingSystem(fixedCamera, "fixed"), 1000);
     }
-
-    public static void addServerSystems(Engine<Context> engine, NetworkSpawnManager nsm, Statistics statistics) {
-//        engine.addSystem(new PhysicsSystem());
-    }
 }

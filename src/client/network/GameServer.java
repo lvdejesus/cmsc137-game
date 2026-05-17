@@ -208,7 +208,7 @@ public class GameServer implements Runnable {
             TransformComponent tc = tm.get(entityId);
             PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
 
-            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, id));
+            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, id, puc.splatter, 0.8f));
         });
 
         handlers.put(C_RequestStartGame.class, (id, message) -> {
@@ -229,7 +229,7 @@ public class GameServer implements Runnable {
         MapGenerator.MapResult grid;
         try {
             TileLoader.loadTiles();
-            grid = MapGenerator.generateMap(System.nanoTime());
+            grid = MapGenerator.generateMap(System.nanoTime(), 8 + 3 * connectedClients.size(), 12 + 5 * connectedClients.size());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -240,13 +240,14 @@ public class GameServer implements Runnable {
         engine.addSystem(new EnemySystem(nsm));
         engine.addSystem(new BossSystem(nsm));
         engine.addSystem(new BulletSystem(nsm));
-        engine.addSystem(new DamageSystem(nsm,playerToEntityMap, statistics));
+        engine.addSystem(new DamageSystem(nsm, playerToEntityMap, statistics));
         engine.addSystem(new BulletWallTileCollisionSystem(nsm));
         engine.addSystem(new WallTileCollisionSystem());
         engine.addSystem(new MapEnemySpawnSystem(grid, nsm));
         engine.addSystem(new MapKeySpawnSystem(grid, nsm));
         engine.addSystem(new KeyPickupSystem(nsm));
         engine.addSystem(new BossDoorSystem(nsm));
+        engine.addSystem(new ExperienceSystem());
         engine.addSystem(new SnapshotSystem(snapshotQueue, outQueue));
         engine.addSystem(new ServerNetworkOutputSystem(outQueue, connectedClients));
 

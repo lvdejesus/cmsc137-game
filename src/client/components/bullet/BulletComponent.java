@@ -7,6 +7,7 @@ public class BulletComponent implements Component {
     public float damage = 25.0f;
     public float age = 0.0f;
     public int origin;
+    public int splatter;
 
     public boolean isEnemy() {
         return origin == -1;

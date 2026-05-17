@@ -57,20 +57,7 @@ public class PlayerShootSystem extends IteratingEntitySystem<Context> {
                 float pvx = mc.velocity.x;
                 float pvy = mc.velocity.y;
 
-                if (puc.splatter > 1) {
-                    TransformComponent tc = engine.getMapper(TransformComponent.class).get(entityId);
-                    Vector2f dirVec = new Vector2f(d).sub(tc.position);
-                    float angle = (float) Math.atan2(dirVec.y, dirVec.x);
-                    float increment = (float) (Math.PI * 2.0f / puc.splatter);
-                    for (int i = 0; i < puc.splatter; i++) {
-                        float finalAngle = angle + increment * i;
-                        float nx = (float) (tc.position.x + 300.0f * Math.cos(finalAngle));
-                        float ny = (float) (tc.position.y + 300.0f * Math.sin(finalAngle));
-                        outQueue.offer(new C_Shoot(nx, ny, pvx, pvy));
-                    }
-                } else {
-                    outQueue.offer(new C_Shoot(d.x, d.y, pvx, pvy));
-                }
+                outQueue.offer(new C_Shoot(d.x, d.y, pvx, pvy));
 
                 ptc.shootTimer = glfwGetTime() + 1.0f / puc.getEffectiveFireRate();
             }

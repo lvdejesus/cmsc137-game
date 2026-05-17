@@ -18,7 +18,7 @@ public class PlayerUpgradeComponent implements SyncComponent {
 
     public float getEffectiveFireRate() {
         if (splatter > 1) {
-            return fireRate * 0.3f;
+            return fireRate * 0.7f;
         } else {
             return fireRate;
         }
@@ -37,7 +37,7 @@ public class PlayerUpgradeComponent implements SyncComponent {
                 bulletSpeed += 200.0f;
                 break;
             case 3:
-                splatter = splatter == 1 ? 6 : (splatter + 2);
+                splatter = splatter == 1 ? 6 : (splatter + 3);
                 break;
             default:
                 throw new RuntimeException("Invalid upgrade type.");
