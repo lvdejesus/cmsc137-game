@@ -2,6 +2,7 @@ package client.systems.client;
 
 import client.components.*;
 import client.components.player.PlayerStateComponent;
+import client.entities.Bullet;
 import client.network.NetworkSpawnManager;
 import client.network.messages.server.S_BossDefeated;
 import client.util.Statistics;
@@ -10,6 +11,7 @@ import framework.engine.Engine;
 import framework.engine.EntitySystem;
 import client.components.bullet.BulletComponent;
 import client.util.SpatialHashGrid;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.primitives.AABBf;
 
@@ -85,6 +87,22 @@ public class DamageSystem extends EntitySystem<Context> {
                     multiplier = bulletVelocity.distance(targetVelocity) / 700.0f;
                 } else {
                     multiplier = bulletVelocity.length() / 700.0f;
+                }
+
+                if (bc.splatter > 1) {
+                    TransformComponent tc = engine.getMapper(TransformComponent.class).get(targetId);
+                    CollisionComponent cc = engine.getMapper(CollisionComponent.class).get(targetId);
+                    float angle = (float) Math.atan2(bulletVelocity.y, bulletVelocity.x);
+                    float increment = (float) (Math.PI * 2.0f / bc.splatter);
+                    for (int i = 0; i < bc.splatter; i++) {
+                        float finalAngle = angle + increment * i;
+                        var minDist = Math.sqrt(cc.boundingBox.minX * cc.boundingBox.minX + cc.boundingBox.minY * cc.boundingBox.minY) + 1.0f;
+                        float ox = (float) (tc.position.x + minDist * Math.cos(finalAngle));
+                        float oy = (float) (tc.position.y + minDist * Math.sin(finalAngle));
+                        float nx = (float) (tc.position.x + 300.0f * Math.cos(finalAngle));
+                        float ny = (float) (tc.position.y + 300.0f * Math.sin(finalAngle));
+                        nsm.spawn(Bullet.class, Bullet.serialize(ox, oy, nx, ny, 0.0f, 0.0f, bulletVelocity.length(), bc.origin, 1, 0.3f));
+                    }
                 }
 
                 if (playerC == null) {

@@ -56,6 +56,7 @@ public class GameServer implements Runnable {
     Map<Integer, Integer> playerToEntityMap;
 
     private static final double NANO_TO_SECOND = 1_000_000_000.0;
+    private static final long TICK_INTERVAL_NS = 50_000_000L; // 20Hz = 50ms per tick
 
     public GameServer(String localIP) {
         this.localIP = localIP;
@@ -207,7 +208,7 @@ public class GameServer implements Runnable {
             TransformComponent tc = tm.get(entityId);
             PlayerUpgradeComponent puc = engine.getMapper(PlayerUpgradeComponent.class).get(entityId);
 
-            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, id));
+            nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, id, puc.splatter, 0.8f));
         });
 
         handlers.put(C_RequestStartGame.class, (id, message) -> {
@@ -228,7 +229,7 @@ public class GameServer implements Runnable {
         MapGenerator.MapResult grid;
         try {
             TileLoader.loadTiles();
-            grid = MapGenerator.generateMap(System.nanoTime());
+            grid = MapGenerator.generateMap(System.nanoTime(), 8 + 3 * connectedClients.size(), 12 + 5 * connectedClients.size());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -239,13 +240,14 @@ public class GameServer implements Runnable {
         engine.addSystem(new EnemySystem(nsm));
         engine.addSystem(new BossSystem(nsm));
         engine.addSystem(new BulletSystem(nsm));
-        engine.addSystem(new DamageSystem(nsm,playerToEntityMap, statistics));
+        engine.addSystem(new DamageSystem(nsm, playerToEntityMap, statistics));
         engine.addSystem(new BulletWallTileCollisionSystem(nsm));
         engine.addSystem(new WallTileCollisionSystem());
         engine.addSystem(new MapEnemySpawnSystem(grid, nsm));
         engine.addSystem(new MapKeySpawnSystem(grid, nsm));
         engine.addSystem(new KeyPickupSystem(nsm));
         engine.addSystem(new BossDoorSystem(nsm));
+        engine.addSystem(new ExperienceSystem());
         engine.addSystem(new SnapshotSystem(snapshotQueue, outQueue));
         engine.addSystem(new ServerNetworkOutputSystem(outQueue, connectedClients));
 
@@ -286,7 +288,9 @@ public class GameServer implements Runnable {
         }
 
         while (running) {
-            double currentTime = System.nanoTime() / NANO_TO_SECOND;
+            long tickStart = System.nanoTime();
+
+            double currentTime = tickStart / NANO_TO_SECOND;
             float dt = (float) (currentTime - lastTime);
             lastTime = currentTime;
 
@@ -307,6 +311,16 @@ public class GameServer implements Runnable {
                 if (allDead && !playerToEntityMap.isEmpty()) {
                     outQueue.add(new MessagePair(-1, new S_GameOver(statistics)));
                     gameEnded = true;
+                }
+            }
+
+            long elapsed = System.nanoTime() - tickStart;
+            long sleepNs = TICK_INTERVAL_NS - elapsed;
+            if (sleepNs > 0) {
+                try {
+                    Thread.sleep(sleepNs / 1_000_000, (int) (sleepNs % 1_000_000));
+                } catch (InterruptedException e) {
+                    running = false;
                 }
             }
         }

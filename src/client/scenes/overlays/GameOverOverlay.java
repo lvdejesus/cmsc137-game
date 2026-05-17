@@ -1,8 +1,10 @@
 package client.scenes.overlays;
 
+import client.components.AnimationComponent;
 import client.components.RenderComponent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
+import client.rendering.Animation;
 import client.network.NetworkManager;
 import client.rendering.Anchor;
 import client.rendering.Font;
@@ -68,22 +70,40 @@ public class GameOverOverlay {
         statsBorder.addComponent(new RenderComponent(TextureAtlas.get().getRegion("stats_border.png"), 0.7f, new Vector4f(1, 1, 1, 1), "fixed"));
         entities.add(statsBorder);
 
-        // Stats Text
+        // Player stats table
         var stats = NetworkManager.getInstance().getGameOverStats();
-        int totalKills = stats != null ? stats.kills.values().stream().mapToInt(Integer::intValue).sum() : 0;
-        int bosses = stats != null ? stats.bossKills : 0;
-        String enemiesText = "enemies killed: " + (totalKills - bosses);
-        String bossesText = "bosses killed: " + bosses;
+        int maxPlayerId = NetworkManager.getInstance().getPlayerCount();
+        if (stats != null) {
+            for (int id : stats.kills.keySet()) {
+                if (id > maxPlayerId) maxPlayerId = id;
+            }
+        }
 
-        Entity<Context> enemiesKilled = engine.createEntity();
-        enemiesKilled.addComponent(new TransformComponent(new Vector2f(centerX, centerY - 30), new Vector2f(1, 1), Anchor.CENTER));
-        enemiesKilled.addComponent(new TextComponent(font, enemiesText, new Vector4f(1, 1, 1, 1), 1.0f, 0.8f, "fixed"));
-        entities.add(enemiesKilled);
+        if (maxPlayerId > 0 && stats != null) {
+            float rowSpacing = 55;
+            float totalHeight = maxPlayerId * rowSpacing;
+            float startY = centerY - totalHeight / 2 + rowSpacing / 2;
+            float currentTime = (float) glfwGetTime();
 
-        Entity<Context> bossesKilled = engine.createEntity();
-        bossesKilled.addComponent(new TransformComponent(new Vector2f(centerX, centerY + 30), new Vector2f(1, 1), Anchor.CENTER));
-        bossesKilled.addComponent(new TextComponent(font, bossesText, new Vector4f(1, 1, 1, 1), 1.0f, 0.8f, "fixed"));
-        entities.add(bossesKilled);
+            for (int playerId = 1; playerId <= maxPlayerId; playerId++) {
+                int kills = stats.kills.getOrDefault(playerId, 0);
+                float rowY = startY + (playerId - 1) * rowSpacing;
+
+                String spritePath = "players/player" + playerId + ".png";
+                Animation anim = Animation.fromFile(spritePath, 22, 0.1f);
+
+                Entity<Context> sprite = engine.createEntity();
+                sprite.addComponent(new TransformComponent(new Vector2f(centerX - 100, rowY), new Vector2f(1.5f, 1.5f), Anchor.CENTER));
+                sprite.addComponent(new RenderComponent(anim.frames[0], 0.8f, new Vector4f(1, 1, 1, 1), "fixed"));
+                sprite.addComponent(new AnimationComponent(anim, currentTime, 0, anim.frames.length - 1, true));
+                entities.add(sprite);
+
+                Entity<Context> killText = engine.createEntity();
+                killText.addComponent(new TransformComponent(new Vector2f(centerX + 80, rowY), new Vector2f(1, 1), Anchor.CENTER));
+                killText.addComponent(new TextComponent(font, String.valueOf(kills), new Vector4f(1, 1, 1, 1), 1.0f, 0.8f, "fixed"));
+                entities.add(killText);
+            }
+        }
 
         // Options
         optionPositions = new Vector2f[]{

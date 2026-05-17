@@ -1,5 +1,6 @@
 package client.entities;
 
+import client.network.messages.client.C_Shoot;
 import framework.engine.Engine;
 import client.systems.client.Context;
 import client.components.*;
@@ -23,8 +24,10 @@ public class Bullet extends Prefab {
     private final float pvy;
     private final float speed;
     private final int origin;
+    private final int splatter;
+    private final float lifetime;
 
-    public Bullet(Engine<Context> engine, int networkId, float x, float y, float px, float py, float pvx, float pvy, float speed, int origin) {
+    public Bullet(Engine<Context> engine, int networkId, float x, float y, float px, float py, float pvx, float pvy, float speed, int origin, int splatter, float lifetime) {
         super(engine);
 
         this.networkId = networkId;
@@ -36,6 +39,8 @@ public class Bullet extends Prefab {
         this.pvy = pvy;
         this.speed = speed;
         this.origin = origin;
+        this.splatter = splatter;
+        this.lifetime = lifetime;
     }
 
     @Override
@@ -64,7 +69,8 @@ public class Bullet extends Prefab {
 
         BulletComponent bulletComp = new BulletComponent();
         bulletComp.origin = origin;
-        bulletComp.lifetime = isEnemy() ? 3.0f : 0.8f;
+        bulletComp.lifetime = lifetime;
+        bulletComp.splatter = splatter;
         entity.addComponent(bulletComp);
 
         entity.addComponent(new CollisionComponent(new AABBf(
@@ -82,12 +88,14 @@ public class Bullet extends Prefab {
         float pvy = bytes.getFloat();
         float speed = bytes.getFloat();
         int origin = bytes.getInt();
+        int splatter = bytes.getInt();
+        float lifetime = bytes.getFloat();
 
-        return new Bullet(engine, networkId, x, y, px, py, pvx, pvy, speed, origin);
+        return new Bullet(engine, networkId, x, y, px, py, pvx, pvy, speed, origin, splatter, lifetime);
     }
 
-    public static byte[] serialize(float x, float y, float px, float py, float pvx, float pvy, float speed, int origin) {
-        ByteBuffer bytes = ByteBuffer.allocate(32);
+    public static byte[] serialize(float x, float y, float px, float py, float pvx, float pvy, float speed, int origin, int splatter, float lifetime) {
+        ByteBuffer bytes = ByteBuffer.allocate(40);
 
         bytes.putFloat(x);
         bytes.putFloat(y);
@@ -97,6 +105,8 @@ public class Bullet extends Prefab {
         bytes.putFloat(pvy);
         bytes.putFloat(speed);
         bytes.putInt(origin);
+        bytes.putInt(splatter);
+        bytes.putFloat(lifetime);
 
         return bytes.array();
     }
