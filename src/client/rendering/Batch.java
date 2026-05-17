@@ -1,5 +1,9 @@
 package client.rendering;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
 import static org.lwjgl.opengl.GL33.*;
 
 public class Batch {
@@ -11,6 +15,7 @@ public class Batch {
     private int spriteCount = 0;
     private final int vao;
     private final int vbo;
+    private final FloatBuffer directBuffer;
 
     public Batch() {
         vao = glGenVertexArrays();
@@ -25,6 +30,10 @@ public class Batch {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(2, 4, GL_FLOAT, false, 9 * 4, 5 * 4);
         glEnableVertexAttribArray(2);
+
+        directBuffer = ByteBuffer.allocateDirect(vertexArray.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
 
         setupIndices();
     }
@@ -88,8 +97,14 @@ public class Batch {
         if (spriteCount == 0)
             return;
 
+        int count = spriteCount * VERTICES_PER_SPRITE * ELEMENTS_PER_VERTEX;
+
+        directBuffer.clear();
+        directBuffer.put(vertexArray, 0, count);
+        directBuffer.flip();
+
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, vertexArray);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, directBuffer);
 
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, spriteCount * 6, GL_UNSIGNED_INT, 0);
