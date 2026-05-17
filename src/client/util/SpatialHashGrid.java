@@ -51,7 +51,6 @@ public class SpatialHashGrid {
     }
 
     public void getPotentialColliders(AABBf worldBounds, Set<Integer> result) {
-        result.clear();
         int minX = (int) Math.floor(worldBounds.minX / cellSize);
         int minY = (int) Math.floor(worldBounds.minY / cellSize);
         int maxX = (int) Math.floor(worldBounds.maxX / cellSize);

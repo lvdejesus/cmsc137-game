@@ -25,7 +25,9 @@ public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<EnemyComponent> enemyM;
     private ComponentMapper<WallComponent> wallM;
 
-    private final SpatialHashGrid wallGrid = new SpatialHashGrid(64);
+    private final SpatialHashGrid staticGrid = new SpatialHashGrid(64);
+    private final SpatialHashGrid dynamicGrid = new SpatialHashGrid(64);
+    private final Set<Integer> staticAdded = new HashSet<>();
     private final Set<Integer> potentialColliders = new HashSet<>();
 
     private final AABBf scratchBox = new AABBf(0.0f, 0.0f, Float.NEGATIVE_INFINITY, 0.0f, 0.0f, Float.POSITIVE_INFINITY);
@@ -50,12 +52,17 @@ public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
 
     @Override
     public void update(Context ctx) {
-        wallGrid.clear();
+        dynamicGrid.clear();
         Iterable<Integer> walls = engine.getFamily(WallComponent.class, CollisionComponent.class, TransformComponent.class)::iterator;
         for (int wallId : walls) {
-            if (!wallM.get(wallId).isActive()) continue;
+            WallComponent wc = wallM.get(wallId);
+            if (!wc.isActive()) continue;
             updateWorldBox(wallId, wallBox);
-            wallGrid.addEntity(wallId, wallBox);
+            if (wc.isStatic) {
+                if (staticAdded.add(wallId)) staticGrid.addEntity(wallId, wallBox);
+            } else {
+                dynamicGrid.addEntity(wallId, wallBox);
+            }
         }
 
         super.update(ctx);
@@ -79,7 +86,9 @@ public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
         pos.x += vel.x * dt;
         if (localBox != null && canSlide) {
             syncWorldBox(pos, localBox, scratchBox);
-            wallGrid.getPotentialColliders(scratchBox, potentialColliders);
+            potentialColliders.clear();
+            staticGrid.getPotentialColliders(scratchBox, potentialColliders);
+            dynamicGrid.getPotentialColliders(scratchBox, potentialColliders);
 
             for (int wallId : potentialColliders) {
                 if (wallId == entityId) continue;
@@ -99,7 +108,9 @@ public class WallTileCollisionSystem extends IteratingEntitySystem<Context> {
         pos.y += vel.y * dt;
         if (localBox != null && canSlide) {
             syncWorldBox(pos, localBox, scratchBox);
-            wallGrid.getPotentialColliders(scratchBox, potentialColliders);
+            potentialColliders.clear();
+            staticGrid.getPotentialColliders(scratchBox, potentialColliders);
+            dynamicGrid.getPotentialColliders(scratchBox, potentialColliders);
 
             for (int wallId : potentialColliders) {
                 if (wallId == entityId) continue;

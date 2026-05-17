@@ -2,6 +2,7 @@ package client;
 
 import client.systems.client.Context;
 import client.systems.client.InputHandler;
+import client.network.NetworkManager;
 import common.NativeLoader;
 import framework.rendering.ShaderProgram;
 import framework.engine.*;
@@ -62,6 +63,7 @@ public class Main {
         client.scenes.SceneManager.setScene(new client.scenes.MenuScene(window), engine);
 
         loop();
+        NetworkManager.getInstance().stop();
         glDeleteProgram(shaderId);
         glfwTerminate();
     }

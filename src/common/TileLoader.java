@@ -30,6 +30,7 @@ public class TileLoader {
                 String textureFile = null;
                 boolean solid = false;
                 boolean door = false;
+                boolean isStatic = false;
                 int[] dims = new int[2];
                 TileDefinition.TileTextureType type = TileDefinition.TileTextureType.regular;
 
@@ -64,6 +65,9 @@ public class TileLoader {
                         case "door":
                             door = tilePair.get().value().getInt() == 1;
                             break;
+                        case "static":
+                            isStatic = tilePair.get().value().getInt() == 1;
+                            break;
                         case "connecting":
                             if (tilePair.get().value().getInt() == 1) {
                                 type = TileDefinition.TileTextureType.connected;
@@ -76,7 +80,7 @@ public class TileLoader {
                     throw new RuntimeException("Texture missing!");
                 }
 
-                tiles.add(new TileDefinition(name, textureFile, solid, door, dims[0], dims[1], type));
+                tiles.add(new TileDefinition(name, textureFile, solid, door, isStatic, dims[0], dims[1], type));
             }
         }
 

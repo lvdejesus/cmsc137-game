@@ -20,7 +20,9 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
     private ComponentMapper<CollisionComponent> collisionMapper;
     private ComponentMapper<WallComponent> wallMapper;
     private final NetworkSpawnManager networkSpawnManager;
-    private final SpatialHashGrid wallGrid;
+    private final SpatialHashGrid staticGrid;
+    private final SpatialHashGrid dynamicGrid;
+    private final Set<Integer> staticAdded = new HashSet<>();
 
     private final AABBf bulletWorldBox = new AABBf(0.0f, 0.0f, Float.NEGATIVE_INFINITY, 0.0f, 0.0f, Float.POSITIVE_INFINITY);
     private final AABBf wallWorldBox = new AABBf(0.0f, 0.0f, Float.NEGATIVE_INFINITY, 0.0f, 0.0f, Float.POSITIVE_INFINITY);
@@ -29,7 +31,8 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
     public BulletWallTileCollisionSystem(NetworkSpawnManager nsm) {
         super(BulletComponent.class);
         this.networkSpawnManager = nsm;
-        this.wallGrid = new SpatialHashGrid(64);
+        this.staticGrid = new SpatialHashGrid(64);
+        this.dynamicGrid = new SpatialHashGrid(64);
     }
 
     @Override
@@ -42,13 +45,18 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
 
     @Override
     public void update(Context ctx) {
-        wallGrid.clear();
+        dynamicGrid.clear();
         Iterable<Integer> walls = engine.getFamily(WallComponent.class)::iterator;
 
         for (int wallId : walls) {
-            if (!wallMapper.get(wallId).isActive()) continue;
+            WallComponent wc = wallMapper.get(wallId);
+            if (!wc.isActive()) continue;
             syncWorldBox(wallId, wallWorldBox);
-            wallGrid.addEntity(wallId, wallWorldBox);
+            if (wc.isStatic) {
+                if (staticAdded.add(wallId)) staticGrid.addEntity(wallId, wallWorldBox);
+            } else {
+                dynamicGrid.addEntity(wallId, wallWorldBox);
+            }
         }
 
         super.update(ctx);
@@ -59,7 +67,8 @@ public class BulletWallTileCollisionSystem extends IteratingEntitySystem<Context
         syncWorldBox(bulletId, bulletWorldBox);
 
         potentialWalls.clear();
-        wallGrid.getPotentialColliders(bulletWorldBox, potentialWalls);
+        staticGrid.getPotentialColliders(bulletWorldBox, potentialWalls);
+        dynamicGrid.getPotentialColliders(bulletWorldBox, potentialWalls);
 
         for (int wallId : potentialWalls) {
             syncWorldBox(wallId, wallWorldBox);

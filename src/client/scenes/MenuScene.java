@@ -106,7 +106,9 @@ public class MenuScene extends Scene {
             if (selectedOption == 0) {
                 // Start Game (Host) - start server first, then join
                 GameServer server = new GameServer("0.0.0.0");
-                new Thread(server).start();
+                Thread serverThread = new Thread(server);
+                serverThread.setDaemon(true);
+                serverThread.start();
 
                 NetworkManager.getInstance().joinGame("127.0.0.1", GameServer.TCP_PORT);
                 SceneManager.setScene(new LobbyScene("127.0.0.1"), engine);
