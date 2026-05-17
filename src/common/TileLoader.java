@@ -18,7 +18,7 @@ public class TileLoader {
 
     public static List<TileDefinition> loadTiles() throws IOException {
         List<TileDefinition> tiles = new ArrayList<>();
-        try (JsonReader reader = new JsonReader("./res/textures/tiles/tiles.json")) {
+        try (JsonReader reader = new JsonReader("res/textures/tiles/tiles.json")) {
             Optional<JsonPair> pair;
             while (true) {
                 pair = reader.getPair();

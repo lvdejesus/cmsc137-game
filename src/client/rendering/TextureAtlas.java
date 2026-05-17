@@ -1,23 +1,15 @@
 package client.rendering;
 
+import common.ResourceLoader;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.stb.STBImage.*;
-
-record TextureEntry(String name, String path) {
-}
 
 public class TextureAtlas {
     private static TextureAtlas instance;
@@ -39,29 +31,21 @@ public class TextureAtlas {
         textureID = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        // Initialize empty texture
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ATLAS_SIZE, ATLAS_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE,
             (ByteBuffer) null);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        Path[] roots = {Paths.get("res/textures"), Paths.get("res/menu_assets")};
-        List<TextureEntry> textures = new ArrayList<>();
+        String[] roots = {"res/textures", "res/menu_assets"};
+        List<String[]> textures = new ArrayList<>();
 
-        for (Path root : roots) {
-            if (!Files.exists(root)) continue;
-            try (Stream<Path> stream = Files.walk(root)) {
-                List<TextureEntry> rootTextures = stream
-                    .filter(Files::isRegularFile)
-                    .filter(path -> path.toString().toLowerCase().endsWith(".png"))
-                    .map(path -> {
-                        String relativePath = root.relativize(path).toString().replace("\\", "/");
-                        System.out.println("[TextureAtlas] Found: " + relativePath + " at " + path);
-                        return new TextureEntry(relativePath, path.toString());
-                    }).toList();
-                textures.addAll(rootTextures);
-            } catch (IOException e) {
-                e.printStackTrace();
+        for (String root : roots) {
+            List<String> files = ResourceLoader.list(root);
+            for (String file : files) {
+                if (!file.toLowerCase().endsWith(".png")) continue;
+                String relativePath = file.substring(root.length() + 1);
+                System.out.println("[TextureAtlas] Found: " + relativePath + " at " + file);
+                textures.add(new String[]{relativePath, file});
             }
         }
 
@@ -69,14 +53,19 @@ public class TextureAtlas {
         int curY = 0;
         int maxHeightInRow = 0;
 
-        for (TextureEntry file : textures) {
+        for (String[] entry : textures) {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 IntBuffer w = stack.mallocInt(1);
                 IntBuffer h = stack.mallocInt(1);
                 IntBuffer comp = stack.mallocInt(1);
 
                 stbi_set_flip_vertically_on_load(true);
-                ByteBuffer data = stbi_load(file.path(), w, h, comp, 4);
+                byte[] bytes = ResourceLoader.read(entry[1]);
+                ByteBuffer imageBuffer = BufferUtils.createByteBuffer(bytes.length);
+                imageBuffer.put(bytes);
+                imageBuffer.flip();
+
+                ByteBuffer data = stbi_load_from_memory(imageBuffer, w, h, comp, 4);
 
                 if (data == null)
                     continue;
@@ -101,7 +90,7 @@ public class TextureAtlas {
                 float u2 = (float) (curX + imgW) / ATLAS_SIZE;
                 float v2 = (float) (curY + imgH) / ATLAS_SIZE;
 
-                regions.put(file.name(), new Texture(u1, v1, u2, v2, imgW, imgH));
+                regions.put(entry[0], new Texture(u1, v1, u2, v2, imgW, imgH));
 
                 curX += imgW + 2; // Added 2px horizontal padding
                 maxHeightInRow = Math.max(maxHeightInRow, imgH);
@@ -117,10 +106,6 @@ public class TextureAtlas {
             throw new RuntimeException(name + " is not in the atlas.");
         }
         return texture;
-    }
-
-    public Iterable<String> listRegions() {
-        return regions.keySet();
     }
 
     public void bind() {

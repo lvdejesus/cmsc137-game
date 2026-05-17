@@ -2,6 +2,7 @@ package client;
 
 import client.systems.client.Context;
 import client.systems.client.InputHandler;
+import common.NativeLoader;
 import framework.rendering.ShaderProgram;
 import framework.engine.*;
 import client.rendering.*;
@@ -98,6 +99,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        NativeLoader.loadNatives();
         new Main().run();
     }
 }

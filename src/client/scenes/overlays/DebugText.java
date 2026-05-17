@@ -8,10 +8,10 @@ import client.systems.client.Context;
 import framework.engine.Engine;
 import framework.engine.Entity;
 
+import common.ResourceLoader;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import framework.engine.Window;
 import org.joml.Vector2f;
@@ -47,14 +47,14 @@ public class DebugText {
     public static DebugText create(Engine<Context> engine, String initialText) {
         try {
             if (font == null) {
-                byte[] bytes = Files.readAllBytes(Paths.get("res/fonts/KiwiSoda.ttf"));
+                byte[] bytes = ResourceLoader.read("res/fonts/KiwiSoda.ttf");
                 ByteBuffer buffer = BufferUtils.createByteBuffer(bytes.length);
                 buffer.put(bytes);
                 buffer.flip();
                 font = new Font(buffer, 32);
             }
             return new DebugText(engine, font, initialText);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }

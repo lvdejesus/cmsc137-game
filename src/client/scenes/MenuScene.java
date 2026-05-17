@@ -9,12 +9,11 @@ import client.systems.client.player.PlayerRotationSystem;
 import framework.engine.*;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
+import common.ResourceLoader;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import client.network.GameServer;
 import client.network.NetworkManager;
 
@@ -44,7 +43,7 @@ public class MenuScene extends Scene {
         try {
             ByteBuffer fontBuffer = loadResource("res/fonts/KiwiSoda.ttf");
             menuFont = new Font(fontBuffer, 48);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -140,8 +139,8 @@ public class MenuScene extends Scene {
         }
     }
 
-    private ByteBuffer loadResource(String path) throws IOException {
-        byte[] bytes = Files.readAllBytes(Paths.get(path));
+    private ByteBuffer loadResource(String path) {
+        byte[] bytes = ResourceLoader.read(path);
         ByteBuffer buffer = BufferUtils.createByteBuffer(bytes.length);
         buffer.put(bytes);
         buffer.flip();

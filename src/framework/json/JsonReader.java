@@ -1,8 +1,12 @@
 package framework.json;
 
-import java.io.FileReader;
+import common.ResourceLoader;
+
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PushbackReader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class JsonReader implements AutoCloseable {
@@ -10,7 +14,9 @@ public class JsonReader implements AutoCloseable {
     private boolean pendingValue = false;
 
     public JsonReader(String filename) throws IOException {
-        this.stream = new PushbackReader(new FileReader(filename), 1);
+        byte[] bytes = ResourceLoader.read(filename);
+        String content = new String(bytes, StandardCharsets.UTF_8);
+        this.stream = new PushbackReader(new StringReader(content), 1);
     }
 
     private int peekChar() throws IOException {

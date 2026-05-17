@@ -11,12 +11,11 @@ import client.systems.client.player.PlayerRotationSystem;
 import client.systems.client.player.PlayerTiltSystem;
 import client.systems.client.DeathSystem;
 import framework.engine.*;
+import common.ResourceLoader;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -50,7 +49,7 @@ public class LevelScene extends Scene {
             ByteBuffer fontBuffer = loadResource("res/fonts/KiwiSoda.ttf");
             pauseFont = new Font(fontBuffer, 32); // Smaller font
             menu = new Menu(engine, pauseFont);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -118,8 +117,8 @@ public class LevelScene extends Scene {
         upgrade.handleInput(input);
     }
 
-    private ByteBuffer loadResource(String path) throws IOException {
-        byte[] bytes = Files.readAllBytes(Paths.get(path));
+    private ByteBuffer loadResource(String path) {
+        byte[] bytes = ResourceLoader.read(path);
         ByteBuffer buffer = BufferUtils.createByteBuffer(bytes.length);
         buffer.put(bytes);
         buffer.flip();

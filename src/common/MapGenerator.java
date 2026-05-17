@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MapGenerator {
 
@@ -653,20 +654,42 @@ public class MapGenerator {
         List<RoomData> rooms = new ArrayList<>();
         Path roomsDir = Path.of("res/rooms");
 
-        if (!Files.exists(roomsDir)) return rooms;
+        if (Files.isDirectory(roomsDir)) {
+            List<String> filenames = new ArrayList<>();
+            try (var stream = Files.list(roomsDir)) {
+                stream.map(p -> p.getFileName().toString())
+                    .filter(f -> f.endsWith(".json"))
+                    .filter(f -> !f.startsWith("generated"))
+                    .forEach(filenames::add);
+            }
+            Collections.sort(filenames);
 
-        List<String> filenames = new ArrayList<>();
-        try (var stream = Files.list(roomsDir)) {
-            stream.map(p -> p.getFileName().toString())
-                .filter(f -> f.endsWith(".json"))
-                .filter(f -> !f.startsWith("generated"))
-                .forEach(filenames::add);
+            for (String filename : filenames) {
+                RoomLoader.Room room = RoomLoader.loadGrid(filename);
+                assert room != null;
+                int[][] grid = room.grid;
+
+                boolean isHallway = room.isHallway;
+                boolean isBoss = room.isBoss;
+
+                if (grid != null && grid.length > 0 && grid[0].length > 0) {
+                    rooms.add(new RoomData(filename, isHallway, isBoss, grid, grid[0].length, grid.length));
+                }
+            }
+            return rooms;
         }
-        Collections.sort(filenames);
+
+        List<String> files = common.ResourceLoader.list("res/rooms");
+        List<String> filenames = files.stream()
+            .map(f -> f.substring(f.lastIndexOf('/') + 1))
+            .filter(f -> f.endsWith(".json"))
+            .filter(f -> !f.startsWith("generated"))
+            .sorted()
+            .collect(Collectors.toList());
 
         for (String filename : filenames) {
             RoomLoader.Room room = RoomLoader.loadGrid(filename);
-            assert room != null;
+            if (room == null) continue;
             int[][] grid = room.grid;
 
             boolean isHallway = room.isHallway;

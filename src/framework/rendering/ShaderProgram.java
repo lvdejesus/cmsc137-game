@@ -1,8 +1,9 @@
 package framework.rendering;
 
+import common.ResourceLoader;
+
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,8 +38,8 @@ public class ShaderProgram {
 
     private static int loadShaderProgram(String vertPath, String fragPath) {
         try {
-            String vertCode = new String(Files.readAllBytes(Paths.get(vertPath)));
-            String fragCode = new String(Files.readAllBytes(Paths.get(fragPath)));
+            String vertCode = new String(ResourceLoader.read(vertPath), StandardCharsets.UTF_8);
+            String fragCode = new String(ResourceLoader.read(fragPath), StandardCharsets.UTF_8);
 
             int vShader = glCreateShader(GL_VERTEX_SHADER);
             glShaderSource(vShader, vertCode);
@@ -58,8 +59,8 @@ public class ShaderProgram {
             glDeleteShader(vShader);
             glDeleteShader(fShader);
             return program;
-        } catch (IOException e) {
-            throw new RuntimeException("Shaders missing!");
+        } catch (Exception e) {
+            throw new RuntimeException("Shaders missing!", e);
         }
     }
 

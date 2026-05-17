@@ -1,6 +1,8 @@
 package editor;
 
 import client.systems.client.*;
+import common.NativeLoader;
+import common.ResourceLoader;
 import common.TileDefinition;
 import editor.components.*;
 import editor.systems.CleanupSystem;
@@ -24,9 +26,6 @@ import client.components.TextComponent;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static common.TileLoader.loadTileTextures;
@@ -129,12 +128,12 @@ public class Main {
         TextureAtlas.get();
 
         try {
-            Path fontPath = Paths.get("res/fonts/Inter-Regular.ttf");
-            ByteBuffer fontBuffer = BufferUtils.createByteBuffer((int) Files.size(fontPath));
-            Files.newByteChannel(fontPath).read(fontBuffer);
+            byte[] bytes = ResourceLoader.read("res/fonts/Inter-Regular.ttf");
+            ByteBuffer fontBuffer = BufferUtils.createByteBuffer(bytes.length);
+            fontBuffer.put(bytes);
             fontBuffer.flip();
             font = new Font(fontBuffer, 24);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to load font", e);
         }
 
@@ -305,6 +304,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        NativeLoader.loadNatives();
         new Main().run();
     }
 }
