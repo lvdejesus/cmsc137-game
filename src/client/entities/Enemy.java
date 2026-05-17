@@ -57,15 +57,25 @@ public class Enemy extends Prefab {
 
     @Override
     public void spawnClientInternal() {
-        TextureAtlas atlas = TextureAtlas.get();
-        Texture enemyTexture;
         double currentTime = glfwGetTime();
 
-        String spritePath = type == EnemyType.Regular ? "enemy.png" : "advanced.png";
-        this.entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 8, 0.1f), (float) currentTime, true));
+        String spritePath;
+        if (type == EnemyType.Regular) {
+            spritePath = "enemy.png";
+            this.entity.addComponent(
+                    new AnimationComponent(Animation.fromFile(spritePath, 8, 0.1f), (float) currentTime, true));
+        } else if (type == EnemyType.Advanced) {
+            spritePath = "advanced.png";
+            this.entity.addComponent(
+                    new AnimationComponent(Animation.fromFile(spritePath, 8, 0.1f), (float) currentTime, true));
+        } else {
+            spritePath = "bossSprite.png";
+            this.entity.addComponent(
+                    new AnimationComponent(Animation.fromFile(spritePath, 16, 0.1f), (float) currentTime, true));
+        }
+
         this.entity.addComponent(new RenderComponent());
     }
-
 
     @Override
     public void spawnCommon() {
@@ -74,25 +84,22 @@ public class Enemy extends Prefab {
             this.entity.addComponent(new HealthComponent(75.0f)); // Enemy health
             this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.0f, 2.0f)));
             this.entity.addComponent(new CollisionComponent(new AABBf(
-                new Vector3f(-16.0f, -16.0f, 0.0f),
-                new Vector3f(16.0f, 16.0f, 0.1f)
-            )));
+                    new Vector3f(-16.0f, -16.0f, 0.0f),
+                    new Vector3f(16.0f, 16.0f, 0.1f))));
             this.entity.addComponent(new EnemyComponent(type, 1.2f, 0.8f));
         } else if (type == EnemyType.Advanced) {
-                this.entity.addComponent(new HealthComponent(150.0f)); // Enemy health
-                this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.5f, 2.5f)));
-                this.entity.addComponent(new CollisionComponent(new AABBf(
+            this.entity.addComponent(new HealthComponent(150.0f)); // Enemy health
+            this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(2.5f, 2.5f)));
+            this.entity.addComponent(new CollisionComponent(new AABBf(
                     new Vector3f(-24.0f, -24.0f, 0.0f),
-                    new Vector3f(24.0f, 24.0f, 0.1f)
-                )));
-                this.entity.addComponent(new EnemyComponent(type, 0.8f, 0.6f));
+                    new Vector3f(24.0f, 24.0f, 0.1f))));
+            this.entity.addComponent(new EnemyComponent(type, 0.8f, 0.6f));
         } else if (type == EnemyType.Boss) {
             this.entity.addComponent(new HealthComponent(3000.0f)); // Enemy health
             this.entity.addComponent(new TransformComponent(new Vector2f(x, y), new Vector2f(5.0f, 5.0f)));
             this.entity.addComponent(new CollisionComponent(new AABBf(
-                new Vector3f(-40.0f, -40.0f, 0.0f),
-                new Vector3f(40.0f, 40.0f, 0.1f)
-            )));
+                    new Vector3f(-40.0f, -40.0f, 0.0f),
+                    new Vector3f(40.0f, 40.0f, 0.1f))));
             this.entity.addComponent(new EnemyComponent(type, 0.2f, 0.1f));
             this.entity.addComponent(new BossComponent(cx, cy));
         }
@@ -144,7 +151,8 @@ public class Enemy extends Prefab {
 
         double currentTime = glfwGetTime();
         String spritePath = "enemyExplosion.png";
-        this.entity.addComponent(new AnimationComponent(Animation.fromFile(spritePath, 12, 0.1f), (float) currentTime, false));
+        this.entity.addComponent(
+                new AnimationComponent(Animation.fromFile(spritePath, 12, 0.1f), (float) currentTime, false));
         this.entity.addComponent(new DespawnTimerComponent(1.2f));
 
         return false;
