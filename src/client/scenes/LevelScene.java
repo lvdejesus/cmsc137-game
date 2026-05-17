@@ -29,6 +29,7 @@ public class LevelScene extends Scene {
     private Player player;
     private Menu menu;
     private UpgradeOverlay upgrade;
+    private GameOverOverlay gameOverOverlay;
 
     private Font pauseFont;
 
@@ -54,6 +55,7 @@ public class LevelScene extends Scene {
         }
 
         upgrade = new UpgradeOverlay(engine, player);
+        gameOverOverlay = new GameOverOverlay(engine, pauseFont);
         healthBar = new HealthBar(engine);
         healthBar.updateHealth(player.getHealth()); // Set initial health
         healthBar.createHealthBar();
@@ -108,6 +110,14 @@ public class LevelScene extends Scene {
 
         if (menu.isVisible()) {
             menu.handlePauseMenuInput(input);
+        }
+
+        if (player.getHealth() <= 0) {
+            if (!gameOverOverlay.isVisible()) {
+                gameOverOverlay.show();
+            }
+            gameOverOverlay.handleInput(input);
+            return; 
         }
 
         var xpc = player.getEntity().getComponent(ExperienceComponent.class);
