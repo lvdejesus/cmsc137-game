@@ -52,7 +52,9 @@ public class TextRenderingSystem extends IteratingEntitySystem<Context> {
         float length = 0;
         for (char c : textComp.text.toCharArray()) {
             Font.Glyph glyph = textComp.font.getGlyph(c);
-            length += glyph.xAdvance() * transform.scale.x * textComp.scale;
+            if (glyph != null) {
+                length += glyph.xAdvance() * transform.scale.x * textComp.scale;
+            }
         }
 
         float x = transform.position.x - length * (transform.anchor.getXOffset());

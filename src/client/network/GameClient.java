@@ -24,6 +24,7 @@ public class GameClient {
     private Socket socket;
     private DataOutputStream out;
     private volatile boolean connected = false;
+    volatile boolean connectionFailed = false;
 
     private final Map<Class<?>, NetworkManager.MessageHandler<?>> handlers;
     private final ConcurrentLinkedQueue<Message> inQueue;
@@ -39,6 +40,7 @@ public class GameClient {
     }
 
     public void connect(String ip, int port) {
+        connectionFailed = false;
         new Thread(() -> {
             for (int attempts = 0; attempts < 30; attempts++) {
                 try {
@@ -53,6 +55,7 @@ public class GameClient {
                 }
             }
             if (!connected) {
+                connectionFailed = true;
                 System.out.println("Failed to connect to server after retries.");
                 return;
             }
@@ -90,6 +93,7 @@ public class GameClient {
 
     public void stop() {
         connected = false;
+        connectionFailed = false;
         try {
             if (socket != null) socket.close();
         } catch (IOException e) {

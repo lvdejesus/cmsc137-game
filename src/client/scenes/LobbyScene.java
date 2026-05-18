@@ -26,6 +26,7 @@ public class LobbyScene extends Scene {
     
     private final String hostIP;
     private boolean isHost;
+    private boolean failedShown = false;
 
     public LobbyScene(String hostIP) {
         this.hostIP = hostIP;
@@ -63,6 +64,12 @@ public class LobbyScene extends Scene {
         startButtonEntity.addComponent(new TransformComponent(new Vector2f(centerX, centerY + 120), new Vector2f(1, 1), Anchor.CENTER));
         startButtonEntity.addComponent(new TextComponent(font, "Start Game", new Vector4f(0, 1, 0, 1), 1.0f, 0.5f, "fixed"));
         entities.add(startButtonEntity);
+
+        // Failed to connect text (hidden initially)
+        Entity<Context> failedText = engine.createEntity();
+        failedText.addComponent(new TransformComponent(new Vector2f(centerX, centerY - 50), new Vector2f(1, 1), Anchor.CENTER));
+        failedText.addComponent(new TextComponent(font, "", new Vector4f(1, 0, 0, 1), 1.0f, 0.5f, "fixed"));
+        entities.add(failedText);
     }
 
     private int lastCount = -1;
@@ -72,6 +79,24 @@ public class LobbyScene extends Scene {
         NetworkManager nm = NetworkManager.getInstance();
         int count = nm.getPlayerCount();
         isHost = nm.isHost();
+
+        if (nm.getConnectionFailed() && !failedShown) {
+            failedShown = true;
+            statusTextEntity.getComponent(TextComponent.class).text = "";
+            ipTextEntity.getComponent(TextComponent.class).text = "";
+            startButtonEntity.getComponent(TextComponent.class).text = "";
+            TextComponent ftc = entities.get(entities.size() - 1).getComponent(TextComponent.class);
+            ftc.color = new Vector4f(1, 0, 0, 1);
+            ftc.text = "Failed to connect. Press ENTER to return to menu.";
+        }
+
+        if (failedShown) {
+            if (InputHandler.getInstance().keyDown(GLFW_KEY_ENTER)) {
+                nm.stop();
+                SceneManager.setScene(new MenuScene(Window.getWindow()), engine);
+            }
+            return;
+        }
 
         if (count != lastCount) {
             System.out.println("UI Update: Player count is now " + count + "/4");

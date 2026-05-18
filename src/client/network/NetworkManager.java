@@ -26,7 +26,7 @@ public class NetworkManager {
     private static NetworkManager instance;
     private final GameClient client;
 
-    public volatile int playerIndex = 1;
+    public volatile int playerIndex = -1;
     public int networkId;
     private volatile int playerCount = 0;
     private volatile boolean gameStarted = false;
@@ -122,6 +122,10 @@ public class NetworkManager {
 
     public String getLastServerIp() {
         return lastServerIp;
+    }
+
+    public boolean getConnectionFailed() {
+        return client.connectionFailed;
     }
 
     public void sendMessage(Message message) {
