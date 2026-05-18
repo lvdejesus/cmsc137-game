@@ -25,7 +25,7 @@ public class Window {
     private Window() {
         this.width = 1280;
         this.height = 720;
-        this.title = "GameTitle";
+        this.title = "Neon Drift";
     }
 
     // Creates window

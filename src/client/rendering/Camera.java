@@ -34,22 +34,14 @@ public class Camera {
         return worldHeight;
     }
 
-    public Camera() {
-        this("default");
-    }
-
-    public Camera(String name) {
-        this(name, 1.0f);
-    }
-
-    public Camera(String name, float scale) {
+    public Camera(String name, float scale, float width, float height) {
         this.name = name;
         this.position = new Vector2f(0, 0);
         this.rotation = 0.0f;
         this.viewportX = 0;
         this.viewportY = 0;
-        this.viewportWidth = 1280;
-        this.viewportHeight = 720;
+        this.viewportWidth = width;
+        this.viewportHeight = height;
         this.worldWidth = this.viewportWidth * scale;
         this.worldHeight = this.viewportHeight * scale;
         this.viewMatrix = new Matrix4f();

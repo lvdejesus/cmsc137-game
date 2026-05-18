@@ -28,6 +28,11 @@ run: build
 		-Djava.library.path="$(NATIVE_PATH)" \
 		client.Main
 
+run-editor: build
+	java -cp "$(CLASSPATH)" \
+		-Djava.library.path="$(NATIVE_PATH)" \
+		editor.Main
+
 jar: build
 	@rm -rf build/jar
 	@mkdir -p build/jar
@@ -86,9 +91,9 @@ _jar-lean:
 	@echo "[JAR-LEAN] Copying resources..."
 	@cp -r res build/jar/res
 	@echo "[JAR-LEAN] Copying $(PLATFORM) natives..."
-	@mkdir -p build/jar/natives/x64/$(PLATFORM)
+	@mkdir -p build/jar/natives/$(PLATFORM)/x64
 	@for native in $(NATIVE_FILES); do \
-		cp $(LIB)/natives/x64/$(PLATFORM)/$$native build/jar/natives/x64/$(PLATFORM)/; \
+		cp $(LIB)/natives/$(PLATFORM)/x64/$$native build/jar/natives/$(PLATFORM)/x64; \
 	done
 	@echo "[JAR-LEAN] Creating manifest..."
 	@echo "Main-Class: client.Main" > build/MANIFEST.MF

@@ -39,10 +39,10 @@ public class Main {
         TextureAtlas.get();
 
         // Initialize Camera
-        this.camera = new Camera("default", 1.2f);
+        this.camera = new Camera("default", 1.2f, window.getWidth(), window.getHeight());
         camera.setSize((int) window.getWidth(), (int) window.getHeight());
 
-        this.fixedCamera = new Camera("fixed");
+        this.fixedCamera = new Camera("fixed", 1.0f, window.getWidth(), window.getHeight());
         fixedCamera.setSize((int) window.getWidth(), (int) window.getHeight());
 
         glfwSetFramebufferSizeCallback(window.getHandle(), (handle, width, height) -> {

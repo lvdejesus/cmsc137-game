@@ -143,11 +143,11 @@ public class Main {
 
         cameraManager = new CameraManager();
 
-        editorCamera = new Camera("editor");
+        editorCamera = new Camera("editor", 1.0f, WIDTH, HEIGHT);
         editorCamera.setViewport(0, 0, WIDTH - SIDEBAR_WIDTH, HEIGHT);
         editorCamera.setWorldSize(WIDTH - SIDEBAR_WIDTH, HEIGHT);
 
-        uiCamera = new Camera("ui");
+        uiCamera = new Camera("ui", 1.0f, WIDTH, HEIGHT);
         uiCamera.setViewport(WIDTH - SIDEBAR_WIDTH, 0, SIDEBAR_WIDTH, HEIGHT);
         uiCamera.setWorldSize(SIDEBAR_WIDTH, HEIGHT);
 
@@ -215,6 +215,12 @@ public class Main {
         editorBox.maxZ = Float.POSITIVE_INFINITY;
 
         editor = new TileGridComponent();
+        try {
+            editor.tileDefs = TileLoader.loadTiles();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        editor.tiles = TileLoader.loadTileTextures(editor.tileDefs);
 
         // Click area for placing tiles in editor
         Entity<Context> entity = engine.createEntity();
