@@ -5,6 +5,7 @@ import client.components.enemy.EnemyComponent;
 import client.components.player.PlayerStateComponent;
 import client.entities.Bullet;
 import client.entities.Enemy;
+import client.entities.Key;
 import client.network.NetworkSpawnManager;
 import client.network.messages.server.S_GameResult;
 import client.util.Statistics;
@@ -28,6 +29,7 @@ public class DamageSystem extends EntitySystem<Context> {
     private ComponentMapper<CollisionComponent> collisionM;
     private ComponentMapper<BulletComponent> bulletM;
     private ComponentMapper<NetworkIdComponent> nim;
+    private ComponentMapper<PlayerKeysComponent> playerKeysM;
 
     private final NetworkSpawnManager nsm;
     private final SpatialHashGrid spatialHash = new SpatialHashGrid(64);
@@ -51,6 +53,7 @@ public class DamageSystem extends EntitySystem<Context> {
         this.collisionM = engine.getMapper(CollisionComponent.class);
         this.bulletM = engine.getMapper(BulletComponent.class);
         this.nim = engine.getMapper(NetworkIdComponent.class);
+        this.playerKeysM = engine.getMapper(PlayerKeysComponent.class);
     }
 
     @Override
@@ -138,6 +141,16 @@ public class DamageSystem extends EntitySystem<Context> {
                     }
                 } else {
                     targetHealth.damage(bc.damage);
+                    if (!targetHealth.isAlive()) {
+                        PlayerKeysComponent pkc = playerKeysM.get(targetId);
+                        if (pkc != null && pkc.keyCount > 0) {
+                            TransformComponent ptc = transformM.get(targetId);
+                            for (int i = 0; i < pkc.keyCount; i++) {
+                                nsm.spawn(Key.class, Key.serialize(ptc.position.x, ptc.position.y));
+                            }
+                            pkc.keyCount = 0;
+                        }
+                    }
                 }
 
                 nsm.despawn(bulletId);
