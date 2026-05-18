@@ -56,10 +56,10 @@ public class EnemySystem extends IteratingEntitySystem<Context> {
             transform.rotation %= 360.0f;
 
             // random movement
-            if (random.nextFloat() < 0.0001f) {
+            if (random.nextFloat() < 0.005f) {
                 movement.velocity.x = 0.0f;
                 movement.velocity.y = 0.0f;
-            } else if (random.nextFloat() < 0.002f) {
+            } else if (random.nextFloat() < 0.02f) {
                 if (movement.velocity.x == 0 && movement.velocity.y == 0) {
                     float angle = random.nextFloat() * (float) Math.PI * 2;
                     float speed = 30.0f + random.nextFloat() * 40.0f;
