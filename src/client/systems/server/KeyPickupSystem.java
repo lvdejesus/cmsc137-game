@@ -48,10 +48,12 @@ public class KeyPickupSystem extends EntitySystem<Context> {
             HealthComponent hc = hm.get(playerEntity);
             if (hc == null || !hc.isAlive()) continue;
             var playerBox = getWorldBox(playerEntity);
+            if (playerBox == null) continue;
             for (int keyEntity : keyEntities) {
                 if (collectedKeys.contains(keyEntity)) continue;
 
                 var keyBox = getWorldBox(keyEntity);
+                if (keyBox == null) continue;
                 if (keyBox.intersectsAABB(playerBox)) {
                     var playerKeys = pkcm.get(playerEntity);
                     playerKeys.addKey();
@@ -66,6 +68,7 @@ public class KeyPickupSystem extends EntitySystem<Context> {
     private AABBf getWorldBox(int entityId) {
         TransformComponent transform = tm.get(entityId);
         CollisionComponent collision = cm.get(entityId);
+        if (transform == null || collision == null) return null;
         return new AABBf(
             new Vector3f(
                 collision.boundingBox.minX() + transform.position.x,

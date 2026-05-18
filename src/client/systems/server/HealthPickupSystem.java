@@ -37,8 +37,10 @@ public class HealthPickupSystem extends EntitySystem<Context> {
             if (!hc.isAlive() || hc.currentHealth >= hc.maxHealth) continue;
 
             AABBf playerBox = getWorldBox(playerEntity);
+            if (playerBox == null) continue;
             for (int pickupEntity : pickupEntities) {
                 AABBf pickupBox = getWorldBox(pickupEntity);
+                if (pickupBox == null) continue;
                 if (pickupBox.intersectsAABB(playerBox)) {
                     hc.currentHealth = Math.min(hc.maxHealth, hc.currentHealth + 25);
                     nsm.despawn(pickupEntity);
@@ -51,6 +53,7 @@ public class HealthPickupSystem extends EntitySystem<Context> {
     private AABBf getWorldBox(int entityId) {
         TransformComponent transform = tm.get(entityId);
         CollisionComponent collision = cm.get(entityId);
+        if (transform == null || collision == null) return null;
         return new AABBf(
             new Vector3f(
                 collision.boundingBox.minX() + transform.position.x,
