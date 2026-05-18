@@ -17,9 +17,7 @@
   * **Windows**: `mingw32-make` or similar MSYS2/MinGW toolchain.
 
 ### Library Dependencies
-The project dependencies (LWJGL 3, JOML, GLFW, STB, OpenGL, and their respective natives) are pre-packaged in the repository.
-* **Linux/macOS**: Library and native files are located in `lib/natives/x64/linux/`.
-* **Windows**: Library and native files are located in `lib/natives/x64/windows/` or configured automatically.
+The project dependencies (LWJGL 3, JOML, GLFW, STB, OpenGL, and their respective natives) are needed to be configured in your system. Follow the steps in the **Downloading & Configuring Dependencies** section to do so.
 
 <br>
 
