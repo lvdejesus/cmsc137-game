@@ -133,6 +133,7 @@ public class TilePrefab extends Prefab {
     public void spawnServerInternal() {
         if (isBoss) {
             entity.addComponent(new BossDoorComponent(bx, by));
+            entity.addComponent(new DoorComponent(x, y, tileIndex));
             entity.addComponent(new NetworkDuplicateComponent(DoorComponent.class, WallComponent.class));
         } else {
             var tgc = getTGC();

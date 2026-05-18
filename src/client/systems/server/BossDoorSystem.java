@@ -1,6 +1,7 @@
 package client.systems.server;
 
 import client.components.BossDoorComponent;
+import client.components.DoorComponent;
 import client.components.PlayerKeysComponent;
 import client.components.TransformComponent;
 import client.components.player.PlayerStateComponent;
@@ -18,6 +19,7 @@ public class BossDoorSystem extends IteratingEntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
     private ComponentMapper<PlayerKeysComponent> psm;
     private ComponentMapper<BossDoorComponent> bsm;
+    private ComponentMapper<DoorComponent> doorM;
 
     private final Map<Long, Integer> keyCounts = new HashMap<>();
 
@@ -37,6 +39,7 @@ public class BossDoorSystem extends IteratingEntitySystem<Context> {
         tm = engine.getMapper(TransformComponent.class);
         psm = engine.getMapper(PlayerKeysComponent.class);
         bsm = engine.getMapper(BossDoorComponent.class);
+        doorM = engine.getMapper(DoorComponent.class);
     }
 
     @Override
@@ -62,7 +65,11 @@ public class BossDoorSystem extends IteratingEntitySystem<Context> {
 
         if (numKeys == 3) {
             nsm.broadcastMessage(new S_BossFightStart());
-            nsm.despawn(entityId);
+            DoorComponent dc = doorM.get(entityId);
+            if (dc != null && dc.state == DoorComponent.State.CLOSED) {
+                dc.state = DoorComponent.State.OPENING;
+                dc.animTimer = 0;
+            }
         }
     }
 }

@@ -17,6 +17,7 @@ public class DoorSystem extends EntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
     private ComponentMapper<HealthComponent> hm;
     private ComponentMapper<WallComponent> wm;
+    private ComponentMapper<BossDoorComponent> bdm;
     private MapGenerator.MapResult grid;
 
     public DoorSystem(MapGenerator.MapResult grid, NetworkSpawnManager nsm) {
@@ -30,6 +31,7 @@ public class DoorSystem extends EntitySystem<Context> {
         tm = engine.getMapper(TransformComponent.class);
         hm = engine.getMapper(HealthComponent.class);
         wm = engine.getMapper(WallComponent.class);
+        bdm = engine.getMapper(BossDoorComponent.class);
     }
 
     @Override
@@ -47,8 +49,9 @@ public class DoorSystem extends EntitySystem<Context> {
         Iterable<Integer> doors = engine.getFamily(DoorComponent.class)::iterator;
         for (int doorId : doors) {
             DoorComponent dc = doorM.get(doorId);
+            boolean isBoss = bdm.get(doorId) != null;
 
-            if (dc.state == DoorComponent.State.CLOSED) {
+            if (!isBoss && dc.state == DoorComponent.State.CLOSED) {
                 Set<Integer> adjacent = getAdjacentRooms(dc.gridX, dc.gridY);
                 boolean anyCleared = false;
                 for (int area : adjacent) {
