@@ -97,6 +97,7 @@ public class LevelScene extends Scene {
         engine.addSystem(new DespawnSystem());
         engine.addSystem(new HealthBarUpdateSystem(healthBar));
         engine.addSystem(new KeyUISystem());
+        engine.addSystem(new DoorAnimatorSystem());
         engine.addSystem(new UpgradeUISystem());
         engine.addSystem(new TimerSystem());
         engine.addSystem(new ClientNetworkOutputSystem(outQueue));

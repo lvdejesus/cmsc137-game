@@ -268,6 +268,7 @@ public class GameServer implements Runnable {
             engine.addSystem(new MapKeySpawnSystem(grid, nsm));
             engine.addSystem(new KeyPickupSystem(nsm));
             engine.addSystem(new HealthPickupSystem(nsm));
+            engine.addSystem(new DoorSystem(grid, nsm));
             engine.addSystem(new BossDoorSystem(nsm));
             engine.addSystem(new ExperienceSystem());
             engine.addSystem(new SnapshotSystem(snapshotQueue, outQueue));

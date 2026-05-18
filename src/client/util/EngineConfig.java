@@ -40,6 +40,7 @@ public class EngineConfig {
         engine.register(NetworkDuplicateComponent.class);
         engine.register(UpgradeKindComponent.class);
         engine.register(TimerComponent.class);
+        engine.register(DoorComponent.class);
     }
 
     public static void registerComponents(Engine<Context> engine) {
