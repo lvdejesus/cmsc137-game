@@ -1,5 +1,6 @@
 package client.rendering;
 
+import common.ResourceLoader;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTTPackContext;
@@ -16,6 +17,14 @@ import static org.lwjgl.opengl.GL33.*;
 
 public class Font {
     private int textureID;
+
+    public static Font load(String path, int fontSize) {
+        byte[] bytes = ResourceLoader.read(path);
+        ByteBuffer buffer = BufferUtils.createByteBuffer(bytes.length);
+        buffer.put(bytes);
+        buffer.flip();
+        return new Font(buffer, fontSize);
+    }
     private final Map<Character, Glyph> glyphs = new HashMap<>();
     private final int fontSize;
     private final float ascent;

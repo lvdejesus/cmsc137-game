@@ -11,11 +11,6 @@ import client.systems.client.*;
 import framework.engine.*;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
-import common.ResourceLoader;
-import org.lwjgl.BufferUtils;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,11 +37,7 @@ public class LobbyScene extends Scene {
 
         // Load Font
         try {
-            byte[] bytes = ResourceLoader.read("res/fonts/KiwiSoda.ttf");
-            ByteBuffer buffer = BufferUtils.createByteBuffer(bytes.length);
-            buffer.put(bytes);
-            buffer.flip();
-            font = new Font(buffer, 32);
+            font = Font.load("res/fonts/KiwiSoda.ttf", 32);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -69,7 +69,7 @@ public class VictoryOverlay {
         entities.add(statsBorder);
 
         // Player stats table
-        var stats = NetworkManager.getInstance().getVictoryStats();
+        var stats = NetworkManager.getInstance().getGameResult();
         int maxPlayerId = NetworkManager.getInstance().getPlayerCount();
         if (stats != null) {
             for (int id : stats.kills.keySet()) {

@@ -6,7 +6,7 @@ import client.components.player.PlayerStateComponent;
 import client.entities.Bullet;
 import client.entities.Enemy;
 import client.network.NetworkSpawnManager;
-import client.network.messages.server.S_BossDefeated;
+import client.network.messages.server.S_GameResult;
 import client.util.Statistics;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -115,7 +115,7 @@ public class DamageSystem extends EntitySystem<Context> {
                         BossComponent bossC = engine.getMapper(BossComponent.class).get(targetId);
                         if (bossC != null) {
                             statistics.addBossKill();
-                            nsm.broadcastMessage(new S_BossDefeated(statistics));
+                            nsm.broadcastMessage(new S_GameResult(statistics, true));
                         }
 
                         var originEntityId = playerEntityMap.get(bc.origin);

@@ -309,8 +309,8 @@ public class GameServer implements Runnable {
             while ((disconnectedId = disconnectQueue.poll()) != null) {
                 Integer entityId = playerToEntityMap.remove(disconnectedId);
                 if (entityId != null) nsm.despawn(entityId);
-                if (disconnectedId == 1 && gameEnded) {
-                    outQueue.add(new MessagePair(-1, new S_GameOver(statistics)));
+                if (disconnectedId == 1 && !gameEnded) {
+                    outQueue.add(new MessagePair(-1, new S_GameResult(statistics, false)));
                     running = false;
                 }
             }
@@ -329,7 +329,7 @@ public class GameServer implements Runnable {
                     }
                 }
                 if (allDead && !playerToEntityMap.isEmpty()) {
-                    outQueue.add(new MessagePair(-1, new S_GameOver(statistics)));
+                    outQueue.add(new MessagePair(-1, new S_GameResult(statistics, false)));
                     gameEnded = true;
                 }
             }

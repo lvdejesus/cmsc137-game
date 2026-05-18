@@ -5,7 +5,10 @@ import client.components.RenderComponent;
 import client.components.TransformComponent;
 import client.components.player.PlayerStateComponent;
 import client.network.messages.Message;
-import client.network.messages.server.*;
+import client.network.messages.server.S_GameResult;
+import client.network.messages.server.S_AssignId;
+import client.network.messages.server.S_PlayerCount;
+import client.network.messages.server.S_StartGame;
 import client.util.Statistics;
 
 import java.util.HashMap;
@@ -29,8 +32,7 @@ public class NetworkManager {
     private volatile boolean gameStarted = false;
     private volatile boolean bossDefeated = false;
     private volatile boolean gameOver = false;
-    private S_BossDefeated victoryStats = null;
-    private S_GameOver gameOverStats = null;
+    private S_GameResult gameResult = null;
 
     public ConcurrentLinkedQueue<Message> inQueue = new ConcurrentLinkedQueue<>();
 
@@ -61,14 +63,13 @@ public class NetworkManager {
             gameStarted = true;
         });
 
-        registerHandler(S_BossDefeated.class, (m) -> {
-            bossDefeated = true;
-            victoryStats = m;
-        });
-
-        registerHandler(S_GameOver.class, (m) -> {
-            gameOver = true;
-            gameOverStats = m;
+        registerHandler(S_GameResult.class, (m) -> {
+            gameResult = m;
+            if (m.victory) {
+                bossDefeated = true;
+            } else {
+                gameOver = true;
+            }
         });
     }
 
@@ -105,12 +106,8 @@ public class NetworkManager {
         return gameOver;
     }
 
-    public S_BossDefeated getVictoryStats() {
-        return victoryStats;
-    }
-
-    public S_GameOver getGameOverStats() {
-        return gameOverStats;
+    public S_GameResult getGameResult() {
+        return gameResult;
     }
 
     public java.util.List<String> discoverHosts() {
@@ -133,8 +130,7 @@ public class NetworkManager {
         gameStarted = false;
         bossDefeated = false;
         gameOver = false;
-        victoryStats = null;
-        gameOverStats = null;
+        gameResult = null;
         inQueue.clear();
     }
 }
