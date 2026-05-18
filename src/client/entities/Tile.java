@@ -20,11 +20,19 @@ public class Tile {
         RenderComponent rc;
 
         var tile = ec.tiles.get(tileIndex);
+        float z = 0.0f;
+        if (tileIndex >= 0 && tileIndex < ec.tileDefs.size()) {
+            TileDefinition def = ec.tileDefs.get(tileIndex);
+            if ("floor".equals(def.name)) {
+                z = -5.0f;
+            }
+        }
+
         if (tile.type == TileDefinition.TileTextureType.regular) {
-            rc = new RenderComponent(tile.textures.get(remap[0]), 0.0f);
+            rc = new RenderComponent(tile.textures.get(remap[0]), z);
         } else if (tile.type == TileDefinition.TileTextureType.connected) {
             int idx = getConnectionIndex(ec, xTile, yTile);
-            rc = new RenderComponent(tile.textures.get(remap[idx]), 0.0f);
+            rc = new RenderComponent(tile.textures.get(remap[idx]), z);
         } else {
             throw new RuntimeException("Invalid TileTextureType");
         }
@@ -55,11 +63,25 @@ public class Tile {
         return tileEntity;
     }
 
+    public static boolean isConnectable(TileGridComponent ec, int x, int y) {
+        Entity<Context> entity = ec.getEntity(x, y);
+        if (entity == null) return false;
+        TileComponent tc = entity.getComponent(TileComponent.class);
+        if (tc == null) return false;
+        if (tc.tile >= 0 && tc.tile < ec.tileDefs.size()) {
+            TileDefinition def = ec.tileDefs.get(tc.tile);
+            if ("floor".equals(def.name)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static int getConnectionIndex(TileGridComponent ec, int xTile, int yTile) {
-        boolean d1 = ec.getEntity(xTile, yTile - 1) != null;
-        boolean d2 = ec.getEntity(xTile + 1, yTile) != null;
-        boolean d3 = ec.getEntity(xTile, yTile + 1) != null;
-        boolean d4 = ec.getEntity(xTile - 1, yTile) != null;
+        boolean d1 = isConnectable(ec, xTile, yTile - 1);
+        boolean d2 = isConnectable(ec, xTile + 1, yTile);
+        boolean d3 = isConnectable(ec, xTile, yTile + 1);
+        boolean d4 = isConnectable(ec, xTile - 1, yTile);
         return (d1 ? 1 : 0) + (d2 ? 2 : 0) + (d3 ? 4 : 0) + (d4 ? 8 : 0);
     }
 

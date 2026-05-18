@@ -247,13 +247,13 @@ public class GameServer implements Runnable {
 
 
 
-            MapGenerator.MapResult grid;
-            try {
-                TileLoader.loadTiles();
-                grid = MapGenerator.generateMap(System.nanoTime(), 1 + 4 * connectedClients.size(), 1 + 7 * connectedClients.size());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        MapGenerator.MapResult grid;
+        try {
+            TileLoader.loadTiles();
+            grid = MapGenerator.generateMap(System.nanoTime(), 8 + 3 * connectedClients.size(), 12 + 5 * connectedClients.size());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
             Statistics statistics = new Statistics();
 
