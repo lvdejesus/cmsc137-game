@@ -5,11 +5,13 @@ import client.components.RenderComponent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
 import client.rendering.Animation;
+import client.network.GameServer;
 import client.network.NetworkManager;
 import client.rendering.Anchor;
 import client.rendering.Font;
 import client.rendering.Texture;
 import client.rendering.TextureAtlas;
+import client.scenes.LobbyScene;
 import client.scenes.MenuScene;
 import client.scenes.SceneManager;
 import client.systems.client.Context;
@@ -149,8 +151,18 @@ public class VictoryOverlay {
         if (input.keyDown(GLFW_KEY_ENTER) || input.keyDown(GLFW_KEY_SPACE)) {
             if (selectedOption == 0) {
                 hide();
+                boolean wasHost = NetworkManager.getInstance().getPlayerIndex() == 1;
+                String ip = NetworkManager.getInstance().getLastServerIp();
                 NetworkManager.getInstance().stop();
-                SceneManager.setScene(new MenuScene(Window.getWindow()), engine);
+                if (wasHost) {
+                    GameServer server = new GameServer("0.0.0.0");
+                    GameServer.hostServer = server;
+                    Thread serverThread = new Thread(server);
+                    serverThread.setDaemon(true);
+                    serverThread.start();
+                }
+                NetworkManager.getInstance().joinGame(ip, GameServer.TCP_PORT);
+                SceneManager.setScene(new LobbyScene(ip), engine);
             } else {
                 hide();
                 NetworkManager.getInstance().stop();

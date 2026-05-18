@@ -33,6 +33,7 @@ public class NetworkManager {
     private volatile boolean bossDefeated = false;
     private volatile boolean gameOver = false;
     private S_GameResult gameResult = null;
+    private String lastServerIp = "127.0.0.1";
 
     public ConcurrentLinkedQueue<Message> inQueue = new ConcurrentLinkedQueue<>();
 
@@ -115,7 +116,12 @@ public class NetworkManager {
     }
 
     public void joinGame(String ip, int port) {
+        lastServerIp = ip;
         client.connect(ip, port);
+    }
+
+    public String getLastServerIp() {
+        return lastServerIp;
     }
 
     public void sendMessage(Message message) {
