@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import client.scenes.overlays.*;
 
 public class LevelScene extends Scene {
+    private Engine<Context> engine;
     private UpgradeNotification upgradeNotification;
     private Player player;
     private Menu menu;
@@ -40,6 +41,7 @@ public class LevelScene extends Scene {
 
     @Override
     public void init(Engine<Context> engine) {
+        this.engine = engine;
         int playerIndex = NetworkManager.getInstance().getPlayerIndex();
         this.player = new Player(engine, playerIndex, NetworkManager.getInstance().getNetworkId());
         this.player.spawnClient();
@@ -115,6 +117,7 @@ public class LevelScene extends Scene {
         }
 
         if (NetworkManager.getInstance().isBossDefeated()) {
+            engine.removeSystems(0);
             if (!victoryOverlay.isVisible()) {
                 victoryOverlay.show();
             }
@@ -123,7 +126,10 @@ public class LevelScene extends Scene {
         }
 
         if (NetworkManager.getInstance().isGameOver()) {
-            if (gameOverTime < 0) gameOverTime = glfwGetTime();
+            if (gameOverTime < 0) {
+                gameOverTime = glfwGetTime();
+                engine.removeSystems(0);
+            }
             if (glfwGetTime() - gameOverTime < GAME_OVER_DELAY) return;
             if (!gameOverOverlay.isVisible()) {
                 gameOverOverlay.show();
