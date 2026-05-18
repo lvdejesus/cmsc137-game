@@ -92,8 +92,10 @@ public class TilePrefab extends Prefab {
 
         }
 
-        entity.addComponent(new CollisionComponent(new AABBf(0.0f, 0.0f, 0.0f, 64.0f, 64.0f, 0.1f)));
         var tileDef = tgc.tileDefs.get(tileIndex);
+        if (!"floor".equals(tileDef.name)) {
+            entity.addComponent(new CollisionComponent(new AABBf(0.0f, 0.0f, 0.0f, 64.0f, 64.0f, 0.1f)));
+        }
         if (tileDef.solid) {
             entity.addComponent(new WallComponent(tileDef.isStatic));
         }

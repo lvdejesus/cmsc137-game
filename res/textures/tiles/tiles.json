@@ -29,5 +29,10 @@
         "size": [1, 1],
         "solid": 1,
         "door": 1
+    },
+    "floor": {
+        "texture": "tile.png",
+        "size": [1, 1],
+        "solid": 0
     }
 }

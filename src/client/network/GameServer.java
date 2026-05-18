@@ -235,8 +235,15 @@ public class GameServer implements Runnable {
 
 
         MapGenerator.MapResult grid;
+        int floorTileIndex = -1;
         try {
-            TileLoader.loadTiles();
+            List<common.TileDefinition> tileDefs = TileLoader.loadTiles();
+            for (int i = 0; i < tileDefs.size(); i++) {
+                if ("floor".equals(tileDefs.get(i).name)) {
+                    floorTileIndex = i;
+                    break;
+                }
+            }
             grid = MapGenerator.generateMap(System.nanoTime(), 8 + 3 * connectedClients.size(), 12 + 5 * connectedClients.size());
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -289,9 +296,25 @@ public class GameServer implements Runnable {
                 }
 
                 if (isBoss) {
+                    if (floorTileIndex != -1) {
+                        nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, floorTileIndex));
+                    }
                     nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, tileIndex, bx, by));
                 } else {
+                    if (MapGenerator.isDoorTile(grid.grid[y][x]) && floorTileIndex != -1) {
+                        nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, floorTileIndex));
+                    }
                     nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, tileIndex));
+                }
+            }
+        }
+
+        if (floorTileIndex != -1 && grid.closedAreas != null) {
+            for (int[][] area : grid.closedAreas) {
+                for (int[] coord : area) {
+                    int x = coord[0];
+                    int y = coord[1];
+                    nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, floorTileIndex));
                 }
             }
         }
