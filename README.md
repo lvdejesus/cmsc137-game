@@ -51,7 +51,7 @@ Follow the quick steps below to compile and play **Neon Drift** on your system:
    ```
 
 ### Windows
-Using your terVminal (CMD, PowerShell, or Git Bash with MinGW):
+Using your terminal (CMD, PowerShell, or Git Bash with MinGW):
 1. **Build the source files**:
    ```bash
    mingw32-make -f Makefile.win build
