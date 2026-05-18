@@ -383,7 +383,7 @@ public class MapGenerator {
 
             for (int y = 0; y < GRID_SIZE; y++) {
                 for (int x = 0; x < GRID_SIZE; x++) {
-                    if (mapGrid[y][x] == 0 && !visited[y][x]) {
+                    if ((mapGrid[y][x] == 0 || mapGrid[y][x] == 6) && !visited[y][x]) {
                         List<int[]> currentArea = new ArrayList<>();
                         Queue<int[]> queue = new LinkedList<>();
                         queue.add(new int[]{x, y});
@@ -406,7 +406,7 @@ public class MapGenerator {
                                 int nx = cx + d[0];
                                 int ny = cy + d[1];
                                 if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
-                                    if (mapGrid[ny][nx] == 0 && !visited[ny][nx]) {
+                                    if ((mapGrid[ny][nx] == 0 || mapGrid[ny][nx] == 6) && !visited[ny][nx]) {
                                         visited[ny][nx] = true;
                                         queue.add(new int[]{nx, ny});
                                     }
@@ -451,7 +451,7 @@ public class MapGenerator {
                     }
 
                     if (coverCount >= 2 && allHallways) {
-                        mapGrid[y][x] = 0;
+                        mapGrid[y][x] = 6;
                     }
                 }
             }

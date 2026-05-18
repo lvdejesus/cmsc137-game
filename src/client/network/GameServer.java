@@ -301,10 +301,16 @@ public class GameServer implements Runnable {
                         continue;
                     }
 
+                    boolean isDoor = tileIndex >= 1 && tileIndex <= 4;
+
                     if (isBoss) {
                         nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, tileIndex, bx, by));
                     } else {
                         nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, tileIndex));
+                    }
+
+                    if (isDoor) {
+                        nsm.spawn(TilePrefab.class, TilePrefab.serialize(x, y, 5));
                     }
                 }
             }

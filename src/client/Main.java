@@ -52,6 +52,8 @@ public class Main {
             glViewport(0, 0, width, height);
         });
 
+        glClearColor(69.0f / 255, 40.0f / 255, 60.0f / 255, 255.0f / 255);
+
         // ECS set
         engine = new Engine<>();
         // Add systems and components

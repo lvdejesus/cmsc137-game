@@ -1,38 +1,57 @@
 {
     "wall": {
         "texture": "wall.png",
-        "size": [1, 1],
+        "size": [
+            1,
+            1
+        ],
         "solid": 1,
         "static": 1,
         "connecting": 1
     },
     "door-left": {
         "texture": "door-left.png",
-        "size": [1, 1],
+        "size": [
+            1,
+            1
+        ],
         "solid": 1,
         "door": 1
     },
     "door-right": {
         "texture": "door-right.png",
-        "size": [1, 1],
+        "size": [
+            1,
+            1
+        ],
         "solid": 1,
         "door": 1
     },
     "door-top": {
         "texture": "door-top.png",
-        "size": [1, 1],
+        "size": [
+            1,
+            1
+        ],
         "solid": 1,
         "door": 1
     },
     "door-bottom": {
         "texture": "door-bottom.png",
-        "size": [1, 1],
+        "size": [
+            1,
+            1
+        ],
         "solid": 1,
         "door": 1
     },
     "floor": {
-        "texture": "tile.png",
-        "size": [1, 1],
-        "solid": 0
+        "texture": "floor.png",
+        "size": [
+            1,
+            1
+        ],
+        "solid": 0,
+        "static": 1
     }
 }
