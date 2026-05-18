@@ -28,6 +28,7 @@ public class LevelScene extends Scene {
     private UpgradeOverlay upgrade;
     private GameResultOverlay gameResultOverlay;
     private BossHealthBar bossHealthBar;
+    private ChatOverlay chatOverlay;
 
     private Font pauseFont;
     private double gameOverTime = -1;
@@ -70,6 +71,8 @@ public class LevelScene extends Scene {
         bossHealthBar = new BossHealthBar(engine);
         bossHealthBar.create();
 
+        chatOverlay = new ChatOverlay(engine, pauseFont);
+
         // Initialize debug text
 //        debugText = DebugText.create(engine, "State: idle");
     }
@@ -110,6 +113,9 @@ public class LevelScene extends Scene {
 
     @Override
     public void update() {
+        chatOverlay.update();
+        if (chatOverlay.isActive()) return;
+
         var pos = player.getEntity().getComponent(TransformComponent.class).position;
 //        this.debugText.setText(String.format("Position: %.2f,  %.2f", pos.x / 64.0f, pos.y / 64.0f));
 
@@ -166,6 +172,7 @@ public class LevelScene extends Scene {
     @Override
     public void clean() {
         menu.hidePauseMenu();
+        chatOverlay.destroy();
         bossHealthBar.destroy();
         xpBar.destroy();
     }

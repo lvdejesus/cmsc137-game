@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import client.rendering.Animation;
 import client.systems.client.Context;
@@ -32,6 +33,8 @@ public class NetworkManager {
     private volatile boolean bossFightStarted = false;
     private S_GameResult gameResult = null;
     private String lastServerIp = "127.0.0.1";
+
+    public final CopyOnWriteArrayList<String> chatMessages = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     public ConcurrentLinkedQueue<Message> inQueue = new ConcurrentLinkedQueue<>();
 
@@ -73,6 +76,11 @@ public class NetworkManager {
 
         registerHandler(S_BossFightStart.class, (m) -> {
             bossFightStarted = true;
+        });
+
+        registerHandler(S_ChatMessage.class, (m) -> {
+            String prefix = m.getPlayerId() == playerIndex ? "You" : ("Player " + m.getPlayerId());
+            chatMessages.add(prefix + ": " + m.getText());
         });
     }
 

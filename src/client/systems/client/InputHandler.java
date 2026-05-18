@@ -22,6 +22,8 @@ public class InputHandler {
     private final ArrayList<MouseEvent> eventsToAdd = new ArrayList<>();
     private final ArrayList<MouseEvent> events = new ArrayList<>();
 
+    private final StringBuilder charBuffer = new StringBuilder();
+
     public Vector2f cursorPosition = new Vector2f(0, 0);
     public Vector2f lastCursorPosition = new Vector2f(0, 0);
     public boolean middleMouseHeld = false;
@@ -48,6 +50,10 @@ public class InputHandler {
             } else if (action == GLFW_RELEASE) {
                 toRelease.add(key);
             }
+        });
+
+        glfwSetCharCallback(windowHandle, (window, codepoint) -> {
+            charBuffer.append((char) codepoint);
         });
 
         glfwSetMouseButtonCallback(windowHandle, (window, button, action, mods) -> {
@@ -104,6 +110,12 @@ public class InputHandler {
         events.clear();
         events.addAll(eventsToAdd);
         eventsToAdd.clear();
+    }
+
+    public String consumeTypedChars() {
+        String s = charBuffer.toString();
+        charBuffer.setLength(0);
+        return s;
     }
 
     public boolean keyDown(int key) {

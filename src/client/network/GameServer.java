@@ -239,11 +239,17 @@ public class GameServer implements Runnable {
                 nsm.spawn(Bullet.class, Bullet.serialize(tc.position.x, tc.position.y, pp.getPx(), pp.getPy(), pp.getPvx(), pp.getPvy(), puc.bulletSpeed, id, puc.splatter, BASE_BULLET_DISTANCE / puc.bulletSpeed));
             });
 
-            handlers.put(C_RequestStartGame.class, (id, message) -> {
-                if (id == 1 && !gameStarted) {
-                    startGame();
-                }
-            });
+        handlers.put(C_RequestStartGame.class, (id, message) -> {
+            if (id == 1 && !gameStarted) {
+                startGame();
+            }
+        });
+
+        handlers.put(C_ChatMessage.class, (id, message) -> {
+            var chatMsg = (C_ChatMessage) message;
+            var broadcast = new S_ChatMessage(id, chatMsg.getText());
+            outQueue.add(new MessagePair(-1, broadcast));
+        });
 
 
 

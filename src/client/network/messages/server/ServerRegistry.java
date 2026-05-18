@@ -13,5 +13,6 @@ public class ServerRegistry extends Registry {
         register(S_Disconnect.class, S_Disconnect::deserialize);
         register(S_GameResult.class, S_GameResult::deserialize);
         register(S_BossFightStart.class, S_BossFightStart::deserialize);
+        register(S_ChatMessage.class, S_ChatMessage::deserialize);
     }
 }

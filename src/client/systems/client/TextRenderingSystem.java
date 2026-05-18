@@ -6,6 +6,7 @@ import client.rendering.*;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
 import framework.engine.IteratingEntitySystem;
+import framework.engine.Window;
 import framework.rendering.ShaderProgram;
 
 import static org.lwjgl.opengl.GL33.*;
@@ -49,6 +50,13 @@ public class TextRenderingSystem extends IteratingEntitySystem<Context> {
 
         if (textComp.layer != layer) return;
 
+        float px = transform.position.x;
+        float py = transform.position.y;
+        if (transform.globalAnchor) {
+            px += transform.anchor.getXOffset() * Window.getWindow().getWidth();
+            py += transform.anchor.getYOffset() * Window.getWindow().getHeight();
+        }
+
         float length = 0;
         for (char c : textComp.text.toCharArray()) {
             Font.Glyph glyph = textComp.font.getGlyph(c);
@@ -57,8 +65,8 @@ public class TextRenderingSystem extends IteratingEntitySystem<Context> {
             }
         }
 
-        float x = transform.position.x - length * (transform.anchor.getXOffset());
-        float y = transform.position.y + textComp.font.getAscent() - (textComp.font.getAscent() - textComp.font.getDescent()) * transform.anchor.getYOffset();
+        float x = px - length * (transform.anchor.getXOffset());
+        float y = py + textComp.font.getAscent() - (textComp.font.getAscent() - textComp.font.getDescent()) * transform.anchor.getYOffset();
         float z = textComp.z;
 
         for (char c : textComp.text.toCharArray()) {
