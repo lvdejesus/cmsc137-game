@@ -14,4 +14,8 @@ public class Texture {
         this.width = w;
         this.height = h;
     }
+
+    public Texture copy(){
+        return new Texture(u1, v1, u2, v2, width, height);
+    }
 }

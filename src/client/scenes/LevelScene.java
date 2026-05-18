@@ -38,6 +38,9 @@ public class LevelScene extends Scene {
     // Health bar
     private HealthBar healthBar;
 
+    // XP bar
+    private XpBar xpBar;
+
     @Override
     public void init(Engine<Context> engine) {
         this.engine = engine;
@@ -59,6 +62,9 @@ public class LevelScene extends Scene {
         healthBar = new HealthBar(engine);
         healthBar.updateHealth(player.getHealth()); // Set initial health
         healthBar.createHealthBar();
+
+        xpBar = new XpBar(engine);
+        xpBar.create();
 
         // Initialize debug text
         debugText = DebugText.create(engine, "State: idle");
@@ -137,6 +143,7 @@ public class LevelScene extends Scene {
         }
 
         var xpc = player.getEntity().getComponent(ExperienceComponent.class);
+        xpBar.updateXp(xpc.exp);
         if (xpc.getRemainingUpgrades() > 0){
             if (xpc.lastLevelNotifShown != xpc.getLevels()){
                 upgradeNotification.toggle();
@@ -153,5 +160,6 @@ public class LevelScene extends Scene {
     @Override
     public void clean() {
         menu.hidePauseMenu();
+        xpBar.destroy();
     }
 }
