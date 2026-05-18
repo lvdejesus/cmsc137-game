@@ -41,18 +41,26 @@ The project dependencies (LWJGL 3, JOML, GLFW, STB, OpenGL, and their respective
 Follow the quick steps below to compile and play **Neon Drift** on your system:
 
 ### Linux & macOS
-1. **Build the source files**:
+1. **Clone the repository or download the ZIP** (and extract the files):
+   ```bash
+   git clone https://github.com/lvdejesus/cmsc137-game.git
+   ```
+2. **Build the source files**:
    ```bash
    make build
    ```
-2. **Run the game client**:
+3. **Run the game client**:
    ```bash
    make run
    ```
 
 ### Windows
 Using your terminal (CMD, PowerShell, or Git Bash with MinGW):
-1. **Build the source files**:
+1. **Clone the repository or download the ZIP** (and extract the files):
+   ```bash
+   git clone https://github.com/lvdejesus/cmsc137-game.git
+   ```
+2. **Build the source files**:
    ```bash
    mingw32-make -f Makefile.win build
    ```
