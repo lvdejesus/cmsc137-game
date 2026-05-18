@@ -15,10 +15,10 @@ public class NativeLoader {
         String[] libs;
 
         if (os.contains("linux")) {
-            nativeDir = "natives/x64/linux/";
+            nativeDir = "natives/linux/x64/";
             libs = new String[]{"libglfw.so", "liblwjgl.so", "liblwjgl_opengl.so", "liblwjgl_stb.so", "libopenal.so"};
         } else if (os.contains("win")) {
-            nativeDir = "natives/x64/windows/";
+            nativeDir = "natives/windows/x64/";
             libs = new String[]{"glfw.dll", "lwjgl.dll", "lwjgl_opengl.dll", "lwjgl_stb.dll", "OpenAL.dll"};
         } else {
             return;
