@@ -27,6 +27,7 @@ public class EngineConfig {
         engine.register(BossDoorComponent.class);
         engine.register(BossComponent.class);
         engine.register(KeyComponent.class);
+        engine.register(HealthPickupComponent.class);
         engine.register(PlayerNetworkComponent.class);
         engine.register(NetworkIdComponent.class);
         engine.register(EnemyComponent.class);

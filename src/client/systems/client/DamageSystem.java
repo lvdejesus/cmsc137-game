@@ -5,6 +5,7 @@ import client.components.enemy.EnemyComponent;
 import client.components.player.PlayerStateComponent;
 import client.entities.Bullet;
 import client.entities.Enemy;
+import client.entities.HealthPickup;
 import client.entities.Key;
 import client.network.NetworkSpawnManager;
 import client.network.messages.server.S_GameResult;
@@ -20,6 +21,7 @@ import org.joml.primitives.AABBf;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 public class DamageSystem extends EntitySystem<Context> {
@@ -34,6 +36,7 @@ public class DamageSystem extends EntitySystem<Context> {
     private final NetworkSpawnManager nsm;
     private final SpatialHashGrid spatialHash = new SpatialHashGrid(64);
     private final Set<Integer> potentialTargets = new HashSet<>();
+    private final Random random = new Random();
 
     private Map<Integer, Integer> playerEntityMap;
     private Statistics statistics;
@@ -131,6 +134,10 @@ public class DamageSystem extends EntitySystem<Context> {
                                         xpc.exp += 5;
                                     } else if (ec.type == Enemy.EnemyType.Advanced) {
                                         xpc.exp += 8;
+                                        if (random.nextFloat() < 0.2f) {
+                                            TransformComponent etc = transformM.get(targetId);
+                                            nsm.spawn(HealthPickup.class, HealthPickup.serialize(etc.position.x, etc.position.y));
+                                        }
                                     }
                                 }
                             }
