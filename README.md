@@ -36,7 +36,7 @@ The project dependencies (LWJGL 3, JOML, GLFW, STB, OpenGL, and their respective
 > * **Windows:**
 >   If you cannot run the bash script (e.g., when using standard Command Prompt or PowerShell), you can set up the dependencies manually:
 >   1. Go to the [LWJGL 3 Customize Page](https://www.lwjgl.org/customize).
->   2. Click the **"Upload Config"** button (or drag-and-drop the file).
+>   2. Click the **"Load Config"** button.
 >   3. Select the config file: `lib/lwjgl-release-custom-zip.json` from the root of this project.
 >   4. Download the generated ZIP bundle.
 >   5. Move all main `.jar` libraries (like `lwjgl.jar`, `joml-1.10.8.jar`, etc.) directly into the `lib/` directory.
