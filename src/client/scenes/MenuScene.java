@@ -12,6 +12,8 @@ import org.joml.Vector4f;
 import client.network.GameServer;
 import client.network.NetworkManager;
 
+import java.util.Objects;
+
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -48,7 +50,7 @@ public class MenuScene extends Scene {
         Texture bgTex = TextureAtlas.get().getRegion("menu_bg.png");
         float scaleX = (float) window.getWidth() / bgTex.width;
         float scaleY = (float) window.getHeight() / bgTex.height;
-        
+
         Entity<Context> bg = engine.createEntity();
         bg.addComponent(new TransformComponent(new Vector2f(centerX, centerY), new Vector2f(scaleX, scaleY)));
         bg.addComponent(new RenderComponent(bgTex, 0.0f, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f), "fixed"));
@@ -59,7 +61,7 @@ public class MenuScene extends Scene {
         title.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_title.png"), 0.1f, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f), "fixed"));
 
         // Options
-        optionPositions = new Vector2f[] {
+        optionPositions = new Vector2f[]{
             new Vector2f(centerX, centerY + 20),
             new Vector2f(centerX, centerY + 70),
             new Vector2f(centerX, centerY + 120)
@@ -111,15 +113,17 @@ public class MenuScene extends Scene {
                 // Join Game (Client)
                 String hostIP = javax.swing.JOptionPane.showInputDialog(null, "Enter Host IP:", "Join Game", javax.swing.JOptionPane.QUESTION_MESSAGE);
                 int port = GameServer.TCP_PORT;
-                if (hostIP.contains(":")) {
-                    var result = hostIP.split(":");
-                    hostIP = result[0];
-                    port = Integer.parseInt(result[1]);
-                }
+                if (!Objects.equals(hostIP, "")) {
+                    if (hostIP.contains(":")) {
+                        var result = hostIP.split(":");
+                        hostIP = result[0];
+                        port = Integer.parseInt(result[1]);
+                    }
 
-                if (hostIP != null && !hostIP.isEmpty()) {
-                    NetworkManager.getInstance().joinGame(hostIP, port);
-                    SceneManager.setScene(new LobbyScene(hostIP), engine);
+                    if (hostIP != null && !hostIP.isEmpty()) {
+                        NetworkManager.getInstance().joinGame(hostIP, port);
+                        SceneManager.setScene(new LobbyScene(hostIP), engine);
+                    }
                 }
             } else {
                 // Exit Game

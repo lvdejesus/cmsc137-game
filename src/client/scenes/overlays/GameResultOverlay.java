@@ -148,16 +148,8 @@ public class GameResultOverlay {
         if (input.keyDown(GLFW_KEY_ENTER) || input.keyDown(GLFW_KEY_SPACE)) {
             if (selectedOption == 0) {
                 hide();
-                boolean wasHost = NetworkManager.getInstance().getPlayerIndex() == 1;
                 String ip = NetworkManager.getInstance().getLastServerIp();
                 NetworkManager.getInstance().stop();
-                if (wasHost) {
-                    GameServer server = new GameServer("0.0.0.0");
-                    GameServer.hostServer = server;
-                    Thread serverThread = new Thread(server);
-                    serverThread.setDaemon(true);
-                    serverThread.start();
-                }
                 NetworkManager.getInstance().joinGame(ip, GameServer.TCP_PORT);
                 SceneManager.setScene(new LobbyScene(ip), engine);
             } else {
