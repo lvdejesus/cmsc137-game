@@ -295,7 +295,7 @@ public class GameServer implements Runnable {
             }
         }
 
-        while (running) {
+        while (running && !gameEnded) {
             long tickStart = System.nanoTime();
 
             double currentTime = tickStart / NANO_TO_SECOND;
@@ -309,17 +309,17 @@ public class GameServer implements Runnable {
             while ((disconnectedId = disconnectQueue.poll()) != null) {
                 Integer entityId = playerToEntityMap.remove(disconnectedId);
                 if (entityId != null) nsm.despawn(entityId);
-                if (disconnectedId == 1 && !gameEnded) {
-                    outQueue.add(new MessagePair(-1, new S_GameResult(statistics, false)));
-                    running = false;
+                if (disconnectedId == 1) {
+                    gameEnded = true;
                 }
             }
 
-            if (!running) break;
+            if (gameEnded) break;
 
             engine.update(ctx);
 
             if (!gameEnded) {
+                boolean victory = statistics.bossKills > 0;
                 boolean allDead = true;
                 for (int entityId : playerToEntityMap.values()) {
                     HealthComponent hc = healthMapper.get(entityId);
@@ -328,8 +328,7 @@ public class GameServer implements Runnable {
                         break;
                     }
                 }
-                if (allDead && !playerToEntityMap.isEmpty()) {
-                    outQueue.add(new MessagePair(-1, new S_GameResult(statistics, false)));
+                if (victory || (allDead && !playerToEntityMap.isEmpty())) {
                     gameEnded = true;
                 }
             }
@@ -345,6 +344,12 @@ public class GameServer implements Runnable {
             }
         }
 
+        if (gameEnded) {
+            S_GameResult result = new S_GameResult(statistics, statistics.bossKills > 0);
+            for (var client : connectedClients.values()) {
+                client.send(result);
+            }
+        }
         stop();
     }
 
