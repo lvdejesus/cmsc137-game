@@ -18,6 +18,7 @@ import java.util.Set;
 public class KeyPickupSystem extends EntitySystem<Context> {
     private ComponentMapper<TransformComponent> tm;
     private ComponentMapper<CollisionComponent> cm;
+    private ComponentMapper<HealthComponent> hm;
     private ComponentMapper<PlayerKeysComponent> pkcm;
     private ComponentMapper<NetworkIdComponent> nim;
     private NetworkSpawnManager nsm;
@@ -31,6 +32,7 @@ public class KeyPickupSystem extends EntitySystem<Context> {
         super.setEngine(engine);
         tm = engine.getMapper(TransformComponent.class);
         cm = engine.getMapper(CollisionComponent.class);
+        hm = engine.getMapper(HealthComponent.class);
         pkcm = engine.getMapper(PlayerKeysComponent.class);
         nim = engine.getMapper(NetworkIdComponent.class);
     }
@@ -43,6 +45,8 @@ public class KeyPickupSystem extends EntitySystem<Context> {
         Set<Integer> collectedKeys = new HashSet<>();
 
         for (int playerEntity : playerEntities) {
+            HealthComponent hc = hm.get(playerEntity);
+            if (hc == null || !hc.isAlive()) continue;
             var playerBox = getWorldBox(playerEntity);
             for (int keyEntity : keyEntities) {
                 if (collectedKeys.contains(keyEntity)) continue;
