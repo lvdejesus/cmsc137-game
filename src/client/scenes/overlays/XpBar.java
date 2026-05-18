@@ -9,6 +9,9 @@ import framework.engine.*;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
+import static client.components.ExperienceComponent.toExp;
+import static client.components.ExperienceComponent.toLevel;
+
 public class XpBar {
     private final Engine<Context> engine;
     private Entity<Context> barEntity;
@@ -23,7 +26,8 @@ public class XpBar {
     }
 
     public void create() {
-        Texture tex = TextureAtlas.get().getRegion("healthbar/xpbar.png").copy();
+        Texture src = TextureAtlas.get().getRegion("healthbar/xpbar.png");
+        Texture tex = new Texture(src.u1, src.v1, src.u2, src.v2, src.width, src.height);
         texWidth = tex.width;
         texHeight = tex.height;
         fullU2 = tex.u2;
@@ -38,9 +42,9 @@ public class XpBar {
     }
 
     public void updateXp(int exp) {
-        int level = (int) Math.floor(Math.log1p(exp / 100.0) / Math.log(2));
-        int prevThreshold = (int) (100 * (Math.pow(2, level) - 1));
-        int nextThreshold = (int) (100 * (Math.pow(2, level + 1) - 1));
+        int level = toLevel(exp);
+        int prevThreshold = toExp(level);
+        int nextThreshold = toExp(level + 1);
         float p = (exp - prevThreshold) / (float) (nextThreshold - prevThreshold);
         if (p < 0) p = 0;
         if (p > 1) p = 1;

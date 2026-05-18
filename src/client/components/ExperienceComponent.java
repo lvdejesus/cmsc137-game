@@ -15,7 +15,15 @@ public class ExperienceComponent implements SyncComponent {
     public int lastLevelNotifShown = -1;
 
     public int getLevels() {
-        return (int)Math.floor(Math.log1p(exp / 100.0) / Math.log(2));
+        return toLevel(exp);
+    }
+
+    public static int toLevel(int exp){
+        return (int)Math.floor(Math.log1p(exp / 50.0) / Math.log(2))       ;
+    }
+
+    public static int toExp(int level) {
+        return (int) Math.floor(50 * (Math.pow(2, level) - 1));
     }
 
     public int getRemainingUpgrades(){

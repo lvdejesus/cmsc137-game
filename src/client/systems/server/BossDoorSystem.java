@@ -5,6 +5,7 @@ import client.components.PlayerKeysComponent;
 import client.components.TransformComponent;
 import client.components.player.PlayerStateComponent;
 import client.network.NetworkSpawnManager;
+import client.network.messages.server.S_BossFightStart;
 import client.systems.client.Context;
 import framework.engine.ComponentMapper;
 import framework.engine.Engine;
@@ -60,6 +61,7 @@ public class BossDoorSystem extends IteratingEntitySystem<Context> {
         }
 
         if (numKeys == 3) {
+            nsm.broadcastMessage(new S_BossFightStart());
             nsm.despawn(entityId);
         }
     }

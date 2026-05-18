@@ -5,10 +5,7 @@ import client.components.RenderComponent;
 import client.components.TransformComponent;
 import client.components.player.PlayerStateComponent;
 import client.network.messages.Message;
-import client.network.messages.server.S_GameResult;
-import client.network.messages.server.S_AssignId;
-import client.network.messages.server.S_PlayerCount;
-import client.network.messages.server.S_StartGame;
+import client.network.messages.server.*;
 import client.util.Statistics;
 
 import java.util.HashMap;
@@ -32,6 +29,7 @@ public class NetworkManager {
     private volatile boolean gameStarted = false;
     private volatile boolean bossDefeated = false;
     private volatile boolean gameOver = false;
+    private volatile boolean bossFightStarted = false;
     private S_GameResult gameResult = null;
     private String lastServerIp = "127.0.0.1";
 
@@ -72,6 +70,10 @@ public class NetworkManager {
                 gameOver = true;
             }
         });
+
+        registerHandler(S_BossFightStart.class, (m) -> {
+            bossFightStarted = true;
+        });
     }
 
     public static NetworkManager getInstance() {
@@ -101,6 +103,10 @@ public class NetworkManager {
 
     public boolean isBossDefeated() {
         return bossDefeated;
+    }
+
+    public boolean isBossFightStarted() {
+        return bossFightStarted;
     }
 
     public boolean isGameOver() {
@@ -139,6 +145,7 @@ public class NetworkManager {
         playerCount = 0;
         gameStarted = false;
         bossDefeated = false;
+        bossFightStarted = false;
         gameOver = false;
         gameResult = null;
         inQueue.clear();

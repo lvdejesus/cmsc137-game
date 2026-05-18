@@ -27,13 +27,14 @@ public class LevelScene extends Scene {
     private Menu menu;
     private UpgradeOverlay upgrade;
     private GameResultOverlay gameResultOverlay;
+    private BossHealthBar bossHealthBar;
 
     private Font pauseFont;
     private double gameOverTime = -1;
     private static final double GAME_OVER_DELAY = 3.0;
 
     //Debug text
-    private DebugText debugText;
+//    private DebugText debugText;
 
     // Health bar
     private HealthBar healthBar;
@@ -66,8 +67,11 @@ public class LevelScene extends Scene {
         xpBar = new XpBar(engine);
         xpBar.create();
 
+        bossHealthBar = new BossHealthBar(engine);
+        bossHealthBar.create();
+
         // Initialize debug text
-        debugText = DebugText.create(engine, "State: idle");
+//        debugText = DebugText.create(engine, "State: idle");
     }
 
     @Override
@@ -106,7 +110,7 @@ public class LevelScene extends Scene {
     @Override
     public void update() {
         var pos = player.getEntity().getComponent(TransformComponent.class).position;
-        this.debugText.setText(String.format("Position: %.2f,  %.2f", pos.x / 64.0f, pos.y / 64.0f));
+//        this.debugText.setText(String.format("Position: %.2f,  %.2f", pos.x / 64.0f, pos.y / 64.0f));
 
         // Toggle menu with Esc
         InputHandler input = InputHandler.getInstance();
@@ -144,6 +148,7 @@ public class LevelScene extends Scene {
 
         var xpc = player.getEntity().getComponent(ExperienceComponent.class);
         xpBar.updateXp(xpc.exp);
+        bossHealthBar.update();
         if (xpc.getRemainingUpgrades() > 0){
             if (xpc.lastLevelNotifShown != xpc.getLevels()){
                 upgradeNotification.toggle();
@@ -160,6 +165,7 @@ public class LevelScene extends Scene {
     @Override
     public void clean() {
         menu.hidePauseMenu();
+        bossHealthBar.destroy();
         xpBar.destroy();
     }
 }

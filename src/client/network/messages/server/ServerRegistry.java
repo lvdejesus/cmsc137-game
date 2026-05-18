@@ -12,5 +12,6 @@ public class ServerRegistry extends Registry {
         register(S_Despawn.class, S_Despawn::deserialize);
         register(S_Disconnect.class, S_Disconnect::deserialize);
         register(S_GameResult.class, S_GameResult::deserialize);
+        register(S_BossFightStart.class, S_BossFightStart::deserialize);
     }
 }
