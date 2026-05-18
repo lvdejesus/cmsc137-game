@@ -24,15 +24,23 @@ The project dependencies (LWJGL 3, JOML, GLFW, STB, OpenGL, and their respective
 <br>
 
 > [!NOTE]
-> **Downloading & Extracting Dependencies:**
-> If you need to clean, re-download, or configure the LWJGL 3 libraries and native files on your machine, you can run the provided shell script:
-> ```bash
-> # 1. Make the script executable
-> chmod +x download_deps.sh
-> 
-> # 2. Run the script to fetch libraries and extract native binaries
-> ./download_deps.sh
-> ```
+> **Downloading & Configuring Dependencies:**
+>
+> * **Linux / macOS:**
+>   Run the provided shell script to automatically fetch and extract the required native libraries and JARs:
+>   ```bash
+>   chmod +x download_deps.sh
+>   ./download_deps.sh
+>   ```
+>
+> * **Windows:**
+>   If you cannot run the bash script (e.g., when using standard Command Prompt or PowerShell), you can set up the dependencies manually:
+>   1. Go to the [LWJGL 3 Customize Page](https://www.lwjgl.org/customize).
+>   2. Click the **"Upload Config"** button (or drag-and-drop the file).
+>   3. Select the config file: `lib/lwjgl-release-custom-zip.json` from the root of this project.
+>   4. Download the generated ZIP bundle.
+>   5. Move all main `.jar` libraries (like `lwjgl.jar`, `joml-1.10.8.jar`, etc.) directly into the `lib/` directory.
+>   6. Extract the Windows `.dll` native libraries (such as `lwjgl.dll`, `lwjgl_opengl.dll`, `glfw.dll`, `lwjgl_stb.dll`) and place them in the `lib/natives/windows/x64/` directory of the project.
 
 ---
 

@@ -43,7 +43,7 @@ public class Window {
 
     public void init() {
         // for aj's pc, wayland-nvidia is not compatible w/o this
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+        // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
         if (!glfwInit()) {
             throw new IllegalStateException("GLFW failed!");
         }
