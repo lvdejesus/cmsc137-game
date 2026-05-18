@@ -4,13 +4,9 @@ import client.components.AnimationComponent;
 import client.components.RenderComponent;
 import client.components.TextComponent;
 import client.components.TransformComponent;
-import client.rendering.Animation;
 import client.network.GameServer;
 import client.network.NetworkManager;
-import client.rendering.Anchor;
-import client.rendering.Font;
-import client.rendering.Texture;
-import client.rendering.TextureAtlas;
+import client.rendering.*;
 import client.scenes.LobbyScene;
 import client.scenes.MenuScene;
 import client.scenes.SceneManager;
@@ -27,30 +23,31 @@ import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class GameOverOverlay {
+public class GameResultOverlay {
     private final Engine<Context> engine;
     private final List<Entity<Context>> entities = new ArrayList<>();
     private final Font font;
 
-    private int selectedOption = 0; // 0 = Retry, 1 = Exit
+    private int selectedOption = 0;
     private Vector2f[] optionPositions;
     private Entity<Context> selectorEntity;
     private boolean isVisible = false;
+    private boolean victory;
 
-    public GameOverOverlay(Engine<Context> engine, Font font) {
+    public GameResultOverlay(Engine<Context> engine, Font font) {
         this.engine = engine;
         this.font = font;
     }
 
-    public void show() {
+    public void show(boolean victory) {
         if (isVisible) return;
         isVisible = true;
+        this.victory = victory;
 
         Window window = Window.getWindow();
         float centerX = window.getWidth() / 2.0f;
         float centerY = window.getHeight() / 2.0f;
 
-        // Background
         Texture bgTex = TextureAtlas.get().getRegion("menu_bg.png");
         float scaleX = (float) window.getWidth() / bgTex.width;
         float scaleY = (float) window.getHeight() / bgTex.height;
@@ -60,19 +57,17 @@ public class GameOverOverlay {
         bg.addComponent(new RenderComponent(bgTex, 0.6f, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f), "fixed"));
         entities.add(bg);
 
-        // Title (GAME OVER)
+        String titleTex = victory ? "you_win.png" : "game_over.png";
         Entity<Context> title = engine.createEntity();
         title.addComponent(new TransformComponent(new Vector2f(centerX, centerY - 200), new Vector2f(1, 1), Anchor.CENTER));
-        title.addComponent(new RenderComponent(TextureAtlas.get().getRegion("game_over.png"), 0.7f, new Vector4f(1, 1, 1, 1), "fixed"));
+        title.addComponent(new RenderComponent(TextureAtlas.get().getRegion(titleTex), 0.7f, new Vector4f(1, 1, 1, 1), "fixed"));
         entities.add(title);
 
-        // Stats Border
         Entity<Context> statsBorder = engine.createEntity();
         statsBorder.addComponent(new TransformComponent(new Vector2f(centerX, centerY), new Vector2f(1, 1), Anchor.CENTER));
         statsBorder.addComponent(new RenderComponent(TextureAtlas.get().getRegion("stats_border.png"), 0.7f, new Vector4f(1, 1, 1, 1), "fixed"));
         entities.add(statsBorder);
 
-        // Player stats table
         var stats = NetworkManager.getInstance().getGameResult();
         int maxPlayerId = NetworkManager.getInstance().getPlayerCount();
         if (stats != null) {
@@ -107,7 +102,6 @@ public class GameOverOverlay {
             }
         }
 
-        // Options
         optionPositions = new Vector2f[]{
             new Vector2f(centerX - 150, centerY + 150),
             new Vector2f(centerX + 150, centerY + 150)
@@ -115,7 +109,7 @@ public class GameOverOverlay {
 
         Entity<Context> retryText = engine.createEntity();
         retryText.addComponent(new TransformComponent(optionPositions[0], new Vector2f(1, 1), Anchor.CENTER));
-        retryText.addComponent(new TextComponent(font, "retry", new Vector4f(1, 1, 1, 1), 1.0f, 0.8f, "fixed"));
+        retryText.addComponent(new TextComponent(font, victory ? "play again" : "retry", new Vector4f(1, 1, 1, 1), 1.0f, 0.8f, "fixed"));
         entities.add(retryText);
 
         Entity<Context> exitText = engine.createEntity();
@@ -123,7 +117,6 @@ public class GameOverOverlay {
         exitText.addComponent(new TextComponent(font, "exit", new Vector4f(1, 1, 1, 1), 1.0f, 0.8f, "fixed"));
         entities.add(exitText);
 
-        // Selector
         selectorEntity = engine.createEntity();
         selectorEntity.addComponent(new TransformComponent(new Vector2f(optionPositions[selectedOption].x - 100, optionPositions[selectedOption].y), new Vector2f(1, 1), Anchor.CENTER));
         selectorEntity.addComponent(new RenderComponent(TextureAtlas.get().getRegion("menu_selector.png"), 0.9f, new Vector4f(1, 1, 1, 1), "fixed"));
@@ -168,7 +161,6 @@ public class GameOverOverlay {
                 NetworkManager.getInstance().joinGame(ip, GameServer.TCP_PORT);
                 SceneManager.setScene(new LobbyScene(ip), engine);
             } else {
-                // Exit
                 hide();
                 NetworkManager.getInstance().stop();
                 SceneManager.setScene(new MenuScene(Window.getWindow()), engine);

@@ -26,8 +26,7 @@ public class LevelScene extends Scene {
     private Player player;
     private Menu menu;
     private UpgradeOverlay upgrade;
-    private GameOverOverlay gameOverOverlay;
-    private VictoryOverlay victoryOverlay;
+    private GameResultOverlay gameResultOverlay;
 
     private Font pauseFont;
     private double gameOverTime = -1;
@@ -56,8 +55,7 @@ public class LevelScene extends Scene {
 
         upgrade = new UpgradeOverlay(engine, player);
         upgradeNotification = new UpgradeNotification(engine);
-        gameOverOverlay = new GameOverOverlay(engine, pauseFont);
-        victoryOverlay = new VictoryOverlay(engine, pauseFont);
+        gameResultOverlay = new GameResultOverlay(engine, pauseFont);
         healthBar = new HealthBar(engine);
         healthBar.updateHealth(player.getHealth()); // Set initial health
         healthBar.createHealthBar();
@@ -118,10 +116,10 @@ public class LevelScene extends Scene {
 
         if (NetworkManager.getInstance().isBossDefeated()) {
             engine.removeSystems(0);
-            if (!victoryOverlay.isVisible()) {
-                victoryOverlay.show();
+            if (!gameResultOverlay.isVisible()) {
+                gameResultOverlay.show(true);
             }
-            victoryOverlay.handleInput(input);
+            gameResultOverlay.handleInput(input);
             return;
         }
 
@@ -131,10 +129,10 @@ public class LevelScene extends Scene {
                 engine.removeSystems(0);
             }
             if (glfwGetTime() - gameOverTime < GAME_OVER_DELAY) return;
-            if (!gameOverOverlay.isVisible()) {
-                gameOverOverlay.show();
+            if (!gameResultOverlay.isVisible()) {
+                gameResultOverlay.show(false);
             }
-            gameOverOverlay.handleInput(input);
+            gameResultOverlay.handleInput(input);
             return; 
         }
 
